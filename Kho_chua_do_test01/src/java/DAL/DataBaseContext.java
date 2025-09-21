@@ -27,7 +27,7 @@ public class DataBaseContext {
         try {
             String user = "sa";
             String pass = "123";
-            String url = "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=MBP";
+            String url = "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=nam_ngu";
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             connection = DriverManager.getConnection(url, user, pass);
         } catch (ClassNotFoundException | SQLException ex) {
