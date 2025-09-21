@@ -44,7 +44,7 @@ public class NhanVien_controller extends HttpServlet {
     throws ServletException, IOException {
         List<User> users = userDAO.getAllUsers();   // ✅ gọi qua đối tượng userDAO
         request.setAttribute("users", users);       // ✅ dùng request (không phải req)
-        request.getRequestDispatcher("jsp/Nhan_vien.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/Nhan_vien.jsp").forward(request, response);
     } 
 
     
