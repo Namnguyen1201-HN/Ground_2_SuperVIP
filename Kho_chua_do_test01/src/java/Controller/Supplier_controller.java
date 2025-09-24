@@ -33,17 +33,11 @@ public class Supplier_controller extends HttpServlet {
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
     } 
-
-    @Override
-    public void init() {
-        userDAO = new UserDAO();
-    }
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        List<User> users = userDAO.getAllUsers();   // ✅ gọi qua đối tượng userDAO
-        request.setAttribute("users", users);       // ✅ dùng request (không phải req)
+        
         request.getRequestDispatcher("/WEB-INF/jsp/supplier.jsp").forward(request, response);
     } 
 
