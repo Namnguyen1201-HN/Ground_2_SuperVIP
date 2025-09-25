@@ -2,22 +2,6 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-<<<<<<< HEAD
-        <group>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/DashBoard_controller.java</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Model/User.java</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/DAL/UserDAO.java</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/web/WEB-INF/jsp/Login.jsp</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/web/WEB-INF/jsp/Tong_quan.jsp</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/Register_controller.java</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/DAL/DataBaseContext.java</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/Product_controller.java</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/web/WEB-INF/jsp/auth/forgot-password.jsp</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/Login_controller.java</file>
-            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/NhanVien_controller.java</file>
-        </group>
-=======
         <group/>
->>>>>>> 75b3ad2c49a49b7dce0b0f316ead64d0aaac8468
     </open-files>
 </project-private>

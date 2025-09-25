@@ -22,6 +22,10 @@
                     <file>${file.reference.sqljdbc42.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
+                <library dirs="200">
+                    <file>${file.reference.jakarta.servlet-api-5.0.0.jar}</file>
+                    <path-in-war>WEB-INF/lib</path-in-war>
+                </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>
@@ -31,5 +35,6 @@
                 <root id="test.src.dir"/>
             </test-roots>
         </data>
+        <libraries xmlns="http://www.netbeans.org/ns/cdnjs-libraries/1"/>
     </configuration>
 </project>
