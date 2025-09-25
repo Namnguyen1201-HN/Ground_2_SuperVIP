@@ -5,11 +5,8 @@
 
 package Controller;
 
-<<<<<<< HEAD
 import DAL.UserDAO;
 import Model.User;
-=======
->>>>>>> 75b3ad2c49a49b7dce0b0f316ead64d0aaac8468
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -17,17 +14,13 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-<<<<<<< HEAD
 import jakarta.servlet.http.HttpSession;
 import java.util.Date;
-=======
->>>>>>> 75b3ad2c49a49b7dce0b0f316ead64d0aaac8468
 
 /**
  *
  * @author TieuPham
  */
-<<<<<<< HEAD
 @WebServlet(name="Register_controller", urlPatterns={"/Register"})
 public class Register_controller extends HttpServlet {
     private UserDAO userDAO;
@@ -41,29 +34,10 @@ public class Register_controller extends HttpServlet {
     public void init() {
         userDAO = new UserDAO();
     }
-=======
-@WebServlet(name="Register_controller", urlPatterns={"/Register_controller"})
-public class Register_controller extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        request.getRequestDispatcher("/WEB-INF/jsp/auth/register.jsp").forward(request, response);
-    } 
-
->>>>>>> 75b3ad2c49a49b7dce0b0f316ead64d0aaac8468
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-<<<<<<< HEAD
         // Hiển thị trang đăng ký
         request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
     } 
@@ -170,22 +144,3 @@ public class Register_controller extends HttpServlet {
         return "Register Controller for WM System";
     }
 }
-=======
-        processRequest(request, response);
-    } 
-
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
-}
->>>>>>> 75b3ad2c49a49b7dce0b0f316ead64d0aaac8468
