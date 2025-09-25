@@ -114,7 +114,7 @@ public class ProductDAO extends DataBaseContext {
     // Tìm kiếm sản phẩm theo tên
     public List<Product> searchProductsByName(String keyword) {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT * FROM Products WHERE ProductName LIKE ?";
+        String sql = "SELECT * FROM Products WHERE ProductName COLLATE Latin1_General_CI_AI LIKE ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, "%" + keyword + "%");
             try (ResultSet rs = ps.executeQuery()) {
