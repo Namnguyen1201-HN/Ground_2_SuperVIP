@@ -3,10 +3,17 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/TieuPham/Documents/GitHub/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Model/User.java</file>
-            <file>file:/C:/Users/TieuPham/Documents/GitHub/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/DAL/UserDAO.java</file>
-            <file>file:/C:/Users/TieuPham/Documents/GitHub/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/NhanVien_controller.java</file>
-            <file>file:/C:/Users/TieuPham/Documents/GitHub/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/Nhan_vien.jsp</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/DashBoard_controller.java</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Model/User.java</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/DAL/UserDAO.java</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/web/WEB-INF/jsp/Login.jsp</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/web/WEB-INF/jsp/Tong_quan.jsp</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/Register_controller.java</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/DAL/DataBaseContext.java</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/Product_controller.java</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/web/WEB-INF/jsp/auth/forgot-password.jsp</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/Login_controller.java</file>
+            <file>file:/C:/Users/Lenovo/Downloads/Ground_2_SuperVIP-main/Ground_2_SuperVIP-main/Kho_chua_do_test01/src/java/Controller/NhanVien_controller.java</file>
         </group>
     </open-files>
 </project-private>

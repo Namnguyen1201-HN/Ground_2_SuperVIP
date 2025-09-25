@@ -51,7 +51,7 @@
                     <span class="icon-partners"></span>
                     Đối tác
                 </a>
-                <a href="NhanVien" class="nav-item">
+                <a href="#" class="nav-item">
                     <span class="icon-staff"></span>
                     Nhân viên
                 </a>
@@ -248,7 +248,8 @@
 
         // Add click handlers for navigation
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {               
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
                 document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
                 this.classList.add('active');
             });

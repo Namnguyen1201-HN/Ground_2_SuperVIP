@@ -14,7 +14,7 @@
                     <p>Chào mừng bạn quay trở lại!</p>
                 </div>
                 
-                <form action="${pageContext.request.contextPath}/jsp.auth/login" method="POST" class="auth-form">
+                <form action="${pageContext.request.contextPath}/login" method="POST" class="auth-form">
                     <div class="form-group">
                         <label for="username">Tên đăng nhập</label>
                         <input type="text" id="username" name="username" required 
@@ -30,9 +30,11 @@
                     <button type="submit" class="auth-button">Đăng nhập</button>
                     
                     <div class="auth-links">
-                        <a href="${pageContext.request.contextPath}/jsp/auth/forgot-password.jsp">Quên mật khẩu?</a>
+                        <a href="${pageContext.request.contextPath}/forgot-password">Quên mật khẩu?</a>
                         <span>|</span>
-                        <a href="${pageContext.request.contextPath}/jsp/auth/register.jsp">Đăng ký tài khoản mới</a>
+                        <a href="${pageContext.request.contextPath}/register">Đăng ký tài khoản mới</a>
+                        <span>|</span>
+                        <a class="btn btn-outline" href="${pageContext.request.contextPath}/DashBoard_controller">Về trang chủ</a>
                     </div>
                 </form>
             </div>

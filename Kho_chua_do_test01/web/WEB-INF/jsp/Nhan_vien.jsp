@@ -41,7 +41,7 @@
                         <span>WM</span>
                     </div>
                     <nav class="nav-menu">
-                        <a href="TongQuan" class="nav-item ">
+                        <a href="#" class="nav-item active">
                             <span class="icon-overview"></span>
                             Tổng quan
                         </a>
@@ -57,7 +57,7 @@
                             <span class="icon-partners"></span>
                             Đối tác
                         </a>
-                        <a href="#" class="nav-item active">
+                        <a href="#" class="nav-item">
                             <span class="icon-staff"></span>
                             Nhân viên
                         </a>
@@ -86,70 +86,49 @@
                 <!-- Sidebar filters -->
                 <aside class="sidebar">
                     <h2>Danh sách nhân viên</h2>
-                    <form action="NhanVien" method="get">
+                    <div class="filter-group">
 
-                        <!-- Trạng thái -->
-                        <div class="filter-group">
-                            <label>Trạng thái nhân viên</label>                         
-                            <div class="status-radios">
-                                <label class="radio-container">
-                                    <input type="radio" name="status" value="all"
-                                           <%= "all".equals(request.getAttribute("selectedStatus")) ? "checked" : "" %>
-                                           onchange="this.form.submit()" />
-                                    <span class="custom-radio"></span>
-                                    Tất cả nhân viên
-                                </label>
-                                <label class="radio-container">
-                                    <input type="radio" name="status" value="active"
-                                           <%= "active".equals(request.getAttribute("selectedStatus")) ? "checked" : "" %>
-                                           onchange="this.form.submit()" />
-                                    <span class="custom-radio"></span>
-                                    Đang làm việc
-                                </label>
-                                <label class="radio-container">
-                                    <input type="radio" name="status" value="inactive"
-                                           <%= "inactive".equals(request.getAttribute("selectedStatus")) ? "checked" : "" %>
-                                           onchange="this.form.submit()" />
-                                    <span class="custom-radio"></span>
-                                    Đã nghỉ
-                                </label>
-                            </div>
+                        <label>Trạng thái nhân viên</label>
+                        <div class="status-radios">
+                            <label class="radio-container">
+                                <input type="radio" name="status" value="active" checked />
+                                <span class="custom-radio"></span>
+                                Đang làm việc
+                            </label>
+                            <label class="radio-container">
+                                <input type="radio" name="status" value="inactive" />
+                                <span class="custom-radio"></span>
+                                Đã nghỉ
+                            </label>
+                        </div>
 
-                            <!-- Chức danh -->
-                        </div>
-                        <div class="filter-group">
-                            <select>
-                                <option>Chọn chi nhánh...</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <select>
-                                <option>Phòng ban</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <select name="role" onchange="this.form.submit()">
-                                <option value="None" <%= "None".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>None</option>
-                                <option value="Admin" <%= "Admin".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>Admin</option>
-                                <option value="InventoryManager" <%= "InventoryManager".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>InventoryManager</option>
-                                <option value="StoreManager" <%= "StoreManager".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>StoreManager</option>
-                                <option value="Supplier" <%= "Supplier".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>Supplier</option>
-                                <option value="Salesperson" <%= "Salesperson".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>Salesperson</option>
-                            </select>
-                        </div>
-                    </form>
+                    </div>
+                    <div class="filter-group">
+                        <select>
+                            <option>Chọn chi nhánh...</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select>
+                            <option>Phòng ban</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <select>
+                            <option>Chức danh</option>
+                        </select>
+                    </div>
                 </aside>
 
                 <!-- Main content -->
                 <main class="main-content">
                     <div class="toolbar">
-                        <form action="NhanVien" method="get" class="search-bar">
-                            <div>
-                                <input type="text" name="search" placeholder="Tìm theo mã, tên nhân viên"
-                                       value="<%= request.getAttribute("searchKeyword") != null ? request.getAttribute("searchKeyword") : "" %>" />
-                                
-                            </div>
-                        </form>
+                        <div class="search-bar">
+                            <input
+                                type="text"
+                                placeholder="Tìm theo mã, tên nhân viên"
+                                />
+                        </div>
                         <div class="btn-group">
                             <button class="btn add">+ Nhân viên</button>
                             <button class="btn import">Nhập file</button>
@@ -192,7 +171,7 @@
                             %>
                             <tr>
                                 <td colspan="8" class="empty">
-                                    Gian hàng chưa có nhân viên hoặc tên hoặc id nhân viên bạn tìm kiếm không tồn tại.
+                                    Gian hàng chưa có nhân viên. Vui lòng thêm mới nhân viên.
                                 </td>
                             </tr>
                             <%
@@ -206,7 +185,8 @@
             <!-- Info bar -->
             <footer class="info-bar">
                 <p>
-
+                    Tài khoản dùng thử hết hạn sau 2 ngày. Để sử dụng tiếp vui lòng liên hệ
+                    với.
                 </p>
             </footer>
         </div>
