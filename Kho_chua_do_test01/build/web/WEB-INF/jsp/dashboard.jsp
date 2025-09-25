@@ -28,6 +28,12 @@
         .card-desc { color:#555; font-size:1rem; margin-bottom:0.5rem; }
         .card-link { color:#3b82f6; text-decoration:none; font-weight:600; margin-top:auto; }
         .card-link:hover { text-decoration:underline; }
+        .btn { display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; border-radius:0.75rem; font-weight:600; text-decoration:none; border:1px solid transparent; transition:all 0.15s ease; box-shadow:0 4px 14px rgba(37,99,235,0.12); }
+        .btn:hover { text-decoration:none; transform:translateY(-1px); }
+        .btn-primary { background:#4f46e5; color:#fff; border-color:#4f46e5; }
+        .btn-primary:hover { background:#4338ca; box-shadow:0 6px 18px rgba(79,70,229,0.28); }
+        .btn-outline { background:#fff; color:#4f46e5; border-color:#4f46e5; }
+        .btn-outline:hover { background:#eef2ff; color:#4338ca; box-shadow:0 6px 18px rgba(37,99,235,0.22); }
         @media (max-width:900px) { .dashboard-container { flex-direction:column; } .sidebar { width:100%; border-radius:0; } .main-content { padding:1rem; } .cards { gap:1rem; } }
     </style>
 </head>
@@ -72,9 +78,9 @@
             <div class="dashboard-header">
                 <h1>Welcome to Warehouse Management</h1>
                 <div style="display:flex;align-items:center;gap:1rem;">
-                    <a href="jsp/auth/login.jsp" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
-                    <a href="jsp/auth/register.jsp" class="btn btn-primary"><i class="fas fa-user-plus"></i> Đăng ký</a>
-                    <span class="user"><i class="fas fa-user-circle"></i> Guest</span>
+                    <a href="login" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
+                    <a href="register" class="btn btn-primary"><i class="fas fa-user-plus"></i> Đăng ký</a>
+                
                 </div>
             </div>
             <div class="cards">

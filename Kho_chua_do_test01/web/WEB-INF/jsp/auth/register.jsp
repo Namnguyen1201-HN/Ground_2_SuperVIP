@@ -43,7 +43,9 @@
                     
                     <div class="auth-links">
                         <span>Đã có tài khoản?</span>
-                        <a href="${pageContext.request.contextPath}/jsp/login.jsp">Đăng nhập</a>
+                        <a href="${pageContext.request.contextPath}/login">Đăng nhập</a>
+                        <span>|</span>
+                        <a class="btn btn-outline" href="${pageContext.request.contextPath}/DashBoard_controller">Về trang chủ</a>
                     </div>
                 </form>
             </div>

@@ -14,7 +14,7 @@
                     <p>Nhập email của bạn để khôi phục mật khẩu</p>
                 </div>
                 
-                <form action="${pageContext.request.contextPath}/jsp/auth/forgot-password" method="POST" class="auth-form">
+                <form action="${pageContext.request.contextPath}/forgot-password" method="POST" class="auth-form">
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" required 
@@ -24,7 +24,9 @@
                     <button type="submit" class="auth-button">Gửi yêu cầu</button>
                     
                     <div class="auth-links">
-                        <a href="${pageContext.request.contextPath}/jsp/auth/login.jsp">Quay lại đăng nhập</a>
+                        <a href="${pageContext.request.contextPath}/login">Quay lại đăng nhập</a>
+                        <span>|</span>
+                        <a class="btn btn-outline" href="${pageContext.request.contextPath}/DashBoard_controller">Về trang chủ</a>
                     </div>
                 </form>
             </div>

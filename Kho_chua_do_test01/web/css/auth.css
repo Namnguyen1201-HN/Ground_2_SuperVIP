@@ -53,25 +53,26 @@
     transition: border-color 0.3s;
 }
 
-.form-group input:focus {
-    border-color: #4CAF50;
+.auth-form input:focus, .form-group input:focus {
+    border-color: #6366f1;
     outline: none;
 }
 
 .auth-button {
-    background-color: #4CAF50;
+    background-color: #6366f1;
     color: white;
     padding: 1rem;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
 }
 
 .auth-button:hover {
-    background-color: #45a049;
+    background-color: #4f46e5;
+    box-shadow: 0 8px 20px rgba(99,102,241,0.25);
 }
 
 .auth-links {
@@ -81,7 +82,7 @@
 }
 
 .auth-links a {
-    color: #4CAF50;
+    color: #6366f1;
     text-decoration: none;
     margin: 0 0.5rem;
 }
@@ -89,6 +90,14 @@
 .auth-links a:hover {
     text-decoration: underline;
 }
+
+/* Reusable buttons for links */
+.btn { display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 1rem; border-radius:0.75rem; font-weight:600; text-decoration:none; border:1px solid transparent; transition:all 0.15s ease; box-shadow:0 4px 14px rgba(37,99,235,0.12); }
+.btn:hover { text-decoration:none; transform:translateY(-1px); }
+.btn-primary { background:#4f46e5; color:#fff; border-color:#4f46e5; }
+.btn-primary:hover { background:#4338ca; box-shadow:0 6px 18px rgba(79,70,229,0.28); }
+.btn-outline { background:#fff; color:#4f46e5; border-color:#4f46e5; }
+.btn-outline:hover { background:#eef2ff; color:#4338ca; box-shadow:0 6px 18px rgba(37,99,235,0.22); }
 
 .error-message {
     color: #dc3545;
