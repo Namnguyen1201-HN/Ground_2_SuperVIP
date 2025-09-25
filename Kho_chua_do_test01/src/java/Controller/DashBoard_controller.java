@@ -17,7 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @author TieuPham
  */
-@WebServlet(name="DashBoard_controller", urlPatterns={"/DashBoard_controller"})
+@WebServlet(name="DashBoard_controller", urlPatterns={"/DashBoard"})
 public class DashBoard_controller extends HttpServlet {
    
    
