@@ -7,10 +7,10 @@ import java.util.List;
 
 public class UserDAO extends DataBaseContext {
 
-    private static final String SELECT_ALL_USERS =
-        "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt " +
-        "FROM Users u " +
-        "JOIN Roles r ON u.RoleId = r.RoleId";
+    private static final String SELECT_ALL_USERS
+            = "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt "
+            + "FROM Users u "
+            + "JOIN Roles r ON u.RoleId = r.RoleId";
 
     private static final String AUTHENTICATE_USER = 
         "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt " +
