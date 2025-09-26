@@ -8,9 +8,12 @@ import java.util.List;
 public class UserDAO extends DataBaseContext {
 
     private static final String SELECT_ALL_USERS
-            = "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt "
+            = "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, "
+            + "u.IdentifierCode, u.IsActive, u.CreatedAt, "
+            + "r.RoleName, d.DepartmentName "
             + "FROM Users u "
-            + "JOIN Roles r ON u.RoleId = r.RoleId";
+            + "JOIN Roles r ON u.RoleId = r.RoleId "
+            + "LEFT JOIN Departments d ON u.DepartmentId = d.DepartmentId";
 
     private static final String AUTHENTICATE_USER = 
         "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt " +
@@ -42,7 +45,9 @@ public class UserDAO extends DataBaseContext {
                 user.setUsername(rs.getString("Username"));
                 user.setEmail(rs.getString("Email"));
                 user.setPhone(rs.getString("Phone"));
+                user.setIdentifierCode(rs.getString("IdentifierCode"));
                 user.setRoleName(rs.getString("RoleName"));
+                user.setDepartmentName(rs.getString("DepartmentName"));
                 user.setActive(rs.getBoolean("IsActive"));
                 user.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 users.add(user);

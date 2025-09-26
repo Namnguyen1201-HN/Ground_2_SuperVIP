@@ -1,8 +1,6 @@
-
 package Model;
 
 import java.util.Date;
-
 
 public class User {
 
@@ -12,6 +10,8 @@ public class User {
     private String email;
     private String phone;
     private String roleName;
+    private String departmentName;   // mới thêm
+    private String identifierCode;   // mới thêm
     private boolean isActive;
     private Date createdAt;
 
@@ -64,6 +64,22 @@ public class User {
         this.roleName = roleName;
     }
 
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
+    public String getIdentifierCode() {
+        return identifierCode;
+    }
+
+    public void setIdentifierCode(String identifierCode) {
+        this.identifierCode = identifierCode;
+    }
+
     public boolean isActive() {
         return isActive;
     }
@@ -79,5 +95,4 @@ public class User {
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
-
 }
