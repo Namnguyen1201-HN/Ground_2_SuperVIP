@@ -96,29 +96,30 @@ public class UserDAO extends DataBaseContext {
     }
 
     public boolean createUser(User user) {
-        try (PreparedStatement ps = connection.prepareStatement(INSERT_USER, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, user.getFullName());
-            ps.setString(2, user.getUsername());
-            ps.setString(3, user.getPhone());
-            ps.setString(4, user.getEmail());
-            ps.setString(5, generateDefaultPassword()); // Tạo mật khẩu mặc định
-            ps.setBoolean(6, user.isActive());
-            ps.setTimestamp(7, new Timestamp(user.getCreatedAt().getTime()));
-            
-            int affectedRows = ps.executeUpdate();
-            
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = ps.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    user.setUserId(generatedKeys.getInt(1));
-                }
-                return true;
+    try (PreparedStatement ps = connection.prepareStatement(INSERT_USER, Statement.RETURN_GENERATED_KEYS)) {
+        ps.setString(1, user.getFullName());
+        ps.setString(2, user.getUsername());
+        ps.setString(3, user.getPhone());
+        ps.setString(4, user.getEmail());
+        ps.setString(5, hashPassword(user.getPasswordHash())); // ✅ dùng password từ form
+        ps.setBoolean(6, user.isActive());
+        ps.setTimestamp(7, new Timestamp(user.getCreatedAt().getTime()));
+
+        int affectedRows = ps.executeUpdate();
+
+        if (affectedRows > 0) {
+            ResultSet generatedKeys = ps.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                user.setUserId(generatedKeys.getInt(1));
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            return true;
         }
-        return false;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return false;
+}
+
 
     public User getUserByPhone(String phone) {
         try (PreparedStatement ps = connection.prepareStatement(GET_USER_BY_PHONE)) {

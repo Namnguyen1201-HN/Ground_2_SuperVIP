@@ -1,5 +1,4 @@
-CREATE DATABASE Lan1;
-
+USE Lan1;
 CREATE TABLE Roles (
     RoleId INT IDENTITY(1,1) PRIMARY KEY,
     RoleName NVARCHAR(50) NOT NULL UNIQUE -- Admin, InventoryManager, StoreManager, Supplier, Salesperson

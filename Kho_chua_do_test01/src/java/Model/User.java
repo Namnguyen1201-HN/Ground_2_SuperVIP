@@ -10,10 +10,13 @@ public class User {
     private String email;
     private String phone;
     private String roleName;
-    private String departmentName;   // mới thêm
-    private String identifierCode;   // mới thêm
+    private String departmentName;   
+    private String identifierCode;   
     private boolean isActive;
     private Date createdAt;
+
+    // 🔑 thêm trường passwordHash
+    private String passwordHash;
 
     // Getters & setters
     public int getUserId() {
@@ -94,5 +97,14 @@ public class User {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    // ✅ Sửa chỗ này
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 }
