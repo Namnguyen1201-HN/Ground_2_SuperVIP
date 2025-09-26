@@ -76,7 +76,6 @@
             </div>
         </header>
 
-
         <!-- Main Content -->
         <main class="main-content">
             <div class="content-left">
@@ -268,21 +267,12 @@
             // Update stats every 30 seconds
             setInterval(updateStats, 30000);
 
-<<<<<<< HEAD
-        // Add click handlers for navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                this.classList.add('active');
-=======
             // Add click handlers for navigation
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function (e) {
                     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
                     this.classList.add('active');
                 });
->>>>>>> 75b3ad2c49a49b7dce0b0f316ead64d0aaac8468
             });
         </script>
     </body>

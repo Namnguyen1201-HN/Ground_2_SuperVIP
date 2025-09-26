@@ -3,12 +3,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package Model;
+
 import java.util.Date;
+
 /**
  *
  * @author TieuPham
  */
 public class Log {
+
     private int logId;
     private int userId;
     private String action;
@@ -17,21 +20,51 @@ public class Log {
     private Date createdAt;
 
     // Getters & setters
-    public int getLogId() { return logId; }
-    public void setLogId(int logId) { this.logId = logId; }
+    public int getLogId() {
+        return logId;
+    }
 
-    public int getUserId() { return userId; }
-    public void setUserId(int userId) { this.userId = userId; }
+    public void setLogId(int logId) {
+        this.logId = logId;
+    }
 
-    public String getAction() { return action; }
-    public void setAction(String action) { this.action = action; }
+    public int getUserId() {
+        return userId;
+    }
 
-    public String getTableName() { return tableName; }
-    public void setTableName(String tableName) { this.tableName = tableName; }
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
-    public int getRecordId() { return recordId; }
-    public void setRecordId(int recordId) { this.recordId = recordId; }
+    public String getAction() {
+        return action;
+    }
 
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public int getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(int recordId) {
+        this.recordId = recordId;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
 }
