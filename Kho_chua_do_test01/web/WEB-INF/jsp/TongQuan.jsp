@@ -7,7 +7,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>TSMS - Tổng quan</title>
-        <link href="css/Tong_quan.css" rel="stylesheet" type="text/css"/>
+        <link href="css/TongQuan.css" rel="stylesheet" type="text/css"/>
 
     </head>
     <body>

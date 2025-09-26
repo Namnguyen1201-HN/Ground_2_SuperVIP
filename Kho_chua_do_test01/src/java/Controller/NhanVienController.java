@@ -57,7 +57,7 @@ public class NhanVienController extends HttpServlet {
         }
 
         request.setAttribute("users", result);
-        request.getRequestDispatcher("/WEB-INF/jsp/Nhan_vien.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/NhanVien.jsp").forward(request, response);
     }
 
     @Override
