@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 
 @WebServlet(name="DashBoard_controller", urlPatterns={"/DashBoard_controller"})
-public class DashBoard_controller extends HttpServlet {
+public class DashBoardController extends HttpServlet {
    
    
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)

@@ -22,7 +22,7 @@ import java.util.Date;
  * @author TieuPham
  */
 @WebServlet(name="Register_controller", urlPatterns={"/Register"})
-public class Register_controller extends HttpServlet {
+public class RegisterController extends HttpServlet {
     private UserDAO userDAO;
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)

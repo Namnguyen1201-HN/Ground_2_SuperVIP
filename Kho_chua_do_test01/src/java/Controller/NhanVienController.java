@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "NhanVien_controller", urlPatterns = {"/NhanVien"})
-public class NhanVien_controller extends HttpServlet {
+public class NhanVienController extends HttpServlet {
 
     private final UserDAO dao = new UserDAO();
 

@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * @author TieuPham
  */
 @WebServlet(name="Forgot_Password_controller", urlPatterns={"/Forgot_Password_controller"})
-public class Forgot_Password_controller extends HttpServlet {
+public class ForgotPasswordController extends HttpServlet {
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
