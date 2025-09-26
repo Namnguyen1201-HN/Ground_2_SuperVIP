@@ -28,48 +28,6 @@
                     <span>👤</span>
                 </div>
             </div>
-<<<<<<< HEAD
-            <nav class="nav-menu">
-                <a href="#" class="nav-item active">
-                    <span class="icon-overview"></span>
-                    Tổng quan
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="icon-products"></span>
-                    Hàng hóa
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="icon-transactions"></span>
-                    Giao dịch
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="icon-partners"></span>
-                    Đối tác
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="icon-staff"></span>
-                    Nhân viên
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="icon-cashbook"></span>
-                    Sổ quỹ
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="icon-reports"></span>
-                    Báo cáo
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="icon-online"></span>
-                    Bán Online
-                </a>
-                <a href="#" class="nav-item">
-                    <span class="icon-sales"></span>
-                    Bán hàng
-                </a>
-            </nav>
-        </div>
-    </header>
-=======
             <div class="header-main">
                 <div class="logo">
                     <div class="logo-icon">
@@ -117,7 +75,7 @@
                 </nav>
             </div>
         </header>
->>>>>>> 75b3ad2c49a49b7dce0b0f316ead64d0aaac8468
+
 
         <!-- Main Content -->
         <main class="main-content">

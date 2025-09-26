@@ -228,7 +228,8 @@
         <td><input type="checkbox"></td>
         <td>${p.productId}</td>
         <td>${p.productName}</td>
-        <td>${p.price}</td>
+        <td>   <fmt:formatNumber value="${p.price}" type="currency" currencySymbol="" groupingUsed="true"/> ₫</td>
+
         <td>${p.quantity}</td>
         <td>
   <fmt:formatDate value="${p.createdAt}" pattern="yyyy-MM-dd"/>
