@@ -1,12 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
+
 
 package Controller;
 
-import DAL.UserDAO;
-import Model.User;
+import DAL.LogDAO;
+import Model.Log;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -15,37 +12,38 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import java.io.IOException;
-import java.util.List;
-
 
 /**
  *
  * @author TieuPham
  */
-@WebServlet(name="Supplier_controller", urlPatterns={"/supplier"})
-public class Supplier_controller extends HttpServlet {
-   private UserDAO userDAO;
+@WebServlet(name="TongQuan_controller", urlPatterns={"/TongQuan"})
+public class TongQuanController extends HttpServlet {
+   
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+        
+        LogDAO dao = new LogDAO();
+        List<Log> logs = dao.getRecentLogs(5); // lấy 5 log gần nhất
+        request.setAttribute("logs", logs);
+        
+        request.getRequestDispatcher("/WEB-INF/jsp/Tong_quan.jsp").forward(request, response);
     } 
+
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        
-        request.getRequestDispatcher("/WEB-INF/jsp/supplier.jsp").forward(request, response);
+        processRequest(request, response);
     } 
 
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        doGet(request, response);
+        processRequest(request, response);
     }
 
     

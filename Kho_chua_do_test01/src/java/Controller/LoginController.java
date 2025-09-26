@@ -17,11 +17,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 /**
+ * 
+ * 
  *
  * @author TieuPham
  */
 @WebServlet(name="Login_controller", urlPatterns={"/Login"})
-public class Login_controller extends HttpServlet {
+public class LoginController extends HttpServlet {
     private UserDAO userDAO;
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
