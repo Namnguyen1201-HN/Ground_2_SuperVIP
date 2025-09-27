@@ -168,7 +168,7 @@
     
 
 
-                        <form action="product" method="get" class="search-container">
+                        <form action="Product" method="get" class="search-container">
                         <input type="text" name="keyword" class="search-input" placeholder="Theo mã, tên hàng"
                         value="${param.keyword != null ? param.keyword : ''}" />
                         </form>

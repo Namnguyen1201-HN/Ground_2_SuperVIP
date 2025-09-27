@@ -44,7 +44,7 @@
             <div class="role">Shop owner</div>
             <ul>
                 <li><a href="#"><i class="fas fa-users"></i> Staff management</a></li>
-                <li><a href="product"><i class="fas fa-box"></i> Product management</a></li>
+                <li><a href="#"><i class="fas fa-box"></i> Product management</a></li>
                 <li><a href="#"><i class="fas fa-shopping-cart"></i> Order management</a></li>
                 <li><a href="#"><i class="fas fa-bullhorn"></i> Promotion management</a></li>
                 <li><a href="#"><i class="fas fa-exchange-alt"></i> Import/Export info</a></li>
