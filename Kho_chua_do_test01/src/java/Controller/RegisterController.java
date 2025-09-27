@@ -21,7 +21,7 @@ import java.util.Date;
  *
  * @author TieuPham
  */
-@WebServlet(name="Register_controller", urlPatterns={"/Register"})
+@WebServlet(name="RegisterController", urlPatterns={"/Register"})
 public class RegisterController extends HttpServlet {
     private UserDAO userDAO;
     

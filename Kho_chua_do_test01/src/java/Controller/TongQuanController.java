@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @author TieuPham
  */
-@WebServlet(name="TongQuan_controller", urlPatterns={"/TongQuan"})
+@WebServlet(name="TongQuanController", urlPatterns={"/TongQuan"})
 public class TongQuanController extends HttpServlet {
    
     

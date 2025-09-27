@@ -4,7 +4,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Quên mật khẩu</title>
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/auth.css"/>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Auth.css"/>
     </head>
     <body>
         <div class="auth-container">
@@ -14,7 +14,7 @@
                     <p>Nhập email của bạn để khôi phục mật khẩu</p>
                 </div>
                 
-                <form action="${pageContext.request.contextPath}/forgot-password" method="POST" class="auth-form">
+                <form action="${pageContext.request.contextPath}/ForgotPassword" method="POST" class="auth-form">
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" required 
@@ -24,9 +24,9 @@
                     <button type="submit" class="auth-button">Gửi yêu cầu</button>
                     
                     <div class="auth-links">
-                        <a href="${pageContext.request.contextPath}/login">Quay lại đăng nhập</a>
+                        <a href="${pageContext.request.contextPath}/Login">Quay lại đăng nhập</a>
                         <span>|</span>
-                        <a class="btn btn-outline" href="${pageContext.request.contextPath}/DashBoard_controller">Về trang chủ</a>
+                        <a class="btn btn-outline" href="${pageContext.request.contextPath}/DashBoard">Về trang chủ</a>
                     </div>
                 </form>
             </div>

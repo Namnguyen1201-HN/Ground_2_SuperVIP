@@ -14,14 +14,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 
-@WebServlet(name="DashBoard_controller", urlPatterns={"/DashBoard_controller"})
+@WebServlet(name="DashBoardController", urlPatterns={"/DashBoard"})
 public class DashBoardController extends HttpServlet {
    
    
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        request.getRequestDispatcher("/WEB-INF/jsp/dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/DashBoard.jsp").forward(request, response);
     } 
 
     

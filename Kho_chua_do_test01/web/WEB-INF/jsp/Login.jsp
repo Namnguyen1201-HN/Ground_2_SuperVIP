@@ -52,7 +52,7 @@
                             <span class="checkmark"></span>
                             Ghi nhớ đăng nhập
                         </label>
-                        <a href="#" class="forgot-password">Quên mật khẩu?</a>
+                        <a href="ForgotPassword" class="forgot-password">Quên mật khẩu?</a>
                     </div>
                     
                     <button type="submit" class="login-btn">Đăng nhập</button>

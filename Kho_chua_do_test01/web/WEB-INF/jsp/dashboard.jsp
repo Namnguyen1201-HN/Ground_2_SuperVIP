@@ -78,8 +78,8 @@
             <div class="dashboard-header">
                 <h1>Welcome to Warehouse Management</h1>
                 <div style="display:flex;align-items:center;gap:1rem;">
-                    <a href="login" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
-                    <a href="register" class="btn btn-primary"><i class="fas fa-user-plus"></i> Đăng ký</a>
+                    <a href="Login" class="btn btn-outline"><i class="fas fa-sign-in-alt"></i> Đăng nhập</a>
+                    <a href="Register" class="btn btn-primary"><i class="fas fa-user-plus"></i> Đăng ký</a>
                 
                 </div>
             </div>

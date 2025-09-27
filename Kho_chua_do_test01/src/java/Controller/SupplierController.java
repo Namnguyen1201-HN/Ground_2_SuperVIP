@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author TieuPham
  */
-@WebServlet(name="Supplier_controller", urlPatterns={"/supplier"})
+@WebServlet(name="SupplierController", urlPatterns={"/Supplier"})
 public class SupplierController extends HttpServlet {
    private UserDAO userDAO;
     
@@ -38,7 +38,7 @@ public class SupplierController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         
-        request.getRequestDispatcher("/WEB-INF/jsp/supplier.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/Supplier.jsp").forward(request, response);
     } 
 
     

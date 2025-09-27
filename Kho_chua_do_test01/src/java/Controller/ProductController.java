@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "ProductController", urlPatterns = {"/product"})
+@WebServlet(name = "ProductController", urlPatterns = {"/Product"})
 public class ProductController extends HttpServlet {
     private ProductDAO productDAO;
 
@@ -42,7 +42,7 @@ public class ProductController extends HttpServlet {
             request.setAttribute("keyword", keyword);
 
             // Chuyển tiếp sang JSP
-            request.getRequestDispatcher("/WEB-INF/jsp/product.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/Product.jsp").forward(request, response);
 
         } catch (Exception  e) {
             e.printStackTrace();

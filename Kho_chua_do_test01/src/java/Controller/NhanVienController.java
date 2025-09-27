@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet(name = "NhanVien_controller", urlPatterns = {"/NhanVien"})
+@WebServlet(name = "NhanVienController", urlPatterns = {"/NhanVien"})
 public class NhanVienController extends HttpServlet {
 
     private final UserDAO dao = new UserDAO();

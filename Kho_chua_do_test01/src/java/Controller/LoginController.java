@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpSession;
  *
  * @author TieuPham
  */
-@WebServlet(name="Login_controller", urlPatterns={"/Login"})
+@WebServlet(name="LoginController", urlPatterns={"/Login"})
 public class LoginController extends HttpServlet {
     private UserDAO userDAO;
     
