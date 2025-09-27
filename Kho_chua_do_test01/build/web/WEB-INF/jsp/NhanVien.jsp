@@ -8,7 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Danh sách nhân viên</title>
         <link
-            href="css/Nhan_vien.css"
+            href="css/NhanVien.css"
             rel="stylesheet"
             type="text/css"
             />

@@ -1,0 +1,33 @@
+# Mặc định: tự động chuẩn hóa line endings
+* text=auto
+
+# Java code luôn dùng LF trong repo
+*.java text eol=lf
+
+# JSP pages
+*.jsp text eol=lf
+
+# HTML, CSS, JS
+*.html text eol=lf
+*.css  text eol=lf
+*.js   text eol=lf
+
+# Config files (XML, JSON, YAML)
+*.xml  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+
+# Shell / script files
+*.sh   text eol=lf
+*.bat  text eol=crlf
+
+# Binary files → không convert line endings
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.jar  binary
+*.war  binary
