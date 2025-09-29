@@ -1,198 +1,159 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%-- 
+    Document   : Register
+    Created on : Sep 20, 2025, 9:10:34 AM
+    Author     : Lenovo
+--%>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WM - Đăng ký Tài khoản</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/Register.css"/>
+    <title>Tạo tài khoản dùng thử miễn phí - WM</title>
+    <link href="css/Register.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
-    <!-- Left Column - Welcome Section -->
-    <div class="welcome-section slide-in-left">
-        <div class="welcome-content">
-            <h1 class="welcome-title">Chào mừng đến với WM!</h1>
-            <p class="welcome-description">
-                Đăng ký để truy cập vào hệ thống quản lý bán hàng thông minh WM và tối ưu hóa kinh doanh của bạn.
-            </p>
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="feature-content">
-                        <h3>Báo cáo thời gian thực</h3>
-                        <p>Theo dõi doanh thu và hiệu suất kinh doanh mọi lúc mọi nơi với dashboard trực quan</p>
-                    </div>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <div class="feature-content">
-                        <h3>Truy cập đa nền tảng</h3>
-                        <p>Sử dụng WM trên máy tính, tablet và điện thoại di động một cách liền mạch</p>
-                    </div>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="feature-content">
-                        <h3>Bảo mật tuyệt đối</h3>
-                        <p>Dữ liệu của bạn được bảo vệ</p>
-                    </div>
+    <div class="register-container">
+        <div class="register-left">
+            <div class="hero-content">
+                <h1>Quản lý dễ dàng<br>Bán hàng đơn giản</h1>
+                <div class="support-info">
+                    <span class="support-icon">📞</span>
+                    <span>Hỗ trợ đăng ký 1800 6162</span>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Right Column - Registration Form -->
-    <div class="form-section">
-        <div class="form-container fade-in">
-            <!-- Header -->
-            <div class="form-header">
-                <div class="logo">
-                    <a href="starting" class="logo">
-                        <div class="logo-icon">T</div>
-                        <span class="logo-text">WM</span>
-                    </a>
-                </div>
-                <h2 class="form-title">Đăng ký Tài khoản</h2>
-                <p class="form-subtitle">Nhập thông tin để tạo tài khoản mới</p>
+        
+        <div class="register-right">
+            <div class="register-header">
+                <div class="close-btn">&times;</div>
             </div>
-
-            <!-- Registration Form -->
-            <form class="form" action="Register" method="post" id="registerForm">
-                <div class="form-group">
-                    <label for="fullName" class="form-label">Họ và tên *</label>
-                    <input type="text" id="fullName" name="fullName" class="form-input" placeholder="Nhập họ và tên đầy đủ" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="username" class="form-label">Tên đăng nhập *</label>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="Nhập tên đăng nhập" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="phone" class="form-label">Số điện thoại *</label>
-                    <input type="tel" id="phone" name="phone" class="form-input" placeholder="Nhập số điện thoại" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email" class="form-label">Email *</label>
-                    <input type="email" id="email" name="email" class="form-input" placeholder="Nhập địa chỉ email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password" class="form-label">Mật khẩu *</label>
-                    <div class="input-wrapper"> 
-                        <input type="password" id="password" name="password" class="form-input" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" required>
-                        <button type="button" class="toggle-password" onclick="togglePassword()">
-                            <i class="fas fa-eye"></i>
-                        </button>
+            
+            <div class="register-form">
+                <h2>Tạo tài khoản dùng thử miễn phí</h2>
+                
+                <form action="Register" method="post">
+                    <% if (request.getAttribute("errorMessage") != null) { %>
+                        <div class="error-message">
+                            <%= request.getAttribute("errorMessage") %>
+                        </div>
+                    <% } %>
+                    
+                    <% if (request.getAttribute("successMessage") != null) { %>
+                        <div class="success-message">
+                            <%= request.getAttribute("successMessage") %>
+                        </div>
+                    <% } %>
+                    
+                    <div class="input-group">
+                        <input type="text" name="fullName" placeholder="Họ tên" required>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="confirmPassword" class="form-label">Xác nhận mật khẩu *</label>
-                    <div class="input-wrapper">
-                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Nhập lại mật khẩu" required>
-                        <button type="button" class="toggle-password" onclick="toggleConfirmPassword()">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                    
+                    <div class="input-group phone-group">
+                        <div class="country-code">
+                            <select name="countryCode">
+                                <option value="+84">🇻🇳</option>
+                                <option value="+1">🇺🇸</option>
+                                <option value="+86">🇨🇳</option>
+                            </select>
+                        </div>
+                        <input type="tel" name="phone" placeholder="091 234 56 78" required>
                     </div>
+                    
+                    <div class="input-group">
+                        <select name="country" required>
+                            <option value="">Quốc gia đăng ký kinh doanh</option>
+                            <option value="VN" selected>Việt Nam</option>
+                            <option value="US">United States</option>
+                            <option value="CN">China</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <select name="region" required>
+                            <option value="">Chọn khu vực</option>
+                            <option value="hanoi">Hà Nội</option>
+                            <option value="hcm">TP. Hồ Chí Minh</option>
+                            <option value="danang">Đà Nẵng</option>
+                            <option value="other">Khác</option>
+                        </select>
+                    </div>
+                    
+                    <div class="captcha-group">
+                        <label>Mã xác thực</label>
+                        <div class="captcha-container">
+                            <div class="captcha-image" id="captcha-display">
+                                <%
+                                    // Generate random captcha
+                                    int captcha = (int)(Math.random() * 9000) + 1000;
+                                    session.setAttribute("captcha", String.valueOf(captcha));
+                                    out.print(captcha);
+                                %>
+                            </div>
+                            <button type="button" class="refresh-captcha">🔄</button>
+                        </div>
+                        <input type="text" name="captcha" placeholder="Nhập mã xác thực" required>
+                    </div>
+                    
+                    <div class="terms-checkbox">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="acceptTerms" required>
+                            <span class="checkmark"></span>
+                            Tôi đã đọc và đồng ý <a href="#" target="_blank">Điều khoản và chính sách sử dụng</a> của WM
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="register-btn">Tiếp tục</button>
+                </form>
+                
+                <div class="login-section">
+                    <p>Đã có tài khoản? <a href="Login" class="login-link">Đăng nhập</a></p>
                 </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" id="terms" name="terms" class="checkbox" required>
-                    <label for="terms" class="checkbox-label">
-                        Tôi đồng ý với 
-                        <a href="#" onclick="return false;">Điều khoản dịch vụ</a> 
-                        và 
-                        <a href="#" onclick="return false;">Chính sách bảo mật</a> của WM
-                    </label>
-                </div>
-
-                <% if (request.getAttribute("error") != null) { %>
-                <div class="error-message">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" title="Error">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 14.667A6.667 6.667 0 1 0 8 1.333a6.667 6.667 0 0 0 0 13.334z" fill="#D00E17" stroke="#D00E17" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 4.583a.75.75 0 0 1 .75.75V8a.75.75 0 0 1-1.5 0V5.333a.75.75 0 0 1 .75-.75z" fill="#fff"></path>
-                        <path d="M8.667 10.667a.667.667 0 1 1-1.334 0 .667.667 0 0 1 1.334 0z" fill="#fff"></path>
-                    </svg>
-                    <span><%= request.getAttribute("error") %></span>
-                </div>
-                <% } %>
-
-                <button type="submit" class="submit-button" id="submitBtn">
-                    Đăng ký
-                </button>
-            </form>
-
-            <!-- Login Link -->
-            <div class="login-link">
-                <p>Đã có tài khoản? <a href="Login">Đăng nhập ngay</a></p>
             </div>
         </div>
     </div>
 
     <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.querySelector('#password + .toggle-password i');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        function toggleConfirmPassword() {
-            const confirmPasswordInput = document.getElementById('confirmPassword');
-            const toggleIcon = document.querySelector('#confirmPassword + .toggle-password i');
-            if (confirmPasswordInput.type === 'password') {
-                confirmPasswordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                confirmPasswordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        document.getElementById('confirmPassword').addEventListener('input', function () {
-            const password = document.getElementById('password').value;
-            if (this.value && this.value !== password) {
-                this.classList.add('error');
-                this.closest('.form-group').classList.add('show-error');
-                this.closest('.form-group').setAttribute('data-error', 'Mật khẩu xác nhận không khớp');
-            } else {
-                this.classList.remove('error');
-                this.closest('.form-group').classList.remove('show-error');
-                this.closest('.form-group').removeAttribute('data-error');
-            }
+        // Close button functionality
+        document.querySelector('.close-btn').addEventListener('click', function() {
+            window.history.back();
         });
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const formElements = document.querySelectorAll('.form-group, .checkbox-group, .submit-button, .login-link');
-            formElements.forEach((element, index) => {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(20px)';
-                element.style.transition = 'all 0.3s ease';
-                setTimeout(() => {
-                    element.style.opacity = '1';
-                    element.style.transform = 'translateY(0)';
-                }, 100 + index * 100);
-            });
+        // Refresh captcha
+        document.querySelector('.refresh-captcha').addEventListener('click', function() {
+            fetch('RefreshCaptcha')
+                .then(response => response.text())
+                .then(captcha => {
+                    document.getElementById('captcha-display').textContent = captcha;
+                })
+                .catch(error => {
+                    const randomCode = Math.floor(Math.random() * 9000) + 1000;
+                    document.getElementById('captcha-display').textContent = randomCode;
+                });
+        });
+
+        // Phone number formatting
+        document.querySelector('input[name="phone"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            let formatted = value.replace(/(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+            e.target.value = formatted;
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const fullName = document.querySelector('input[name="fullName"]').value;
+            const phone = document.querySelector('input[name="phone"]').value;
+            const country = document.querySelector('select[name="country"]').value;
+            const region = document.querySelector('select[name="region"]').value;
+            const captcha = document.querySelector('input[name="captcha"]').value;
+            const acceptTerms = document.querySelector('input[name="acceptTerms"]').checked;
+            
+            if (!fullName || !phone || !country || !region || !captcha || !acceptTerms) {
+                e.preventDefault();
+                alert('Vui lòng điền đầy đủ thông tin và đồng ý điều khoản!');
+            }
         });
     </script>
 </body>
