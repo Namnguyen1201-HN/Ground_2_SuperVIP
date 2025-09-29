@@ -18,6 +18,16 @@ CREATE TABLE Users (
     FOREIGN KEY (RoleId) REFERENCES Roles(RoleId)
 );
 
+CREATE TABLE PasswordResetTokens (
+    TokenId INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT NOT NULL,
+    Token NVARCHAR(100) NOT NULL,
+    ExpiryDate DATETIME NOT NULL,
+    IsUsed BIT NOT NULL DEFAULT 0,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
+
 CREATE TABLE Suppliers (
     SupplierId INT IDENTITY(1,1) PRIMARY KEY,
     SupplierName NVARCHAR(100) NOT NULL,
