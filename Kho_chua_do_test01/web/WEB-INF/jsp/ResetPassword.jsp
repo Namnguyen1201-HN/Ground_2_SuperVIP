@@ -4,7 +4,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Đặt lại mật khẩu</title>
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/auth.css"/>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Auth.css"/>
         <style>
             .alert {
                 padding: 12px 16px;
