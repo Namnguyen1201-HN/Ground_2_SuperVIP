@@ -61,7 +61,7 @@ public class UserDAO extends DataBaseContext {
     public User authenticateUser(String username, String password) {
         try (PreparedStatement ps = connection.prepareStatement(AUTHENTICATE_USER)) {
             ps.setString(1, username);
-            ps.setString(2, hashPassword(password)); // Trong thực tế nên mã hóa mật khẩu
+            ps.setString(2, hashPassword(password));
             
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
