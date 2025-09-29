@@ -19,7 +19,7 @@
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
-                    <file>${file.reference.jakarta.servlet-api-5.0.0.jar}</file>
+                    <file>${file.reference.jakarta.servlet-api-5.0.0__1_.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
                 <library dirs="200">
