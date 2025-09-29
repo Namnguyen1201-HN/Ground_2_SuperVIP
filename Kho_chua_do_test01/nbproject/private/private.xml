@@ -4,28 +4,29 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/nbproject/build-impl.xml</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/TongQuan_controller.java</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/NhanVien_controller.java</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/DAL/DataBaseContext.java</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/DAL/UserDAO.java</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Model/User.java</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/DashBoard_controller.java</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/Login_controller.java</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/Product_controller.java</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/Forgot_Password_controller.java</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/auth/forgot-password.jsp</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/auth/login.jsp</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/auth/register.jsp</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/Tong_quan.jsp</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/dashboard.jsp</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/web.xml</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/product.jsp</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/Supplier_controller.java</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/css/auth.css</file>
-            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/css/Tong_quan.css</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/css/product.css</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/DAL/LogDAO.java</file>
             <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/DAL/ProductDAO.java</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/DashBoardController.java</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/META-INF/context.xml</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/ForgotPassword.jsp</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/NhanVien.jsp</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/Register.jsp</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/ForgotPasswordController.java</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Model/Log.java</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/LoginController.java</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/css/Login.css</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/css/NhanVien.css</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/css/Register.css</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/src/java/Controller/RegisterController.java</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/Login.jsp</file>
+            <file>file:/Users/dotritrong/Desktop/Ground_2_SuperVIP/Kho_chua_do_test01/web/WEB-INF/jsp/TongQuan.jsp</file>
         </group>
     </open-files>
 </project-private>

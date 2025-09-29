@@ -110,8 +110,8 @@
                     
                     <div class="auth-links">
                         <a href="${pageContext.request.contextPath}/Login">Quay lại đăng nhập</a>
-                        <span>|</span>
-                        <a href="${pageContext.request.contextPath}/DashBoard">Về trang chủ</a>
+                    
+                      
                     </div>
                 </form>
             </div>
