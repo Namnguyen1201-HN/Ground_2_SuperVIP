@@ -5,6 +5,7 @@
 --%>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -14,7 +15,7 @@
     <title>Quản lý khách hàng - SWP391</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/Supplier.css">
+    <link rel="stylesheet" href="css/supplier.css">
 
     <!-- Header -->
             <header class="header">
@@ -211,7 +212,15 @@
                             </tr>
                         </thead>
                         <tbody>
-
+                            <c:forEach var="s" items="${suppliers}">
+                                <tr>
+                                    <td>${s.supplierId}</td>
+                                    <td>${s.supplierName}</td>
+                                    <td>${s.phone}</td>
+                                    <td>${s.address}</td>
+                                    <td>${s.createdAt}</td>
+                                </tr>
+                            </c:forEach>
                         </tbody>
                     </table>
                 </div>
@@ -219,22 +228,22 @@
                 <!-- Pagination -->
                 <div class="pagination-container mt-3 d-flex justify-content-between align-items-center">
                     <div class="pagination-info">
-                        Hiển thị ${startCustomer} - ${endCustomer} / Tổng số ${totalCustomers} Khách hàng
+                        Hiển thị ${startSupplier} - ${endSupplier} / Tổng số ${totalSuppliers} Đối tác
                     </div>
                     <div class="pagination">
-                        <a href="so-customer?page=1" class="page-btn ${currentPage == 1 ? 'disabled' : ''}">
+                        <a href="Supplier?page=1" class="page-btn ${currentPage == 1 ? 'disabled' : ''}">
                             <i class="fas fa-angle-double-left"></i>
                         </a>
-                        <a href="so-customer?page=${currentPage - 1}" class="page-btn ${currentPage == 1 ? 'disabled' : ''}">
+                        <a href="Supplier?page=${currentPage - 1}" class="page-btn ${currentPage == 1 ? 'disabled' : ''}">
                             <i class="fas fa-angle-left"></i>
                         </a>
                         <c:forEach begin="1" end="${totalPages}" var="i">
-                            <a href="so-customer?page=${i}" class="page-btn ${i == currentPage ? 'active' : ''}">${i}</a>
+                            <a href="Supplier?page=${i}" class="page-btn ${i == currentPage ? 'active' : ''}">${i}</a>
                         </c:forEach>
-                        <a href="so-customer?page=${currentPage + 1}" class="page-btn ${currentPage == totalPages ? 'disabled' : ''}">
+                        <a href="Supplier?page=${currentPage + 1}" class="page-btn ${currentPage == totalPages ? 'disabled' : ''}">
                             <i class="fas fa-angle-right"></i>
                         </a>
-                        <a href="so-customer?page=${totalPages}" class="page-btn ${currentPage == totalPages ? 'disabled' : ''}">
+                        <a href="Supplier?page=${totalPages}" class="page-btn ${currentPage == totalPages ? 'disabled' : ''}">
                             <i class="fas fa-angle-double-right"></i>
                         </a>
                     </div>
