@@ -5,8 +5,8 @@
 
 package Controller;
 
-import DAL.UserDAO;
-import Model.User;
+import DAL.SupplierDAO;
+import Model.Supplier;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -27,7 +27,7 @@ import java.util.List;
  */
 @WebServlet(name="SupplierController", urlPatterns={"/Supplier"})
 public class SupplierController extends HttpServlet {
-   private UserDAO userDAO;
+   private SupplierDAO supplierDAO;
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
@@ -37,8 +37,33 @@ public class SupplierController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        
-        request.getRequestDispatcher("/WEB-INF/jsp/Supplier.jsp").forward(request, response);
+        supplierDAO = new SupplierDAO();
+        int pageSize = 10;
+        int page;
+        try {
+            page = Integer.parseInt(request.getParameter("page"));
+            if (page < 1) page = 1;
+        } catch (Exception e) {
+            page = 1;
+        }
+
+        int total = supplierDAO.getTotalSuppliers();
+        int totalPages = (int) Math.ceil((double) total / pageSize);
+        if (totalPages == 0) totalPages = 1;
+        if (page > totalPages) page = totalPages;
+
+        List<Supplier> suppliers = supplierDAO.getSuppliersPaged(page, pageSize);
+        int startIndex = total == 0 ? 0 : (page - 1) * pageSize + 1;
+        int endIndex = Math.min(page * pageSize, total);
+
+        request.setAttribute("suppliers", suppliers);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalSuppliers", total);
+        request.setAttribute("startSupplier", startIndex);
+        request.setAttribute("endSupplier", endIndex);
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/supplier.jsp");
+        dispatcher.forward(request, response);
     } 
 
     
