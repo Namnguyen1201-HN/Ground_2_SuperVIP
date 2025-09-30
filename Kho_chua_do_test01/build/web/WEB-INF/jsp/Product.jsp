@@ -3,68 +3,68 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> WM - Quản lý Hàng hóa</title>
-    <link rel="stylesheet" href="css/Product.css">
-    
-    <!-- Header -->
-            <header class="header">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title> WM - Quản lý Hàng hóa</title>
+        <link rel="stylesheet" href="css/Product.css">
 
-                <div class="header-main">
-                    <div class="logo">
-                        <div class="logo-icon">
-                            <span class="icon-building"></span>
-                        </div>
-                        <span>WM</span>
-                    </div>
-                    <nav class="nav-menu">
-                        <a href="#" class="nav-item ">
-                            <span class="icon-overview"></span>
-                            Tổng quan
-                        </a>
-                        <a href="#" class="nav-item active">
-                            <span class="icon-products"></span>
-                            Hàng hóa
-                        </a>
-                        <a href="#" class="nav-item">
-                            <span class="icon-transactions"></span>
-                            Giao dịch
-                        </a>
-                        <a href="#" class="nav-item">
-                            <span class="icon-partners"></span>
-                            Đối tác
-                        </a>
-                        <a href="#" class="nav-item">
-                            <span class="icon-staff"></span>
-                            Nhân viên
-                        </a>
-                        <a href="#" class="nav-item">
-                            <span class="icon-cashbook"></span>
-                            Sổ quỹ
-                        </a>
-                        <a href="#" class="nav-item">
-                            <span class="icon-reports"></span>
-                            Báo cáo
-                        </a>
-                        <a href="#" class="nav-item">
-                            <span class="icon-online"></span>
-                            Bán Online
-                        </a>
-                        <a href="#" class="nav-item">
-                            <span class="icon-sales"></span>
-                            Bán hàng
-                        </a>
-                    </nav>
+        <!-- Header -->
+    <header class="header">
+
+        <div class="header-main">
+            <div class="logo">
+                <div class="logo-icon">
+                    <span class="icon-building"></span>
                 </div>
-            </header>
-    
-    
-    
+                <span>WM</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item ">
+                    <span class="icon-overview"></span>
+                    Tổng quan
+                </a>
+                <a href="#" class="nav-item active">
+                    <span class="icon-products"></span>
+                    Hàng hóa
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon-transactions"></span>
+                    Giao dịch
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon-partners"></span>
+                    Đối tác
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon-staff"></span>
+                    Nhân viên
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon-cashbook"></span>
+                    Sổ quỹ
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon-reports"></span>
+                    Báo cáo
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon-online"></span>
+                    Bán Online
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="icon-sales"></span>
+                    Bán hàng
+                </a>
+            </nav>
+        </div>
+    </header>
+
+
+
 </head>
 <body>
-    
+
 
     <div class="main-container">
         <!-- Sidebar -->
@@ -164,21 +164,22 @@
                 <h1 class="page-title">Hàng hóa</h1>
                 <div class="header-actions">
                     <div class="search-container">
-                        
-    
 
 
-                        <form action="Product" method="get" class="search-container">
-                        <input type="text" name="keyword" class="search-input" placeholder="Theo mã, tên hàng"
-                        value="${param.keyword != null ? param.keyword : ''}" />
+
+
+                        <form action="product" method="get" class="search-container">
+                            <input type="text" name="keyword" class="search-input" placeholder="Theo mã, tên hàng"
+                                   value="${param.keyword != null ? param.keyword : ''}" />
                         </form>
                         <span class="search-icon icon-search"></span>
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-primary">
+                        <a href="product?action=add" class="btn btn-primary">
                             <span class="icon-plus"></span>
                             Thêm mới
-                        </button>
+                        </a>
+
                         <button class="btn btn-secondary">
                             <span class="icon-upload"></span>
                             Import
@@ -210,35 +211,33 @@
                 <table class="products-table">
                     <thead>
                         <tr>
-        <tr>
-            <th><input type="checkbox" id="select-all"></th>
-            <th>ID</th>
-            <th>Tên sản phẩm</th>
-            <th>Giá</th>
-            <th>Số lượng</th>
-            <th>Ngày tạo</th>
-        </tr>
+                        <tr>
+                            <th><input type="checkbox" id="select-all"></th>
+                            <th>ID</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Giá</th>
+                            <th>Số lượng</th>
+                            <th>Ngày tạo</th>
+                        </tr>
                     </thead>
                     <tbody>
-
-
-
-<c:forEach var="p" items="${products}">
-    <tr>
-        <td><input type="checkbox"></td>
-        <td>${p.productId}</td>
-        <td>${p.productName}</td>
-        <td>   <fmt:formatNumber value="${p.price}" type="currency" currencySymbol="" groupingUsed="true"/> ₫</td>
-
-        <td>${p.quantity}</td>
-        <td>
-  <fmt:formatDate value="${p.createdAt}" pattern="yyyy-MM-dd"/>
-</td>
-    </tr>
-</c:forEach>
-
+                        <c:forEach var="p" items="${products}">
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>${p.productId}</td>
+                                <td>${p.productName}</td>
+                                <td><fmt:formatNumber value="${p.price}" type="currency" currencySymbol="" groupingUsed="true"/> ₫</td>
+                                <td>${p.quantity}</td>
+                                <td><fmt:formatDate value="${p.createdAt}" pattern="yyyy-MM-dd"/></td>
+                                <td>
+                                    <a href="product?action=edit&id=${p.productId}" class="btn btn-sm btn-warning">Sửa</a>
+                                    <a href="product?action=delete&id=${p.productId}" class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?');">Xóa</a>
+                                </td>
+                            </tr>
+                        </c:forEach>
                     </tbody>
-              
+
                 </table>
                 <!-- Pagination -->
                 <div class="pagination">
@@ -263,14 +262,13 @@
 
         // Select all checkbox functionality
         document.getElementById('select-all').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
-            checkboxes.forEach(checkbox => {
+        const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
-            });
+                });
         });
-
-     
-        });
+        }
+        );
     </script>
 </body>
 </html>

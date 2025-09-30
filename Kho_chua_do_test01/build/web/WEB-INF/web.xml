@@ -3,6 +3,9 @@
     <display-name>SuperVIP Store</display-name>
     <description>Ứng dụng web bán hàng SuperVIP Store</description>
     <!-- Servlet Mappings -->
+     <welcome-file-list>
+        <welcome-file>Login</welcome-file>
+    </welcome-file-list>
     <servlet>
         <servlet-name>Register_controller</servlet-name>
         <servlet-class>Controller.RegisterController</servlet-class>
@@ -50,7 +53,5 @@
         <param-value>duccuong160805@gmail.com</param-value>
     </context-param>
 
-    <welcome-file-list>
-        <welcome-file>DashBoard</welcome-file>
-    </welcome-file-list>
+   
 </web-app>
