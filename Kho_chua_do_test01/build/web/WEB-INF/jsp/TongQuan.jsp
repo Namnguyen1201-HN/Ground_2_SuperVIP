@@ -36,11 +36,11 @@
                     <span>WM</span>
                 </div>
                 <nav class="nav-menu">
-                    <a href="#" class="nav-item active">
+                    <a href="TongQuan" class="nav-item active">
                         <span class="icon-overview"></span>
                         Tổng quan
                     </a>
-                    <a href="#" class="nav-item">
+                    <a href="product" class="nav-item">
                         <span class="icon-products"></span>
                         Hàng hóa
                     </a>
@@ -48,7 +48,7 @@
                         <span class="icon-transactions"></span>
                         Giao dịch
                     </a>
-                    <a href="#" class="nav-item">
+                    <a href="Supplier" class="nav-item">
                         <span class="icon-partners"></span>
                         Đối tác
                     </a>
