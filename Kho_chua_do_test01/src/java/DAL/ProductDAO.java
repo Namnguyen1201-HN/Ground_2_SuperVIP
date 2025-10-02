@@ -11,8 +11,7 @@ public class ProductDAO extends DataBaseContext {
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT * FROM Products";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapResultSetToProduct(rs));
             }
@@ -40,8 +39,8 @@ public class ProductDAO extends DataBaseContext {
 
     // Thêm sản phẩm
     public boolean insertProduct(Product p) {
-        String sql = "INSERT INTO Products (ProductName, CategoryId, SupplierId, Price, Quantity, ExpiryDate, CreatedAt, UpdatedAt) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        String sql = "INSERT INTO Products (ProductName, CategoryId, SupplierId, Price, Quantity, ExpiryDate, CreatedAt, UpdatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, ?, GETDATE(), GETDATE())";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, p.getProductName());
             if (p.getCategoryId() != null) {
@@ -70,8 +69,8 @@ public class ProductDAO extends DataBaseContext {
 
     // Cập nhật sản phẩm
     public boolean updateProduct(Product p) {
-        String sql = "UPDATE Products SET ProductName=?, CategoryId=?, SupplierId=?, Price=?, Quantity=?, ExpiryDate=?, UpdatedAt=GETDATE() " +
-                     "WHERE ProductId=?";
+        String sql = "UPDATE Products SET ProductName=?, CategoryId=?, SupplierId=?, Price=?, Quantity=?, ExpiryDate=?, UpdatedAt=GETDATE() "
+                + "WHERE ProductId=?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, p.getProductName());
             if (p.getCategoryId() != null) {
@@ -124,9 +123,66 @@ public class ProductDAO extends DataBaseContext {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }   
+        }
         return list;
     }
+
+    public List<Product> getProductsByCategory(int categoryId) {
+        List<Product> list = new ArrayList<>();
+        String sql = "SELECT * FROM Products WHERE CategoryId = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, categoryId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToProduct(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    
+    public List<Product> findProductsWithThreshold(Integer categoryId, String keyword, String stock, int threshold) {
+    List<Product> list = new ArrayList<>();
+    StringBuilder sql = new StringBuilder("SELECT * FROM Products WHERE 1=1");
+    List<Object> params = new ArrayList<>();
+
+    if (categoryId != null) {
+        sql.append(" AND CategoryId = ?");
+        params.add(categoryId);
+    }
+    if (keyword != null && !keyword.isBlank()) {
+        sql.append(" AND ProductName LIKE ?");
+        params.add("%" + keyword.trim() + "%");
+    }
+
+    // so sánh tồn kho theo lựa chọn
+    if ("in".equals(stock)) {
+        sql.append(" AND Quantity > 0");
+    } else if ("out".equals(stock)) {
+        sql.append(" AND Quantity = 0");
+    } else if ("belowMin".equals(stock)) {      // dùng ngưỡng cố định
+        sql.append(" AND Quantity < ?");
+        params.add(threshold);
+    } else if ("aboveMax".equals(stock)) {      // dùng ngưỡng cố định
+        sql.append(" AND Quantity > ?");
+        params.add(threshold);
+    }
+    sql.append(" ORDER BY ProductId");
+
+    try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+        for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) list.add(mapResultSetToProduct(rs));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+
 
     // Hàm private để map ResultSet sang Product object
     private Product mapResultSetToProduct(ResultSet rs) throws SQLException {

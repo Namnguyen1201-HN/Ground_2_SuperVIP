@@ -1,6 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -20,7 +22,7 @@
                 <span>WM</span>
             </div>
             <nav class="nav-menu">
-                <a href="#" class="nav-item ">
+                <a href="TongQuan" class="nav-item ">
                     <span class="icon-overview"></span>
                     Tổng quan
                 </a>
@@ -36,7 +38,7 @@
                     <span class="icon-partners"></span>
                     Đối tác
                 </a>
-                <a href="#" class="nav-item">
+                <a href="NhanVien" class="nav-item">
                     <span class="icon-staff"></span>
                     Nhân viên
                 </a>
@@ -96,65 +98,83 @@
             </div>
 
             <!-- Product Groups Filter -->
-            <div class="filter-section">
-                <div class="filter-title" onclick="toggleFilter('product-groups')">
-                    Nhóm hàng
-                    <span class="icon-expand" id="product-groups-icon"></span>
-                </div>
-                <div class="filter-content" id="product-groups-content">
-                    <input type="text" class="search-box" placeholder="Tìm kiếm nhóm hàng">
-                    <div class="filter-item">
-                        <span class="icon-phone"></span>
-                        <label>Điện thoại</label>
-                    </div>
-                    <div class="filter-item">
-                        <span class="icon-watch"></span>
-                        <label>Đồng hồ thông minh</label>
-                    </div>
-                    <div class="filter-item">
-                        <span class="icon-laptop"></span>
-                        <label>Laptop</label>
-                    </div>
-                    <div class="filter-item">
-                        <span class="icon-laptop"></span>
-                        <label>Máy tính bảng</label>
-                    </div>
-                    <div class="filter-item">
-                        <span class="icon-headphone"></span>
-                        <label>Phụ kiện</label>
-                    </div>
-                </div>
-            </div>
+<form action="product" method="get" action="product">
+    
+    
+    <select name="categoryId" class="categoryId1">
+        <option value="">-- Tất cả loại --</option>
+        <option value="1" ${selectedCategoryId == '1' ? 'selected' : ''}>Quần áo</option>
+        <option value="2" ${selectedCategoryId == '2' ? 'selected' : ''}>Thiết bị điện tử</option>
+        <option value="3" ${selectedCategoryId == '3' ? 'selected' : ''}>Đồ gia dụng</option>
+        <option value="4" ${selectedCategoryId == '4' ? 'selected' : ''}>Thực phẩm khô và đóng gói</option>
+        <option value="5" ${selectedCategoryId == '5' ? 'selected' : ''}>Hóa phẩm</option>
+    </select>
+
+
+
 
             <!-- Stock Filter -->
-            <div class="filter-section">
-                <div class="filter-title" onclick="toggleFilter('stock-filter')">
-                    Tồn kho
-                    <span class="icon-expand" id="stock-filter-icon"></span>
-                </div>
-                <div class="filter-content" id="stock-filter-content">
-                    <div class="filter-item">
-                        <input type="radio" id="all-stock" name="stock" checked>
-                        <label for="all-stock">Tất cả</label>
-                    </div>
-                    <div class="filter-item">
-                        <input type="radio" id="below-min" name="stock">
-                        <label for="below-min">Dưới định mức tồn</label>
-                    </div>
-                    <div class="filter-item">
-                        <input type="radio" id="above-max" name="stock">
-                        <label for="above-max">Vượt định mức tồn</label>
-                    </div>
-                    <div class="filter-item">
-                        <input type="radio" id="in-stock" name="stock">
-                        <label for="in-stock">Còn hàng trong kho</label>
-                    </div>
-                    <div class="filter-item">
-                        <input type="radio" id="out-of-stock" name="stock">
-                        <label for="out-of-stock">Hết hàng trong kho</label>
-                    </div>
-                </div>
-            </div>
+
+  <input type="hidden" name="action" value="list" />
+  <!-- Giữ lại các filter khác nếu có -->
+  <c:if test="${not empty selectedCategoryId}">
+    <input type="hidden" name="categoryId" value="${selectedCategoryId}" />
+  </c:if>
+  <c:if test="${not empty keyword}">
+    <input type="hidden" name="keyword" value="${fn:escapeXml(keyword)}" />
+  </c:if>
+
+  <div class="filter-section">
+    <div class="filter-title" onclick="toggleFilter('stock-filter')">
+      Tồn kho
+      <span class="icon-expand" id="stock-filter-icon"></span>
+    </div>
+
+    <div class="filter-content" id="stock-filter-content">
+      <div class="filter-item">
+        <input
+          type="radio" id="all-stock" name="stock" value="all"
+          ${empty param.stock or param.stock == 'all' ? 'checked' : ''} />
+        <label for="all-stock">Tất cả</label>
+      </div>
+
+      <div class="filter-item">
+        <input
+          type="radio" id="below-min" name="stock" value="belowMin"
+          ${param.stock == 'belowMin' ? 'checked' : ''} />
+        <label for="below-min">Dưới định mức tồn</label>
+      </div>
+
+      <div class="filter-item">
+        <input
+          type="radio" id="above-max" name="stock" value="aboveMax"
+          ${param.stock == 'aboveMax' ? 'checked' : ''} />
+        <label for="above-max">Vượt định mức tồn</label>
+      </div>
+
+      <div class="filter-item">
+        <input
+          type="radio" id="in-stock" name="stock" value="in"
+          ${param.stock == 'in' ? 'checked' : ''} />
+        <label for="in-stock">Còn hàng trong kho</label>
+      </div>
+
+      <div class="filter-item">
+        <input
+          type="radio" id="out-of-stock" name="stock" value="out"
+          ${param.stock == 'out' ? 'checked' : ''} />
+        <label for="out-of-stock">Hết hàng trong kho</label>
+      </div>
+
+      <%-- Tuỳ chọn: ô nhập ngưỡng cố định để so sánh Quantity --%>
+      <div class="filter-item" style="margin-top:8px">
+        <label for="stockThreshold">Ngưỡng tồn (dùng cho Dưới/Vượt):</label>
+        <input type="number" min="0" id="stockThreshold" name="stockThreshold"
+               value="${empty stockThreshold ? 10 : stockThreshold}" />
+      </div>
+    </div>
+  </div>
+</form>
         </aside>
 
         <!-- Main Content -->
@@ -215,6 +235,7 @@
                             <th><input type="checkbox" id="select-all"></th>
                             <th>ID</th>
                             <th>Tên sản phẩm</th>
+                            <th>loại sản phẩm</th>
                             <th>Giá</th>
                             <th>Số lượng</th>
                             <th>Ngày tạo</th>
@@ -226,6 +247,7 @@
                                 <td><input type="checkbox"></td>
                                 <td>${p.productId}</td>
                                 <td>${p.productName}</td>
+                                <td>${p.categoryId}<td/.
                                 <td><fmt:formatNumber value="${p.price}" type="currency" currencySymbol="" groupingUsed="true"/> ₫</td>
                                 <td>${p.quantity}</td>
                                 <td><fmt:formatDate value="${p.createdAt}" pattern="yyyy-MM-dd"/></td>
@@ -269,6 +291,26 @@
         });
         }
         );
-    </script>
+  // Tự động submit khi đổi radio hoặc đổi ngưỡng
+  document.querySelectorAll('input[name="stock"]').forEach(function (el) {
+    el.addEventListener('change', function () {
+      // nếu bạn có phân trang, khi đổi filter nên reset về page=1:
+      const form = document.getElementById('filtersForm');
+      let page = form.querySelector('input[name="page"]');
+      if (page) page.value = 1;
+      form.submit();
+    });
+  });
+
+  const thresholdInput = document.getElementById('stockThreshold');
+  if (thresholdInput) {
+    thresholdInput.addEventListener('change', function () {
+      const form = document.getElementById('filtersForm');
+      let page = form.querySelector('input[name="page"]');
+      if (page) page.value = 1;
+      form.submit();
+    });
+  }
+</script>
 </body>
 </html>
