@@ -18,21 +18,7 @@
 
             <!-- Header -->
             <header class="header">
-                <div class="header-top">
-                    <div class="header-top-left">
-                        <span>🔙 Người hàng giá lót</span>
-                        <span>💬 Chờ đề</span>
-                        <span>❓ Hỗ trợ</span>
-                        <span>📋 Góp ý</span>
-                        <span>📧 Giao diện mới</span>
-                    </div>
-                    <div class="header-top-right">
-                        <span>🇻🇳 Tiếng Việt</span>
-                        <span>⚙️</span>
-                        <span>0923391668</span>
-                        <span>👤</span>
-                    </div>
-                </div>
+
                 <div class="header-main">
                     <div class="logo">
                         <div class="logo-icon">
@@ -118,13 +104,22 @@
                             <!-- Chức danh -->
                         </div>
                         <div class="filter-group">
-                            <select>
-                                <option>Chọn chi nhánh...</option>
+                            <select name="branch" onchange="this.form.submit()">
+                                <option value="all" <%= "all".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>Tất cả chi nhánh</option>
+                                <option value="Head Office" <%= "Head Office".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>Head Office</option>
+                                <option value="Chi nhánh Sài Gòn" <%= "Chi nhánh Sài Gòn".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>Chi nhánh Sài Gòn</option>
+                                <option value="Chi nhánh Đà Nẵng" <%= "Chi nhánh Đà Nẵng".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>Chi nhánh Đà Nẵng</option>
+                                <!-- TODO: load dynamic list từ BranchDAL -->
                             </select>
                         </div>
                         <div class="filter-group">
-                            <select>
-                                <option>Phòng ban</option>
+                            <select name="department" onchange="this.form.submit()">
+                                <option value="all" <%= "all".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Tất cả phòng ban</option>
+                                <option value="Kinh Doanh" <%= "Kinh Doanh".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Phòng Kinh Doanh</option>
+                                <option value="Kho Hàng" <%= "Kho Hàng".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Phòng Kho Hàng</option>
+                                <option value="Kế Toán" <%= "Kế Toán".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Phòng Kế Toán</option>
+                                <option value="Nhân Sự" <%= "Nhân Sự".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Phòng Nhân Sự</option>
+                                <!-- TODO: load dynamic list từ DepartmentDAL -->
                             </select>
                         </div>
                         <div class="filter-group">
@@ -151,7 +146,7 @@
                             </div>
                         </form>
                         <div class="btn-group">
-                            <button class="btn add">+ Nhân viên</button>
+                            <a href="AddUser.jsp" class="btn add">⚙️ Thiết lập nhân viên</a>
                             <button class="btn import">Nhập file</button>
                             <button class="btn export">Xuất file</button>
                         </div>
@@ -168,6 +163,7 @@
                                 <th>SĐT</th>
                                 <th>CMND/CCCD</th>
                                 <th>Email</th>
+                                <th>Hành động</th> 
                             </tr>
                         </thead>
                         <tbody>
@@ -179,12 +175,16 @@
                             <tr>
                                 <td><%= u.getUserId() %></td>
                                 <td><%= u.getFullName() %></td>
-                                <td>Chưa có</td>   
+                                <td><%= u.getBranchName() != null ? u.getBranchName() : "Chưa có" %></td>   
                                 <td><%= u.getDepartmentName() != null ? u.getDepartmentName() : "Chưa có" %></td>
                                 <td><%= u.getRoleName() != null ? u.getRoleName() : "Chưa có" %></td>
                                 <td><%= u.getPhone() != null ? u.getPhone() : "Chưa có" %></td>
                                 <td><%= u.getIdentifierCode() != null ? u.getIdentifierCode() : "Chưa có" %></td>
                                 <td><%= u.getEmail() != null ? u.getEmail() : "Chưa có" %></td>
+                                <td>
+                                    <a href="EditUser?userId=<%= u.getUserId() %>" class="btn edit">Sửa</a>
+                                    <a href="DeleteUser?userId=<%= u.getUserId() %>" class="btn delete" onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?');">Xóa</a>
+                                </td>
                             </tr>
                             <%
                                     }

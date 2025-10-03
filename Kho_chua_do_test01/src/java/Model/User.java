@@ -10,10 +10,11 @@ public class User {
     private String email;
     private String phone;
     private String roleName;
-    private String departmentName;   // mới thêm
-    private String identifierCode;   // mới thêm
+    private String departmentName;
+    private String identifierCode;
     private boolean isActive;
     private Date createdAt;
+    private String branchName;
 
     // Getters & setters
     public int getUserId() {
@@ -95,4 +96,13 @@ public class User {
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
+    }
+    
 }
