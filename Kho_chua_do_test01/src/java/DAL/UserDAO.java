@@ -11,29 +11,30 @@ public class UserDAO extends DataBaseContext {
     private static final String SELECT_ALL_USERS
             = "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, "
             + "u.IdentifierCode, u.IsActive, u.CreatedAt, "
-            + "r.RoleName, d.DepartmentName "
+            + "r.RoleName, d.DepartmentName, b.BranchName "
+            + "FROM Users u "
+            + "LEFT JOIN Departments d ON u.DepartmentId = d.DepartmentId "
+            + "LEFT JOIN CompanyBranches b ON d.BranchId = b.BranchId "
+            + "JOIN Roles r ON u.RoleId = r.RoleId";
+
+    private static final String AUTHENTICATE_USER
+            = "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt "
             + "FROM Users u "
             + "JOIN Roles r ON u.RoleId = r.RoleId "
-            + "LEFT JOIN Departments d ON u.DepartmentId = d.DepartmentId";
+            + "WHERE u.Username = ? AND u.PasswordHash = ? AND u.IsActive = 1";
 
-    private static final String AUTHENTICATE_USER = 
-        "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt " +
-        "FROM Users u " +
-        "JOIN Roles r ON u.RoleId = r.RoleId " +
-        "WHERE u.Username = ? AND u.PasswordHash = ? AND u.IsActive = 1";
+    private static final String CHECK_PHONE_EXISTS
+            = "SELECT COUNT(*) FROM Users WHERE Phone = ?";
 
-    private static final String CHECK_PHONE_EXISTS =
-        "SELECT COUNT(*) FROM Users WHERE Phone = ?";
+    private static final String INSERT_USER
+            = "INSERT INTO Users (FullName, Username, Phone, Email, PasswordHash, RoleId, IsActive, CreatedAt) "
+            + "VALUES (?, ?, ?, ?, ?, (SELECT RoleId FROM Roles WHERE RoleName = 'Salesperson'), ?, ?)";
 
-    private static final String INSERT_USER =
-        "INSERT INTO Users (FullName, Username, Phone, Email, PasswordHash, RoleId, IsActive, CreatedAt) " +
-        "VALUES (?, ?, ?, ?, ?, (SELECT RoleId FROM Roles WHERE RoleName = 'Salesperson'), ?, ?)";
-
-    private static final String GET_USER_BY_PHONE =
-        "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt " +
-        "FROM Users u " +
-        "JOIN Roles r ON u.RoleId = r.RoleId " +
-        "WHERE u.Phone = ?";
+    private static final String GET_USER_BY_PHONE
+            = "SELECT u.UserId, u.FullName, u.Username, u.Email, u.Phone, r.RoleName, u.IsActive, u.CreatedAt "
+            + "FROM Users u "
+            + "JOIN Roles r ON u.RoleId = r.RoleId "
+            + "WHERE u.Phone = ?";
 
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
@@ -49,6 +50,7 @@ public class UserDAO extends DataBaseContext {
                 user.setIdentifierCode(rs.getString("IdentifierCode"));
                 user.setRoleName(rs.getString("RoleName"));
                 user.setDepartmentName(rs.getString("DepartmentName"));
+                user.setBranchName(rs.getString("BranchName"));
                 user.setActive(rs.getBoolean("IsActive"));
                 user.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 users.add(user);
@@ -63,7 +65,7 @@ public class UserDAO extends DataBaseContext {
         try (PreparedStatement ps = connection.prepareStatement(AUTHENTICATE_USER)) {
             ps.setString(1, username);
             ps.setString(2, hashPassword(password)); // Trong thực tế nên mã hóa mật khẩu
-            
+
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 User user = new User();
@@ -105,9 +107,9 @@ public class UserDAO extends DataBaseContext {
             ps.setString(5, generateDefaultPassword()); // Tạo mật khẩu mặc định
             ps.setBoolean(6, user.isActive());
             ps.setTimestamp(7, new Timestamp(user.getCreatedAt().getTime()));
-            
+
             int affectedRows = ps.executeUpdate();
-            
+
             if (affectedRows > 0) {
                 ResultSet generatedKeys = ps.getGeneratedKeys();
                 if (generatedKeys.next()) {
@@ -186,7 +188,7 @@ public class UserDAO extends DataBaseContext {
             String searchPattern = "%" + name + "%";
             ps.setString(1, searchPattern);
             ps.setString(2, searchPattern);
-            
+
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 User user = new User();
@@ -198,6 +200,7 @@ public class UserDAO extends DataBaseContext {
                 user.setRoleName(rs.getString("RoleName"));
                 user.setActive(rs.getBoolean("IsActive"));
                 user.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                user.setBranchName(rs.getString("BranchName"));
                 users.add(user);
             }
         } catch (SQLException e) {
@@ -221,6 +224,7 @@ public class UserDAO extends DataBaseContext {
                 user.setRoleName(rs.getString("RoleName"));
                 user.setActive(rs.getBoolean("IsActive"));
                 user.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                user.setBranchName(rs.getString("BranchName"));
                 users.add(user);
             }
         } catch (SQLException e) {
@@ -232,7 +236,6 @@ public class UserDAO extends DataBaseContext {
     // =====================
     // Forgot password flow
     // =====================
-
     public User getUserByEmail(String email) {
         String sql = "SELECT UserId, FullName, Username, Email, Phone, IsActive, CreatedAt FROM Users WHERE Email = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -256,8 +259,8 @@ public class UserDAO extends DataBaseContext {
     }
 
     public User1 getUser1ByEmail(String email) {
-        String sql = "SELECT u.UserId, u.FullName, u.Username, u.PasswordHash, u.Email, u.Phone, u.RoleId, u.IsActive, u.CreatedAt, r.RoleName " +
-                     "FROM Users u JOIN Roles r ON u.RoleId = r.RoleId WHERE u.Email = ?";
+        String sql = "SELECT u.UserId, u.FullName, u.Username, u.PasswordHash, u.Email, u.Phone, u.RoleId, u.IsActive, u.CreatedAt, r.RoleName "
+                + "FROM Users u JOIN Roles r ON u.RoleId = r.RoleId WHERE u.Email = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
