@@ -15,6 +15,9 @@ public class User {
     private boolean isActive;
     private Date createdAt;
     private String branchName;
+    private int departmentId;
+    private int roleId;
+    
 
     // Getters & setters
     public int getUserId() {
@@ -104,5 +107,31 @@ public class User {
     public void setBranchName(String branchName) {
         this.branchName = branchName;
     }
+
+    public boolean isIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public int getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(int departmentId) {
+        this.departmentId = departmentId;
+    }
+
+    public int getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(int roleId) {
+        this.roleId = roleId;
+    }
+    
+    
     
 }

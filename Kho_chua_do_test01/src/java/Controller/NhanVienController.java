@@ -1,5 +1,8 @@
 package Controller;
 
+import DAL.BranchDAO;
+import DAL.DepartmentDAO;
+import DAL.RoleDAO;
 import DAL.UserDAO;
 import Model.User;
 
@@ -25,6 +28,10 @@ public class NhanVienController extends HttpServlet {
         String roleParam = request.getParameter("role");
         String branchParam = request.getParameter("branch");
         String departmentParam = request.getParameter("department");
+
+        BranchDAO branchDAO = new BranchDAO();
+        DepartmentDAO departmentDAO = new DepartmentDAO();
+        RoleDAO roleDAO = new RoleDAO();
 
         List<User> users = dao.getAllUsers();
         List<User> result;
@@ -77,6 +84,10 @@ public class NhanVienController extends HttpServlet {
             request.setAttribute("selectedRole", role);
             request.setAttribute("selectedBranch", branchParam);
             request.setAttribute("selectedDepartment", departmentParam);
+            
+            request.setAttribute("branches", branchDAO.getAllBranches());
+            request.setAttribute("departments", departmentDAO.getAllDepartments());
+            request.setAttribute("roles", roleDAO.getAllRoles());
         }
 
         request.setAttribute("users", result);

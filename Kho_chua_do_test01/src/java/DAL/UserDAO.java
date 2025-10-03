@@ -361,4 +361,29 @@ public class UserDAO extends DataBaseContext {
             connection.setAutoCommit(originalAutoCommit);
         }
     }
+    
+    public boolean insertUser(User u) {
+        String sql = "INSERT INTO Users (FullName, Username, Email, Phone, IdentifierCode, DepartmentId, RoleId, IsActive, CreatedAt, PasswordHash) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, u.getFullName());
+            ps.setString(2, u.getUsername());
+            ps.setString(3, u.getEmail());
+            ps.setString(4, u.getPhone());
+            ps.setString(5, u.getIdentifierCode());
+            ps.setInt(6, u.getDepartmentId());
+            ps.setInt(7, u.getRoleId());
+            ps.setBoolean(8, u.isActive());
+            ps.setTimestamp(9, new java.sql.Timestamp(u.getCreatedAt().getTime()));
+            ps.setString(10, "123456"); // mật khẩu mặc định
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    
 }

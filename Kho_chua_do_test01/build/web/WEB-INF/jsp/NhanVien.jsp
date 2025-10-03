@@ -2,6 +2,9 @@
 <!DOCTYPE html>
 <%@ page import="java.util.List" %>
 <%@ page import="Model.User" %>
+<%@ page import="Model.Branch" %>
+<%@ page import="Model.Department" %>
+<%@ page import="Model.Role" %>
 <html lang="vi">
     <head>
         <meta charset="UTF-8">
@@ -105,31 +108,62 @@
                         </div>
                         <div class="filter-group">
                             <select name="branch" onchange="this.form.submit()">
-                                <option value="all" <%= "all".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>Tất cả chi nhánh</option>
-                                <option value="Head Office" <%= "Head Office".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>Head Office</option>
-                                <option value="Chi nhánh Sài Gòn" <%= "Chi nhánh Sài Gòn".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>Chi nhánh Sài Gòn</option>
-                                <option value="Chi nhánh Đà Nẵng" <%= "Chi nhánh Đà Nẵng".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>Chi nhánh Đà Nẵng</option>
-                                <!-- TODO: load dynamic list từ BranchDAL -->
+                                <option value="all" <%= "all".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>
+                                    Tất cả chi nhánh
+                                </option>
+                                <%
+                                    List<Branch> branches = (List<Branch>) request.getAttribute("branches");
+                                    String selectedBranch = (String) request.getAttribute("selectedBranch");
+                                    if (branches != null) {
+                                        for (Branch b : branches) {
+                                %>
+                                <option value="<%= b.getBranchName() %>" <%= b.getBranchName().equals(selectedBranch) ? "selected" : "" %>>
+                                    <%= b.getBranchName() %>
+                                </option>
+                                <%
+                                        }
+                                    }
+                                %>
                             </select>
                         </div>
                         <div class="filter-group">
                             <select name="department" onchange="this.form.submit()">
-                                <option value="all" <%= "all".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Tất cả phòng ban</option>
-                                <option value="Kinh Doanh" <%= "Kinh Doanh".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Phòng Kinh Doanh</option>
-                                <option value="Kho Hàng" <%= "Kho Hàng".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Phòng Kho Hàng</option>
-                                <option value="Kế Toán" <%= "Kế Toán".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Phòng Kế Toán</option>
-                                <option value="Nhân Sự" <%= "Nhân Sự".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>Phòng Nhân Sự</option>
-                                <!-- TODO: load dynamic list từ DepartmentDAL -->
+                                <option value="all" <%= "all".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>
+                                    Tất cả phòng ban
+                                </option>
+                                <%
+                                    List<Department> departments = (List<Department>) request.getAttribute("departments");
+                                    String selectedDept = (String) request.getAttribute("selectedDepartment");
+                                    if (departments != null) {
+                                        for (Department d : departments) {
+                                %>
+                                <option value="<%= d.getDepartmentName() %>" <%= d.getDepartmentName().equals(selectedDept) ? "selected" : "" %>>
+                                    <%= d.getDepartmentName() %>
+                                </option>
+                                <%
+                                        }
+                                    }
+                                %>
                             </select>
                         </div>
                         <div class="filter-group">
                             <select name="role" onchange="this.form.submit()">
-                                <option value="None" <%= "None".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>None</option>
-                                <option value="Admin" <%= "Admin".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>Admin</option>
-                                <option value="InventoryManager" <%= "InventoryManager".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>InventoryManager</option>
-                                <option value="StoreManager" <%= "StoreManager".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>StoreManager</option>
-                                <option value="Supplier" <%= "Supplier".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>Supplier</option>
-                                <option value="Salesperson" <%= "Salesperson".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>Salesperson</option>
+                                <option value="None" <%= "None".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>
+                                    None
+                                </option>
+                                <%
+                                    List<Role> roles = (List<Role>) request.getAttribute("roles");
+                                    String selectedRole = (String) request.getAttribute("selectedRole");
+                                    if (roles != null) {
+                                        for (Role r : roles) {
+                                %>
+                                <option value="<%= r.getRoleName() %>" <%= r.getRoleName().equals(selectedRole) ? "selected" : "" %>>
+                                    <%= r.getRoleName() %>
+                                </option>
+                                <%
+                                        }
+                                    }
+                                %>
                             </select>
                         </div>
                     </form>
@@ -146,7 +180,7 @@
                             </div>
                         </form>
                         <div class="btn-group">
-                            <a href="AddUser.jsp" class="btn add">⚙️ Thiết lập nhân viên</a>
+                            <a href="AddUser" class="btn add">Thêm nhân viên</a>
                             <button class="btn import">Nhập file</button>
                             <button class="btn export">Xuất file</button>
                         </div>
@@ -163,7 +197,7 @@
                                 <th>SĐT</th>
                                 <th>CMND/CCCD</th>
                                 <th>Email</th>
-                                <th>Hành động</th> 
+                                <th>Thao tác</th> 
                             </tr>
                         </thead>
                         <tbody>
@@ -182,8 +216,7 @@
                                 <td><%= u.getIdentifierCode() != null ? u.getIdentifierCode() : "Chưa có" %></td>
                                 <td><%= u.getEmail() != null ? u.getEmail() : "Chưa có" %></td>
                                 <td>
-                                    <a href="EditUser?userId=<%= u.getUserId() %>" class="btn edit">Sửa</a>
-                                    <a href="DeleteUser?userId=<%= u.getUserId() %>" class="btn delete" onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?');">Xóa</a>
+                                    <a href="EditUser?userId=<%= u.getUserId() %>" class="btn edit">Chi tiết</a>                            
                                 </td>
                             </tr>
                             <%
