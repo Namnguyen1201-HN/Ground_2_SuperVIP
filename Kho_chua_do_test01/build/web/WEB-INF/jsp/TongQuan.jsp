@@ -13,21 +13,7 @@
     <body>
         <!-- Header -->
         <header class="header">
-            <div class="header-top">
-                <div class="header-top-left">
-                    <span>🔙 Người hàng giá lót</span>
-                    <span>💬 Chờ đề</span>
-                    <span>❓ Hỗ trợ</span>
-                    <span>📋 Góp ý</span>
-                    <span>📧 Giao diện mới</span>
-                </div>
-                <div class="header-top-right">
-                    <span>🇻🇳 Tiếng Việt</span>
-                    <span>⚙️</span>
-                    <span>0923391668</span>
-                    <span>👤</span>
-                </div>
-            </div>
+            
             <div class="header-main">
                 <div class="logo">
                     <div class="logo-icon">
