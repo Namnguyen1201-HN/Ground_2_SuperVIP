@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "ProductController", urlPatterns = {"/product"})
 public class ProductController extends HttpServlet {
-
+    private static final int DEFAULT_STOCK_THRESHOLD = 30; 
     private ProductDAO productDAO;
 
     @Override
@@ -77,22 +77,32 @@ public class ProductController extends HttpServlet {
         }
     }
 
-    private void listProducts(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
-        String keyword = request.getParameter("keyword");
-        List<Product> products;
+private void listProducts(HttpServletRequest request, HttpServletResponse response)
+        throws Exception {
+    String keyword = trimToNull(request.getParameter("keyword"));
+    String categoryIdParam = request.getParameter("categoryId");
+    Integer categoryId = parseIntOrNull(categoryIdParam);
 
-        if (keyword != null && !keyword.trim().isEmpty()) {
+    // stock: all | in | out | belowMin | aboveMax
+    String stock = request.getParameter("stock");
+    if (stock == null || stock.isBlank()) stock = "all";
 
-            products = productDAO.searchProductsByName(keyword.trim());
-        } else {
-            products = productDAO.getAllProducts();
-        }
+    // ngưỡng cố định (nếu không truyền thì lấy DEFAULT)
+    int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
-        request.setAttribute("products", products);
-        request.setAttribute("keyword", keyword);
-        request.getRequestDispatcher("/WEB-INF/jsp/Product.jsp").forward(request, response);
-    }
+    // gọi DAO hợp nhất có so sánh ngưỡng
+    List<Product> products = productDAO.findProductsWithThreshold(categoryId, keyword, stock, threshold);
+
+    // gán attribute cho JSP
+    request.setAttribute("products", products);
+    request.setAttribute("keyword", keyword);
+    request.setAttribute("selectedCategoryId", categoryIdParam);
+    request.setAttribute("stock", stock);
+    request.setAttribute("stockThreshold", threshold);
+
+    request.getRequestDispatcher("/WEB-INF/jsp/Product.jsp").forward(request, response);
+}
+
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -133,6 +143,21 @@ public class ProductController extends HttpServlet {
         productDAO.deleteProduct(id);
         response.sendRedirect("product?action=list");
     }
+    
+    private Integer parseIntOrNull(String s) {
+    try { return (s == null || s.isBlank()) ? null : Integer.valueOf(s); }
+    catch (NumberFormatException e) { return null; }
+}
+private int parseIntOrDefault(String s, int def) {
+    try { return (s == null || s.isBlank()) ? def : Integer.parseInt(s); }
+    catch (NumberFormatException e) { return def; }
+}
+private String trimToNull(String s) {
+    if (s == null) return null;
+    String t = s.trim();
+    return t.isEmpty() ? null : t;
+}
+
 
     private Product extractProductFromRequest(HttpServletRequest request) {
         Product p = new Product();
