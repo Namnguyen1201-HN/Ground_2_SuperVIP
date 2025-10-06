@@ -1,2 +1,11 @@
 /Kho_chua_do_test01/dist/
 /SWP391/nbproject/private/
+# Build outputs
+Kho_chua_do_test01/build/
+# NetBeans private config
+Kho_chua_do_test01/nbproject/private/
+# Compiled classes
+**/*.class
+# Logs and OS files
+*.log
+.DS_Store
