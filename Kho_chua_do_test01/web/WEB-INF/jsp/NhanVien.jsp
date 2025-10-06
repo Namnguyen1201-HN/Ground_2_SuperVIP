@@ -15,6 +15,7 @@
             rel="stylesheet"
             type="text/css"
             />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     </head>
     <body>
         <div class="container">
@@ -67,6 +68,19 @@
                             Bán hàng
                         </a>
                     </nav>
+
+                    <div class="header-right">
+                        <div class="user-dropdown">
+                            <a href="#" class="user-icon gradient" id="dropdownToggle">
+                                <i class="fas fa-user-circle fa-2x"></i>
+                            </a>
+                            <div class="dropdown-menu" id="dropdownMenu">
+                                <a href="so-information" class="dropdown-item">Thông tin chi tiết</a>
+                                <a href="logout" class="dropdown-item">Đăng xuất</a>
+                            </div>
+                        </div>      
+                    </div>
+
                 </div>
             </header>
 
@@ -244,5 +258,28 @@
             </footer>
         </div>
 
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const dropdown = document.querySelector('.user-dropdown');
+                const toggle = document.getElementById('dropdownToggle');
+                const menu = document.getElementById('dropdownMenu');
+
+                // Khi click icon => mở / đóng menu
+                toggle.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    dropdown.classList.toggle('active');
+                });
+
+                // Khi click ra ngoài => đóng menu
+                document.addEventListener('click', function (e) {
+                    if (!dropdown.contains(e.target)) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+            });
+        </script>
+
     </body>
+
 </html>
+

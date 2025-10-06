@@ -8,7 +8,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>TSMS - Tổng quan</title>
         <link href="css/TongQuan.css" rel="stylesheet" type="text/css"/>
-
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     </head>
     <body>
         <!-- Header -->
@@ -59,6 +59,19 @@
                         Bán hàng
                     </a>
                 </nav>
+                
+                <div class="header-right">
+                    <div class="user-dropdown">
+                        <a href="#" class="user-icon gradient" id="dropdownToggle">
+                            <i class="fas fa-user-circle fa-2x"></i>
+                        </a>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="so-information" class="dropdown-item">Thông tin chi tiết</a>
+                            <a href="logout" class="dropdown-item">Đăng xuất</a>
+                        </div>
+                    </div>      
+                </div>
+                
             </div>
         </header>
 
@@ -258,6 +271,25 @@
                 item.addEventListener('click', function (e) {
                     document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
                     this.classList.add('active');
+                });
+            });
+            
+            document.addEventListener('DOMContentLoaded', function () {
+                const dropdown = document.querySelector('.user-dropdown');
+                const toggle = document.getElementById('dropdownToggle');
+                const menu = document.getElementById('dropdownMenu');
+
+                // Khi click icon => mở / đóng menu
+                toggle.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    dropdown.classList.toggle('active');
+                });
+
+                // Khi click ra ngoài => đóng menu
+                document.addEventListener('click', function (e) {
+                    if (!dropdown.contains(e.target)) {
+                        dropdown.classList.remove('active');
+                    }
                 });
             });
         </script>
