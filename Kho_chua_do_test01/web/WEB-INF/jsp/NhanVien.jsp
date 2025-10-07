@@ -39,7 +39,7 @@
                             <span class="icon-products"></span>
                             Hàng hóa
                         </a>
-                        <a href="#" class="nav-item">
+                        <a href="Transactions" class="nav-item">
                             <span class="icon-transactions"></span>
                             Giao dịch
                         </a>

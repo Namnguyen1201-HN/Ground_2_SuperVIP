@@ -56,7 +56,7 @@ public class LoginController extends HttpServlet {
                     session.setMaxInactiveInterval(30 * 60);
                 }
 
-                response.sendRedirect("DashBoard"); 
+                response.sendRedirect("TongQuan"); 
             } else {
                 request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không chính xác!");
                 request.getRequestDispatcher("/WEB-INF/jsp/Login.jsp").forward(request, response);

@@ -1,0 +1,49 @@
+/* Transactions page specific styles, designed to fit existing layout */
+
+.transactions-page .menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: transparent;   /* no card background */
+    border-radius: 0;          /* remove rounded corners */
+    overflow: visible;
+    border: 0;                 /* no wrapper border */
+}
+
+.transactions-page .menu-item {
+    display: block;
+    padding: 14px 16px;
+    font-size: 18px;
+    color: #111827; /* gray-900 */
+    text-decoration: none;
+    background: #fff;
+}
+
+.transactions-page .menu-item + .menu-item { border-top: 1px solid #e5e7eb; }
+
+.transactions-page .menu-item:hover { background: #f9fafb; }
+
+.transactions-page .menu-item.active,
+.transactions-page .menu-item:focus {
+    color: #2563eb; /* primary */
+    font-weight: 600;
+}
+
+.transactions-page .section-title {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0 0 12px 0;
+}
+
+/* Make table/toolbar spacing consistent with staff page */
+.transactions-page .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* make the list stretch full width of content area */
+.transactions-page .menu-list .menu-item { width: 100%; }
+
+
