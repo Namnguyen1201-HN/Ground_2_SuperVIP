@@ -22,18 +22,18 @@ public class DashBoardController extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        request.getRequestDispatcher("/WEB-INF/jsp/Dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/includes/Dashboard.jsp").forward(request, response);
     } 
 
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("currentUser") == null) {
-            response.sendRedirect("Login");
-            return;
-        }
+        
+//        if (session == null || session.getAttribute("currentUser") == null) {
+//            response.sendRedirect("Login");
+//            return;
+//        }      
         processRequest(request, response);
     } 
 
@@ -41,11 +41,11 @@ public class DashBoardController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("currentUser") == null) {
-            response.sendRedirect("Login");
-            return;
-        }
+        
+//        if (session == null || session.getAttribute("currentUser") == null) {
+//            response.sendRedirect("Login");
+//            return;
+//        }
         processRequest(request, response);
     }
 

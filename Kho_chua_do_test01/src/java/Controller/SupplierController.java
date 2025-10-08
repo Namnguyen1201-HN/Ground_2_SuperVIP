@@ -62,7 +62,7 @@ public class SupplierController extends HttpServlet {
         request.setAttribute("totalSuppliers", total);
         request.setAttribute("startSupplier", startIndex);
         request.setAttribute("endSupplier", endIndex);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/supplier.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/admin/supplier.jsp");
         dispatcher.forward(request, response);
     } 
 

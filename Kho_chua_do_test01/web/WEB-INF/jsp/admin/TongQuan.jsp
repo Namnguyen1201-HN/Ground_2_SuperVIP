@@ -7,12 +7,12 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>TSMS - Tổng quan</title>
-        <link href="css/TongQuan.css" rel="stylesheet" type="text/css"/>
+        <link href="css/admin/TongQuan.css" rel="stylesheet" type="text/css"/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     </head>
     <body>
         <!-- Header -->
-        <%@ include file="includes/header.jsp" %>
+        <%@ include file="../includes/header.jsp" %>
 
         <!-- Main Content -->
         <main class="main-content">

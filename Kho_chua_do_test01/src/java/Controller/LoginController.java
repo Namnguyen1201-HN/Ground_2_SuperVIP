@@ -27,7 +27,7 @@ public class LoginController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/jsp/Login.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class LoginController extends HttpServlet {
 
         if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!");
-            request.getRequestDispatcher("/WEB-INF/jsp/Login.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
             return;
         }
 
@@ -59,12 +59,12 @@ public class LoginController extends HttpServlet {
                 response.sendRedirect("TongQuan"); 
             } else {
                 request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không chính xác!");
-                request.getRequestDispatcher("/WEB-INF/jsp/Login.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Có lỗi xảy ra trong quá trình đăng nhập!");
-            request.getRequestDispatcher("/WEB-INF/jsp/Login.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
         }
     }
 

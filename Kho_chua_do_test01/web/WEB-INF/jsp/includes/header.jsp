@@ -8,7 +8,7 @@
             <span>WM</span>
         </div>
         <nav class="nav-menu">
-            <a href="TongQuan" class="nav-item active">
+            <a href="TongQuan" class="nav-item">
                 <span class="icon-overview"></span>
                 Tổng quan
             </a>

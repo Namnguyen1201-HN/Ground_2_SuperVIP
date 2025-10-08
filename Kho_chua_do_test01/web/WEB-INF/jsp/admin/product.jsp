@@ -9,7 +9,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title> WM - Quản lý Hàng hóa</title>
-        <link rel="stylesheet" href="css/Product.css">
+        <link rel="stylesheet" href="css/admin/product.css">
 
         <!-- Header -->
     <header class="header">
@@ -26,11 +26,11 @@
                     <span class="icon-overview"></span>
                     Tổng quan
                 </a>
-                <a href="#" class="nav-item active">
+                <a href="product" class="nav-item active">
                     <span class="icon-products"></span>
                     Hàng hóa
                 </a>
-                <a href="#" class="nav-item">
+                <a href="Transactions" class="nav-item">
                     <span class="icon-transactions"></span>
                     Giao dịch
                 </a>

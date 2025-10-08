@@ -30,7 +30,7 @@ public class CreateInboundController extends HttpServlet {
         }
         request.setAttribute("suppliers", supplierDAO.getAllSuppliers());
         request.setAttribute("products", productDAO.getAllProducts());
-        request.getRequestDispatcher("/WEB-INF/jsp/create_inbound.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/create_inbound.jsp").forward(request, response);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class CreateInboundController extends HttpServlet {
         // reload dropdown data and forward back to form
         request.setAttribute("suppliers", supplierDAO.getAllSuppliers());
         request.setAttribute("products", productDAO.getAllProducts());
-        request.getRequestDispatcher("/WEB-INF/jsp/create_inbound.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/create_inbound.jsp").forward(request, response);
     }
 }
 

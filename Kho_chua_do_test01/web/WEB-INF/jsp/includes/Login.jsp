@@ -8,13 +8,13 @@
     <title>Đăng nhập - WM</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/Login.css"/>
+    <link rel="stylesheet" href="css/includes/Login.css"/>
 </head>
 <body>
     <!-- Header -->
     <header class="header" id="header">
         <div class="header-content">
-            <a href="starting" class="logo">
+            <a href="DashBoard" class="logo">
                 <div class="logo-icon">T</div>
                 <span class="logo-text">WM</span>
             </a>

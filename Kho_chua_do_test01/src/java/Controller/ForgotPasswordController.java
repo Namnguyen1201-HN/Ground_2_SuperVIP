@@ -25,14 +25,14 @@ public class ForgotPasswordController extends HttpServlet {
             UserDAO userDAO = new UserDAO();
             if (userDAO.isValidResetToken(token)) {
                 request.setAttribute("token", token);
-                request.getRequestDispatcher("/WEB-INF/jsp/ResetPassword.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             } else {
                 request.setAttribute("errorMessage", "Token không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu đặt lại mật khẩu mới.");
-                request.getRequestDispatcher("/WEB-INF/jsp/ForgotPassword.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             }
         } else {
             // Show forgot password form
-            request.getRequestDispatcher("/WEB-INF/jsp/ForgotPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
         }
     }
 
@@ -57,7 +57,7 @@ public class ForgotPasswordController extends HttpServlet {
         // Validate email input
         if (email == null || email.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Vui lòng nhập địa chỉ email.");
-            request.getRequestDispatcher("/WEB-INF/jsp/ForgotPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             return;
         }
         
@@ -65,7 +65,7 @@ public class ForgotPasswordController extends HttpServlet {
         if (!isValidEmail(email)) {
             request.setAttribute("errorMessage", "Địa chỉ email không hợp lệ.");
             request.setAttribute("email", email);
-            request.getRequestDispatcher("/WEB-INF/jsp/ForgotPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             return;
         }
         
@@ -123,7 +123,7 @@ public class ForgotPasswordController extends HttpServlet {
             request.setAttribute("successMessage", "Nếu địa chỉ email tồn tại trong hệ thống, một email đặt lại mật khẩu sẽ được gửi đến địa chỉ email của bạn.");
         }
         
-        request.getRequestDispatcher("/WEB-INF/jsp/ForgotPassword.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/includes/ForgotPassword.jsp").forward(request, response);
     }
     
     private void handleResetPassword(HttpServletRequest request, HttpServletResponse response)
@@ -135,35 +135,35 @@ public class ForgotPasswordController extends HttpServlet {
         // Validate inputs
         if (token == null || token.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Token không hợp lệ.");
-            request.getRequestDispatcher("/WEB-INF/jsp/ForgotPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ForgotPassword.jsp").forward(request, response);
             return;
         }
         
         if (newPassword == null || newPassword.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Vui lòng nhập mật khẩu mới.");
             request.setAttribute("token", token);
-            request.getRequestDispatcher("/WEB-INF/jsp/ResetPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             return;
         }
         
         if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Vui lòng xác nhận mật khẩu mới.");
             request.setAttribute("token", token);
-            request.getRequestDispatcher("/WEB-INF/jsp/ResetPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             return;
         }
         
         if (!newPassword.equals(confirmPassword)) {
             request.setAttribute("errorMessage", "Mật khẩu xác nhận không khớp với mật khẩu mới.");
             request.setAttribute("token", token);
-            request.getRequestDispatcher("/WEB-INF/jsp/ResetPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             return;
         }
         
         if (newPassword.length() < 6) {
             request.setAttribute("errorMessage", "Mật khẩu phải có ít nhất 6 ký tự.");
             request.setAttribute("token", token);
-            request.getRequestDispatcher("/WEB-INF/jsp/ResetPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             return;
         }
         
@@ -173,17 +173,17 @@ public class ForgotPasswordController extends HttpServlet {
             
             if (resetSuccess) {
                 request.setAttribute("successMessage", "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập với mật khẩu mới.");
-                request.getRequestDispatcher("/WEB-INF/jsp/Login.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
             } else {
                 request.setAttribute("errorMessage", "Token không hợp lệ, đã hết hạn hoặc đã được sử dụng. Vui lòng yêu cầu đặt lại mật khẩu mới.");
-                request.getRequestDispatcher("/WEB-INF/jsp/ForgotPassword.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/includes/ForgotPassword.jsp").forward(request, response);
             }
         } catch (Exception e) {
             System.err.println("Error in handleResetPassword: " + e.getMessage());
             e.printStackTrace();
             request.setAttribute("errorMessage", "Đã xảy ra lỗi hệ thống khi đặt lại mật khẩu. Vui lòng thử lại sau.");
             request.setAttribute("token", token);
-            request.getRequestDispatcher("/WEB-INF/jsp/ResetPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
         }
     }
     

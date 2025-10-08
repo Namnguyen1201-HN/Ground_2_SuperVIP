@@ -15,25 +15,11 @@
     <title>Quản lý khách hàng - SWP391</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/supplier.css">
+    <link rel="stylesheet" href="css/admin/Supplier.css">
 
     <!-- Header -->
             <header class="header">
-                <div class="header-top">
-                    <div class="header-top-left">
-                        <span>🔙 Người hàng giá lót</span>
-                        <span>💬 Chờ đề</span>
-                        <span>❓ Hỗ trợ</span>
-                        <span>📋 Góp ý</span>
-                        <span>📧 Giao diện mới</span>
-                    </div>
-                    <div class="header-top-right">
-                        <span>🇻🇳 Tiếng Việt</span>
-                        <span>⚙️</span>
-                        <span>0923391668</span>
-                        <span>👤</span>
-                    </div>
-                </div>
+                
                 <div class="header-main">
                     <div class="logo">
                         <div class="logo-icon">
@@ -42,23 +28,23 @@
                         <span>WM</span>
                     </div>
                     <nav class="nav-menu">
-                        <a href="#" class="nav-item active">
+                        <a href="TongQuan" class="nav-item">
                             <span class="icon-overview"></span>
                             Tổng quan
                         </a>
-                        <a href="#" class="nav-item">
+                        <a href="product" class="nav-item">
                             <span class="icon-products"></span>
                             Hàng hóa
                         </a>
-                        <a href="#" class="nav-item">
+                        <a href="Transactions" class="nav-item">
                             <span class="icon-transactions"></span>
                             Giao dịch
                         </a>
-                        <a href="#" class="nav-item">
+                        <a href="#" class="nav-item active">
                             <span class="icon-partners"></span>
                             Đối tác
                         </a>
-                        <a href="#" class="nav-item">
+                        <a href="NhanVien" class="nav-item">
                             <span class="icon-staff"></span>
                             Nhân viên
                         </a>
@@ -79,6 +65,9 @@
                             Bán hàng
                         </a>
                     </nav>
+                    
+                    
+                    
                 </div>
             </header>
     
@@ -304,7 +293,7 @@
         }
 
 
-
+        
 
     </script>
 </body>

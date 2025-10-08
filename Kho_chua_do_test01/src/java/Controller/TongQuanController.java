@@ -29,7 +29,7 @@ public class TongQuanController extends HttpServlet {
         List<Log> logs = dao.getRecentLogs(5); // lấy 5 log gần nhất
         request.setAttribute("logs", logs);
         
-        request.getRequestDispatcher("/WEB-INF/jsp/TongQuan.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/TongQuan.jsp").forward(request, response);
     } 
 
     

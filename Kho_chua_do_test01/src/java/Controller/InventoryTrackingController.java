@@ -90,7 +90,7 @@ public class InventoryTrackingController extends HttpServlet {
                 Model.Receipt receipt = receiptDAO.getById(rid);
                 request.setAttribute("receipt", receipt);
                 request.setAttribute("details", receiptDetailDAO.getByReceipt(rid));
-                request.getRequestDispatcher("/WEB-INF/jsp/receipt_detail.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/admin/receipt_detail.jsp").forward(request, response);
                 return;
             } catch (NumberFormatException ignored) {}
         }
@@ -112,7 +112,7 @@ public class InventoryTrackingController extends HttpServlet {
             request.setAttribute("productIdToSupplier", productIdToSupplier);
             request.setAttribute("supplierIdToName", supplierIdToName);
         }
-        request.getRequestDispatcher("/WEB-INF/jsp/inventory_tracking.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/inventory_tracking.jsp").forward(request, response);
     }
 }
 

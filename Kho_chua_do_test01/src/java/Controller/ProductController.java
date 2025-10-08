@@ -13,7 +13,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "ProductController", urlPatterns = {"/product"})
 public class ProductController extends HttpServlet {
-    private static final int DEFAULT_STOCK_THRESHOLD = 30; 
+
+    private static final int DEFAULT_STOCK_THRESHOLD = 30;
     private ProductDAO productDAO;
 
     @Override
@@ -77,37 +78,38 @@ public class ProductController extends HttpServlet {
         }
     }
 
-private void listProducts(HttpServletRequest request, HttpServletResponse response)
-        throws Exception {
-    String keyword = trimToNull(request.getParameter("keyword"));
-    String categoryIdParam = request.getParameter("categoryId");
-    Integer categoryId = parseIntOrNull(categoryIdParam);
+    private void listProducts(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+        String keyword = trimToNull(request.getParameter("keyword"));
+        String categoryIdParam = request.getParameter("categoryId");
+        Integer categoryId = parseIntOrNull(categoryIdParam);
 
-    // stock: all | in | out | belowMin | aboveMax
-    String stock = request.getParameter("stock");
-    if (stock == null || stock.isBlank()) stock = "all";
+        // stock: all | in | out | belowMin | aboveMax
+        String stock = request.getParameter("stock");
+        if (stock == null || stock.isBlank()) {
+            stock = "all";
+        }
 
-    // ngưỡng cố định (nếu không truyền thì lấy DEFAULT)
-    int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
+        // ngưỡng cố định (nếu không truyền thì lấy DEFAULT)
+        int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
-    // gọi DAO hợp nhất có so sánh ngưỡng
-    List<Product> products = productDAO.findProductsWithThreshold(categoryId, keyword, stock, threshold);
+        // gọi DAO hợp nhất có so sánh ngưỡng
+        List<Product> products = productDAO.findProductsWithThreshold(categoryId, keyword, stock, threshold);
 
-    // gán attribute cho JSP
-    request.setAttribute("products", products);
-    request.setAttribute("keyword", keyword);
-    request.setAttribute("selectedCategoryId", categoryIdParam);
-    request.setAttribute("stock", stock);
-    request.setAttribute("stockThreshold", threshold);
+        // gán attribute cho JSP
+        request.setAttribute("products", products);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("selectedCategoryId", categoryIdParam);
+        request.setAttribute("stock", stock);
+        request.setAttribute("stockThreshold", threshold);
 
-    request.getRequestDispatcher("/WEB-INF/jsp/Product.jsp").forward(request, response);
-}
-
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/product.jsp").forward(request, response);
+    }
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         request.setAttribute("action", "insert");  // để form biết đang insert
-        request.getRequestDispatcher("/WEB-INF/jsp/ProductForm.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -116,7 +118,7 @@ private void listProducts(HttpServletRequest request, HttpServletResponse respon
         Product product = productDAO.getProductById(id);  // lấy sản phẩm từ DB
         request.setAttribute("product", product);         // gắn vào request
         request.setAttribute("action", "update");         // để form biết đang update
-        request.getRequestDispatcher("/WEB-INF/jsp/ProductForm.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
     }
 
     private void insertProduct(HttpServletRequest request, HttpServletResponse response)
@@ -143,21 +145,30 @@ private void listProducts(HttpServletRequest request, HttpServletResponse respon
         productDAO.deleteProduct(id);
         response.sendRedirect("product?action=list");
     }
-    
-    private Integer parseIntOrNull(String s) {
-    try { return (s == null || s.isBlank()) ? null : Integer.valueOf(s); }
-    catch (NumberFormatException e) { return null; }
-}
-private int parseIntOrDefault(String s, int def) {
-    try { return (s == null || s.isBlank()) ? def : Integer.parseInt(s); }
-    catch (NumberFormatException e) { return def; }
-}
-private String trimToNull(String s) {
-    if (s == null) return null;
-    String t = s.trim();
-    return t.isEmpty() ? null : t;
-}
 
+    private Integer parseIntOrNull(String s) {
+        try {
+            return (s == null || s.isBlank()) ? null : Integer.valueOf(s);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private int parseIntOrDefault(String s, int def) {
+        try {
+            return (s == null || s.isBlank()) ? def : Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return def;
+        }
+    }
+
+    private String trimToNull(String s) {
+        if (s == null) {
+            return null;
+        }
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
 
     private Product extractProductFromRequest(HttpServletRequest request) {
         Product p = new Product();

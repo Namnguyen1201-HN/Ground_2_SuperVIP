@@ -28,7 +28,7 @@ public class RegisterController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
     }
 
     @Override
@@ -47,39 +47,39 @@ public class RegisterController extends HttpServlet {
             fullName.trim().isEmpty() || username.trim().isEmpty() || phone.trim().isEmpty() ||
             email.trim().isEmpty() || password.trim().isEmpty() || confirmPassword.trim().isEmpty()) {
             request.setAttribute("error", "Vui lòng điền đầy đủ thông tin!");
-            request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
             return;
         }
 
         if (!password.equals(confirmPassword)) {
             request.setAttribute("error", "Mật khẩu xác nhận không khớp!");
-            request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
             return;
         }
 
         String cleanPhone = phone.replaceAll("\\s+", "");
         if (!cleanPhone.matches("\\d{10,11}")) {
             request.setAttribute("error", "Số điện thoại không hợp lệ!");
-            request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
             return;
         }
 
         if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             request.setAttribute("error", "Email không hợp lệ!");
-            request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
             return;
         }
 
         if (!"on".equals(terms)) {
             request.setAttribute("error", "Vui lòng đồng ý với điều khoản dịch vụ!");
-            request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
             return;
         }
 
         try {
             if (userDAO.isPhoneExists(cleanPhone)) {
                 request.setAttribute("error", "Số điện thoại đã được sử dụng!");
-                request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
                 return;
             }
 
@@ -101,12 +101,12 @@ public class RegisterController extends HttpServlet {
                 response.sendRedirect("Login");
             } else {
                 request.setAttribute("error", "Có lỗi xảy ra trong quá trình đăng ký!");
-                request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Có lỗi hệ thống xảy ra!");
-            request.getRequestDispatcher("/WEB-INF/jsp/Register.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
         }
     }
 

@@ -51,7 +51,7 @@ public class OrdersController extends HttpServlet {
                     // preload for display names
                     request.setAttribute("suppliers", new DAL.SupplierDAO().getAllSuppliers());
                     request.setAttribute("products", new DAL.ProductDAO().getAllProducts());
-                    request.getRequestDispatcher("/WEB-INF/jsp/order_detail.jsp").forward(request, response);
+                    request.getRequestDispatcher("/WEB-INF/jsp/admin/order_detail.jsp").forward(request, response);
                     return;
                 } catch (NumberFormatException ignored) {}
                 response.sendRedirect("Orders");
@@ -66,14 +66,14 @@ public class OrdersController extends HttpServlet {
                         request.setAttribute("details", orderDetailDAO.getByOrder(id));
                     } catch (NumberFormatException ignored) {}
                 }
-                request.getRequestDispatcher("/WEB-INF/jsp/order_form.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/admin/order_form.jsp").forward(request, response);
                 return;
             default:
                 request.setAttribute("orders", orderDAO.getAll());
                 // preload suppliers & products for create modal
                 request.setAttribute("suppliers", new DAL.SupplierDAO().getAllSuppliers());
                 request.setAttribute("products", new DAL.ProductDAO().getAllProducts());
-                request.getRequestDispatcher("/WEB-INF/jsp/orders.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/jsp/admin/orders.jsp").forward(request, response);
         }
     }
 

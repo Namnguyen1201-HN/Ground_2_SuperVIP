@@ -11,7 +11,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Danh sách nhân viên</title>
         <link
-            href="css/NhanVien.css"
+            href="css/admin/NhanVien.css"
             rel="stylesheet"
             type="text/css"
             />

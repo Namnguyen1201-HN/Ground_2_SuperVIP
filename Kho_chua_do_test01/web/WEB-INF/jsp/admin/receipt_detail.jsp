@@ -4,12 +4,12 @@
   <head>
     <meta charset="UTF-8">
     <title>Chi tiết đơn nhập</title>
-    <link href="css/NhanVien.css" rel="stylesheet" type="text/css"/>
+    <link href="css/admin/NhanVien.css" rel="stylesheet" type="text/css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   </head>
   <body>
     <div class="container-fluid">
-      <%@ include file="includes/header.jsp" %>
+      <%@ include file="../includes/header.jsp" %>
       <div class="content">
         <main class="main-content">
           <div class="toolbar d-flex justify-content-between align-items-center">
