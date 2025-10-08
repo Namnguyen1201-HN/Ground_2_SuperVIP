@@ -1,108 +1,128 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 
     /* Header Navigation */
-        .header {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white;
-            padding: 0px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            
-        }
+    .header {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        padding: 0px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 
-        .header-top {
-            background: #f8f9fa;
-            color: #6b7280;
-            padding: 0.5rem 2rem;
-            font-size: 0.875rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    }
 
-        .header-top-left {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
+    .header-top {
+        background: #f8f9fa;
+        color: #6b7280;
+        padding: 0.5rem 2rem;
+        font-size: 0.875rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-        .header-top-right {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-        
-        div.header-main{
-            margin-bottom: 10px;
-        }
+    .header-top-left {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
 
-        .header-main {
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
+    .header-top-right {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
+    div.header-main{
+        margin-bottom: 10px;
+    }
 
-        .logo-icon {
-            background: #14b8a6;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .header-main {
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
 
-        .nav-menu {
-            display: flex;
-            gap: 0;
-            flex: 1;
-        }
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            color: rgba(255,255,255,0.9);
-            text-decoration: none;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
+    .logo-icon {
+        background: #14b8a6;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        .nav-item:hover, .nav-item.active {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
+    .nav-menu {
+        display: flex;
+        gap: 0;
+        flex: 1;
+    }
 
-        .nav-item.active {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        /* Icons using CSS */
-        .icon-overview::before { content: "📊"; }
-        .icon-products::before { content: "📦"; }
-        .icon-transactions::before { content: "💳"; }
-        .icon-partners::before { content: "🤝"; }
-        .icon-staff::before { content: "👥"; }
-        .icon-cashbook::before { content: "💰"; }
-        .icon-reports::before { content: "📈"; }
-        .icon-online::before { content: "🌐"; }
-        .icon-sales::before { content: "🛒"; }
-        .icon-building::before { content: "🏢"; }
-     
-    
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        color: rgba(255,255,255,0.9);
+        text-decoration: none;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .nav-item:hover, .nav-item.active {
+        background: rgba(255,255,255,0.1);
+        color: white;
+    }
+
+    .nav-item.active {
+        background: rgba(255,255,255,0.2);
+    }
+
+    /* Icons using CSS */
+    .icon-overview::before {
+        content: "📊";
+    }
+    .icon-products::before {
+        content: "📦";
+    }
+    .icon-transactions::before {
+        content: "💳";
+    }
+    .icon-partners::before {
+        content: "🤝";
+    }
+    .icon-staff::before {
+        content: "👥";
+    }
+    .icon-cashbook::before {
+        content: "💰";
+    }
+    .icon-reports::before {
+        content: "📈";
+    }
+    .icon-online::before {
+        content: "🌐";
+    }
+    .icon-sales::before {
+        content: "🛒";
+    }
+    .icon-building::before {
+        content: "🏢";
+    }
+
+
     /* --- Dropdown người dùng --- */
     .user-dropdown {
         position: relative;
@@ -149,11 +169,11 @@
     }
 
     .user-icon i {
-        color: #fff;
+        color: #fff !important;
     }
 
     .gradient {
-        background: linear-gradient(45deg, #007bff, #00aaff);
+        background: linear-gradient(45deg, #007bff, #00aaff) !important ;
         border-radius: 50%;
         width: 38px;
         height: 38px;
@@ -161,8 +181,15 @@
         align-items: center;
         justify-content: center;
     }
-    
-    
+
+    /* Giữ nguyên màu và kiểu icon user trong header */
+    .header .user-icon i {
+        color: #fff !important;
+    }
+    .header .gradient {
+        background: linear-gradient(45deg, #007bff, #00aaff) !important;
+        border-radius: 50% !important;
+    }
 
 
 </style>
@@ -221,7 +248,7 @@
                 </a>
                 <div class="dropdown-menu" id="dropdownMenu">
                     <a href="InformationAccount" class="dropdown-item">Thông tin chi tiết</a>
-                    <a href="logout" class="dropdown-item">Đăng xuất</a>
+                    <a href="Login" class="dropdown-item">Đăng xuất</a>
                 </div>
             </div>      
         </div>
