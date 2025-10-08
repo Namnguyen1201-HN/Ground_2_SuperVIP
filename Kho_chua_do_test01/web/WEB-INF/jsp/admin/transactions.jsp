@@ -4,14 +4,13 @@
     <head>
         <meta charset="UTF-8">
         <title>Giao dịch</title>
-        <link href="css/admin/NhanVien.css" rel="stylesheet" type="text/css"/>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
         <link href="css/admin/Transactions.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
-        <div class="container-fluid">
-            <%@ include file="../includes/header.jsp" %>
+        <%@ include file="../includes/header.jsp" %>
+        <div class="container-fluid">          
             <div class="content">
                 <main class="main-content transactions-page" style="width:100%">
                     <div class="toolbar d-flex justify-content-between align-items-center">

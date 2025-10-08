@@ -213,24 +213,7 @@
                 });
             });
             
-            document.addEventListener('DOMContentLoaded', function () {
-                const dropdown = document.querySelector('.user-dropdown');
-                const toggle = document.getElementById('dropdownToggle');
-                const menu = document.getElementById('dropdownMenu');
-
-                // Khi click icon => mở / đóng menu
-                toggle.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    dropdown.classList.toggle('active');
-                });
-
-                // Khi click ra ngoài => đóng menu
-                document.addEventListener('click', function (e) {
-                    if (!dropdown.contains(e.target)) {
-                        dropdown.classList.remove('active');
-                    }
-                });
-            });
+            
         </script>
     </body>
 </html>
