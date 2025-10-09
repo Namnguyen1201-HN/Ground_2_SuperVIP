@@ -1,0 +1,59 @@
+.branch-form-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    padding: 20px 25px;
+    width: 100%;
+    max-width: 1100px;
+}
+
+.form-section {
+    background: #f9fafb;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.form-section h5 {
+    font-weight: 600;
+    color: #1e3a8a;
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.form-control {
+    border-radius: 6px;
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-back {
+    background-color: #4b5563;
+    color: white;
+}
+.btn-back:hover {
+    background-color: #374151;
+}
+
+.btn-reset {
+    background-color: #6b7280;
+    color: white;
+}
+.btn-reset:hover {
+    background-color: #52525b;
+}
+
+.btn-create {
+    background-color: #22c55e;
+    color: white;
+}
+.btn-create:hover {
+    background-color: #16a34a;
+}
+

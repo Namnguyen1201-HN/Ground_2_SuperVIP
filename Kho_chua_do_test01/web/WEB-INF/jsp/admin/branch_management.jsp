@@ -25,7 +25,9 @@
                     <div class="branch-container">
                         <div class="branch-header">
                             <h2><i class="fas fa-code-branch"></i> Quản lý chi nhánh</h2>
-                            <button class="btn-primary">Tạo chi nhánh mới</button>
+                            <form action="BranchCreate" method="get">
+                                <button type="submit" class="btn-primary">Tạo chi nhánh mới</button>
+                            </form>
                         </div>
 
                         <div class="branch-table">
