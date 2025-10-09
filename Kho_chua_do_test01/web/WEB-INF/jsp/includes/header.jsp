@@ -231,14 +231,7 @@
                 <span class="icon-reports"></span>
                 Báo cáo
             </a>
-            <a href="#" class="nav-item">
-                <span class="icon-online"></span>
-                Bán Online
-            </a>
-            <a href="#" class="nav-item">
-                <span class="icon-sales"></span>
-                Bán hàng
-            </a>
+            
         </nav>
 
         <div class="header-right">
