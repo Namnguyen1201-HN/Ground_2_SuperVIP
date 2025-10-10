@@ -1,74 +1,53 @@
 package Model;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class Product {
-    private int productId;
-    private String productName;
-    private Integer categoryId;
-    private Integer supplierId;
-    private double price;
-    private int quantity;
-    private Date expiryDate;
-    private Date createdAt;
-    private Date updatedAt;
+    private Integer productId;          // IDENTITY
+    private String productName;         // NVARCHAR(255)
+    private Integer brandId;            // FK -> Brands
+    private Integer categoryId;         // FK -> Categories
+    private Integer supplierId;         // FK -> Suppliers
+    private BigDecimal costPrice;       // DECIMAL(18,2)
+    private BigDecimal retailPrice;     // DECIMAL(18,2)
+    private String imageUrl;            // NVARCHAR(MAX)
+    private BigDecimal vat;             // DECIMAL(18,2)
+    private LocalDateTime createdAt;    // DEFAULT GETDATE()
+    private Boolean isActive;           // BIT
 
-    // Constructor
     public Product() {}
 
-    // Getters & Setters
-    public int getProductId() {
-        return productId;
-    }
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
-    public String getProductName() {
-        return productName;
-    }
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-    public Integer getCategoryId() {
-        return categoryId;
-    }
-    public void setCategoryId(Integer categoryId) {
-        this.categoryId = categoryId;
-    }
-    public Integer getSupplierId() {
-        return supplierId;
-    }
-    public void setSupplierId(Integer supplierId) {
-        this.supplierId = supplierId;
-    }
-    public double getPrice() {
-        return price;
-    }
-    public void setPrice(double price) {
-        this.price = price;
-    }
-    public int getQuantity() {
-        return quantity;
-    }
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-    public Date getExpiryDate() {
-        return expiryDate;
-    }
-    public void setExpiryDate(Date expiryDate) {
-        this.expiryDate = expiryDate;
-    }
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
+    public Integer getProductId() { return productId; }
+    public void setProductId(Integer productId) { this.productId = productId; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
+
+    public Integer getBrandId() { return brandId; }
+    public void setBrandId(Integer brandId) { this.brandId = brandId; }
+
+    public Integer getCategoryId() { return categoryId; }
+    public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }
+
+    public Integer getSupplierId() { return supplierId; }
+    public void setSupplierId(Integer supplierId) { this.supplierId = supplierId; }
+
+    public BigDecimal getCostPrice() { return costPrice; }
+    public void setCostPrice(BigDecimal costPrice) { this.costPrice = costPrice; }
+
+    public BigDecimal getRetailPrice() { return retailPrice; }
+    public void setRetailPrice(BigDecimal retailPrice) { this.retailPrice = retailPrice; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public BigDecimal getVat() { return vat; }
+    public void setVat(BigDecimal vat) { this.vat = vat; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 }
