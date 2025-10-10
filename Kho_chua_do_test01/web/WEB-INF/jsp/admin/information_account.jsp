@@ -12,16 +12,16 @@
     <link href="css/admin/information_account.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <%@ include file="../includes/header.jsp" %>
+    <%@ include file="../admin/header_admin.jsp" %>
 
     <div class="container-fluid py-4">
         <div class="row">
             <!-- Sidebar -->
-            <%@ include file="../includes/sidebar-store.jsp" %>
+            <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
             <!-- Main content -->
             <div class="col-md-9 col-lg-9">
-                <div class="card shadow-sm p-4">
+                <div class="card shadow-sm p-4" style="width: 965px;">
                     <div class="info-section mb-3">
                         <i class="bi bi-info-circle"></i>
                         Thông tin gian hàng

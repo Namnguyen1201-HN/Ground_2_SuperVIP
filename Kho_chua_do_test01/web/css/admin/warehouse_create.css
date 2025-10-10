@@ -57,7 +57,7 @@ body {
     width: 100%;
     padding: 10px 12px;
     border-radius: 6px;
-    border: 1px solid #f87171; /* viền đỏ như ảnh */
+   
     outline: none;
     font-size: 14px;
     transition: all 0.2s ease;

@@ -7,7 +7,7 @@
 
     /* Sidebar Styling */
     .sidebar {
-        min-height: 420px;
+        width: 300px;
     }
 
     .sidebar-link {

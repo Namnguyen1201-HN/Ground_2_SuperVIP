@@ -11,7 +11,7 @@
     <body>
         <!-- Header -->
         <div>
-            <%@ include file="../includes/header.jsp" %>
+            <%@ include file="../admin/header_admin.jsp" %>
         </div>
 
         <!-- Layout chính: sidebar + nội dung -->

@@ -18,7 +18,7 @@
 
                 <!-- Main Content -->
                 <div class="col-md-9">
-                    <div class="card shadow-sm">
+                    <div class="card shadow-sm" style="width: 1000px;">
                         <div class="card-body">
                             <h5 class="mb-4">
                                 <i class="bi bi-lock-fill text-primary me-2"></i> Đổi mật khẩu

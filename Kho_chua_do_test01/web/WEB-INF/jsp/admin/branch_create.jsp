@@ -10,7 +10,7 @@
         
     </head>
     <body>
-        <%@ include file="../includes/header.jsp" %>
+        <%@ include file="../admin/header_admin.jsp" %>
 
         <div class="container-fluid mt-3">
             <div class="row">

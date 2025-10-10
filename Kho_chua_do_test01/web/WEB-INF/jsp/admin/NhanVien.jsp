@@ -18,7 +18,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     </head>
     <body>
-        <%@ include file="../includes/header.jsp" %>
+        <%@ include file="../admin/header_admin.jsp" %>
         <div class="container">            
 
             <!-- Sidebar + Main -->
