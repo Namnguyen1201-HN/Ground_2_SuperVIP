@@ -26,6 +26,7 @@
                 <!-- Sidebar filters -->
                 <aside class="sidebar">
                     <h2>Danh sách nhân viên</h2>
+                    
                     <form action="NhanVien" method="get">
 
                         <!-- Trạng thái -->

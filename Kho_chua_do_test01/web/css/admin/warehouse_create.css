@@ -1,0 +1,118 @@
+body {
+    background-color: #f9fafb;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Container chính */
+.warehouse-create-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    padding: 20px 25px;
+    width: 100%;
+    max-width: 1100px;
+}
+
+/* Header */
+.create-header h2 {
+    font-size: 18px;
+    color: #1e3a8a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+/* Card thông tin */
+.form-section {
+    background-color: #f9fafb;
+    border-radius: 8px;
+    padding: 20px 25px;
+    border: 1px solid #e5e7eb;
+}
+
+.form-section h5 {
+    font-size: 16px;
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Input field */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #1f2937;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #f87171; /* viền đỏ như ảnh */
+    outline: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
+}
+
+.form-group small {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+/* Dấu * */
+.required {
+    color: #dc2626;
+}
+
+/* Hàng nút */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+/* Nút */
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+.btn-success {
+    background-color: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #15803d;
+}

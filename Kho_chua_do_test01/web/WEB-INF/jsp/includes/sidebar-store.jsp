@@ -58,10 +58,10 @@
         <a href="ChangePassWord" class="sidebar-link <%= request.getRequestURI().contains("ChangePassword") ? "active" : "" %>">
             <i class="bi bi-lock me-2"></i> Đổi mật khẩu
         </a>
-        <a href="BranchManagement" class="sidebar-link">
+        <a href="BranchManagement" class="sidebar-link <%= request.getRequestURI().contains("BranchManagement") ? "active" : "" %> ">
             <i class="bi bi-key me-2"></i> Quản lý chi nhánh
         </a>
-        <a href="#" class="sidebar-link">
+        <a href="WareHouseManagement" class="sidebar-link <%= request.getRequestURI().contains("WareHouseManagement") ? "active" : "" %> ">
             <i class="bi bi-house-door me-2"></i> Quản lý kho tổng
         </a>
 
