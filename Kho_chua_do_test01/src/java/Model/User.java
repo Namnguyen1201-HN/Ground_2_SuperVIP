@@ -5,21 +5,29 @@ import java.util.Date;
 public class User {
 
     private int userId;
+    private String passwordHash;
     private String fullName;
-    private String username;
     private String email;
     private String phone;
-    private String roleName;
-    private String departmentName;
-    private String identifierCode;
-    private boolean isActive;
-    private Date createdAt;
-    private String branchName;
-    private int departmentId;
+    private Integer branchId;
+    private Integer warehouseId;
     private int roleId;
-    
+    private boolean isActive;
+    private Boolean gender; // TRUE = Nam, FALSE = Nữ
+    private String avaUrl;
+    private String address;
+    private String taxNumber;
+    private String webUrl;
+    private Date dob;
+    private String identificationId;
 
-    // Getters & setters
+    // Thêm các trường liên kết hiển thị
+    private String branchName;
+    private String warehouseName;
+    private String roleName;
+
+    // ===== Getters & Setters =====
+
     public int getUserId() {
         return userId;
     }
@@ -28,20 +36,20 @@ public class User {
         this.userId = userId;
     }
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public String getFullName() {
         return fullName;
     }
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getEmail() {
@@ -60,28 +68,28 @@ public class User {
         this.phone = phone;
     }
 
-    public String getRoleName() {
-        return roleName;
+    public Integer getBranchId() {
+        return branchId;
     }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setBranchId(Integer branchId) {
+        this.branchId = branchId;
     }
 
-    public String getDepartmentName() {
-        return departmentName;
+    public Integer getWarehouseId() {
+        return warehouseId;
     }
 
-    public void setDepartmentName(String departmentName) {
-        this.departmentName = departmentName;
+    public void setWarehouseId(Integer warehouseId) {
+        this.warehouseId = warehouseId;
     }
 
-    public String getIdentifierCode() {
-        return identifierCode;
+    public int getRoleId() {
+        return roleId;
     }
 
-    public void setIdentifierCode(String identifierCode) {
-        this.identifierCode = identifierCode;
+    public void setRoleId(int roleId) {
+        this.roleId = roleId;
     }
 
     public boolean isActive() {
@@ -92,12 +100,60 @@ public class User {
         isActive = active;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public Boolean getGender() {
+        return gender;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setGender(Boolean gender) {
+        this.gender = gender;
+    }
+
+    public String getAvaUrl() {
+        return avaUrl;
+    }
+
+    public void setAvaUrl(String avaUrl) {
+        this.avaUrl = avaUrl;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getTaxNumber() {
+        return taxNumber;
+    }
+
+    public void setTaxNumber(String taxNumber) {
+        this.taxNumber = taxNumber;
+    }
+
+    public String getWebUrl() {
+        return webUrl;
+    }
+
+    public void setWebUrl(String webUrl) {
+        this.webUrl = webUrl;
+    }
+
+    public Date getDob() {
+        return dob;
+    }
+
+    public void setDob(Date dob) {
+        this.dob = dob;
+    }
+
+    public String getIdentificationId() {
+        return identificationId;
+    }
+
+    public void setIdentificationId(String identificationId) {
+        this.identificationId = identificationId;
     }
 
     public String getBranchName() {
@@ -108,30 +164,19 @@ public class User {
         this.branchName = branchName;
     }
 
-    public boolean isIsActive() {
-        return isActive;
+    public String getWarehouseName() {
+        return warehouseName;
     }
 
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
     }
 
-    public int getDepartmentId() {
-        return departmentId;
+    public String getRoleName() {
+        return roleName;
     }
 
-    public void setDepartmentId(int departmentId) {
-        this.departmentId = departmentId;
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
-
-    public int getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(int roleId) {
-        this.roleId = roleId;
-    }
-    
-    
-    
 }

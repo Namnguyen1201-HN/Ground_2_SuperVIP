@@ -225,7 +225,7 @@
             </a>
             <a href="#" class="nav-item">
                 <span class="icon-cashbook"></span>
-                Sổ quỹ
+                Khuyến mãi
             </a>
             <a href="#" class="nav-item">
                 <span class="icon-reports"></span>
