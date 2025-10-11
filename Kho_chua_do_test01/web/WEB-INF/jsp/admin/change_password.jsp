@@ -9,12 +9,12 @@
         <link href="css/admin/change_password.css" rel="stylesheet">
     </head>
     <body class="bg-light">
-        <%@ include file="../includes/header.jsp" %>
+        <%@ include file="../admin/header_admin.jsp" %>
 
         <div class="container-fluid py-4">
             <div class="row">
                 <!-- Sidebar -->
-                <%@ include file="../includes/sidebar-store.jsp" %>
+                <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
                 <!-- Main Content -->
                 <div class="col-md-9">

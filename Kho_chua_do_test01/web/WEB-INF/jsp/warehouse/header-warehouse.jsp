@@ -209,15 +209,15 @@
                 <span class="icon-products"></span>
                 Hàng hóa
             </a>
-            <a href="Transactions" class="nav-item">
+            <a href="NhapHang" class="nav-item">
                 <span class=""></span>
                 Nhập hàng
             </a>
-            <a href="Supplier" class="nav-item">
+            <a href="XuatHang" class="nav-item">
                 <span class=""></span>
                 Xuất hàng
             </a>
-            <a href="NhanVien" class="nav-item">
+            <a href="ThongBao" class="nav-item">
                 <span class=""></span>
                 Tạo thông báo
             </a>          
@@ -230,7 +230,7 @@
                     <i class="fas fa-user-circle fa-2x"></i>
                 </a>
                 <div class="dropdown-menu" id="dropdownMenu">
-                    <a href="InformationAccount" class="dropdown-item">Thông tin chi tiết</a>
+                    <a href="Information" class="dropdown-item">Thông tin chi tiết</a>
                     <a href="Login" class="dropdown-item">Đăng xuất</a>
                 </div>
             </div>      

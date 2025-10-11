@@ -1,0 +1,78 @@
+body {
+    background-color: #f6f7fb;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.container-fluid {
+    padding: 20px;
+}
+
+.card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.card-header {
+    background: #fff;
+    border-bottom: none;
+    font-weight: 600;
+    color: #111827;
+    font-size: 18px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.label-bold {
+    font-weight: 500;
+    color: #374151;
+}
+
+.btn-save {
+    background-color: #2563eb;
+    color: white;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+
+.btn-cancel {
+    background-color: #6b7280;
+    color: white;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+
+.info-section h6 {
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #111827;
+}
+
+.info-section {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.badge-success {
+    background-color: #dcfce7;
+    color: #16a34a;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 5px 8px;
+}
+
+.col-md-9 .card.p-4 {
+    margin-left: -25px;
+    max-width: 1050px;
+}
+
