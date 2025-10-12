@@ -124,8 +124,8 @@
                                 <th>Tên nhân viên</th>
                                 <th>Chi nhánh làm việc</th>
                                 <th>Chức danh</th>
-                                <th>SĐT</th>
-                                
+                                <th>SĐT</th>                              
+                                <th>CMND/CCCD</th>
                                 <th>Email</th>
                                 <th>Thao tác</th>
                             </tr>
@@ -142,6 +142,7 @@
                                 <td><%= u.getBranchName() != null ? u.getBranchName() : "Chưa có" %></td>
                                 <td><%= u.getRoleName() != null ? u.getRoleName() : "Chưa có" %></td>
                                 <td><%= u.getPhone() != null ? u.getPhone() : "Chưa có" %></td>                               
+                                <td><%= u.getIdentificationId() != null ? u.getIdentificationId() : "Chưa có" %></td>
                                 <td><%= u.getEmail() != null ? u.getEmail() : "Chưa có" %></td>
                                 <td>
                                     <a href="EditUser?userId=<%= u.getUserId() %>" class="btn edit">Chi tiết</a>
