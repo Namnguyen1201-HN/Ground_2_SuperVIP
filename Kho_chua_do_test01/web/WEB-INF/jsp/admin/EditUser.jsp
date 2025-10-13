@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*, Model.Role, Model.Warehouse, Model.Shift, Model.User" %>
+<%@ page import="java.util.*, Model.Role, Model.Branch, Model.Warehouse, Model.Shift, Model.User" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -17,6 +17,7 @@
             List<Role> roles = (List<Role>) request.getAttribute("roles");
             List<Warehouse> warehouses = (List<Warehouse>) request.getAttribute("warehouses");
             List<Shift> shifts = (List<Shift>) request.getAttribute("shifts");
+            List<Branch> branches = (List<Branch>) request.getAttribute("branches");
         %>
 
         <div class="staff-edit-container">
@@ -100,16 +101,16 @@
                             </select>
                         </div>
 
-                        <!-- Kho -->
+                        <!-- Chi nhánh làm việc -->
                         <div class="form-group half">
-                            <label>Kho</label>
-                            <select name="warehouseID">
-                                <option value="">-- Không quản lý kho --</option>
-                                <% if (warehouses != null) {
-                                for (Warehouse w : warehouses) { %>
-                                <option value="<%= w.getWarehouseId() %>" 
-                                        <%= (user.getWarehouseId() != null && user.getWarehouseId() == w.getWarehouseId()) ? "selected" : "" %>>
-                                    <%= w.getWarehouseName() %>
+                            <label>Chi nhánh làm việc</label>
+                            <select name="branchID">
+                                <option value="">-- Không thuộc chi nhánh nào --</option>
+                                <% if (branches != null) {
+            for (Branch b : branches) { %>
+                                <option value="<%= b.getBranchId() %>"
+                                        <%= (user.getBranchId() != null && user.getBranchId().equals(b.getBranchId())) ? "selected" : "" %>>
+                                    <%= b.getBranchName() %>
                                 </option>
                                 <% } } %>
                             </select>
@@ -152,13 +153,22 @@
                         <i class="fas fa-arrow-left"></i> Quay lại
                     </a>
 
-                    <a href="EditUser?action=delete&userId=<%= user.getUserId() %>"
-                       class="btn btn-delete"
-                       onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?')">
+                    <!-- Nút sa thải dùng form POST riêng -->
+                    <a href="#" class="btn btn-delete"
+                       onclick="if (confirm('Bạn có chắc muốn xóa nhân viên này?'))
+                                   document.getElementById('deleteForm').submit();
+                               return false;">
                         <i class="fas fa-trash"></i> Sa thải
                     </a>
                 </div>
+            </form> <!-- Kết thúc form editUserForm -->
+
+            <!-- Form xóa nhân viên (đặt ngoài form chính để không bị lỗi nested form) -->
+            <form id="deleteForm" action="EditUser" method="post" style="display:none;">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="userId" value="<%= user.getUserId() %>">
             </form>
+
         </div>
     </body>
 </html>

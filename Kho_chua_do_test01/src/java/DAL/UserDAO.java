@@ -187,39 +187,55 @@ public class UserDAO extends DataBaseContext {
     public boolean updateUser(User u) {
         String sql = "UPDATE Users "
                 + "SET FullName=?, Email=?, Phone=?, Address=?, Gender=?, DOB=?, "
-                + "RoleID=?, WarehouseID=?, IsActive=? "
+                + "RoleID=?, BranchID=?, WarehouseID=?, IsActive=? "
                 + "WHERE UserID=?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
+
             ps.setString(1, u.getFullName());
             ps.setString(2, u.getEmail());
             ps.setString(3, u.getPhone());
             ps.setString(4, u.getAddress());
 
+            // Giới tính (có thể null)
             if (u.getGender() != null) {
                 ps.setBoolean(5, u.getGender());
             } else {
                 ps.setNull(5, Types.BIT);
             }
 
+            // Ngày sinh (có thể null)
             if (u.getDob() != null) {
                 ps.setTimestamp(6, new Timestamp(u.getDob().getTime()));
             } else {
                 ps.setNull(6, Types.TIMESTAMP);
             }
 
+            // Vai trò
             ps.setInt(7, u.getRoleId());
 
-            if (u.getWarehouseId() != null) {
-                ps.setInt(8, u.getWarehouseId());
+            // Chi nhánh (BranchID)
+            if (u.getBranchId() != null) {
+                ps.setInt(8, u.getBranchId());
             } else {
                 ps.setNull(8, Types.INTEGER);
             }
 
-            ps.setBoolean(9, u.isActive());
-            ps.setInt(10, u.getUserId());
+            // Kho (WarehouseID)
+            if (u.getWarehouseId() != null) {
+                ps.setInt(9, u.getWarehouseId());
+            } else {
+                ps.setNull(9, Types.INTEGER);
+            }
+
+            // Trạng thái
+            ps.setBoolean(10, u.isActive());
+
+            // UserID (điều kiện WHERE)
+            ps.setInt(11, u.getUserId());
 
             return ps.executeUpdate() > 0;
+
         } catch (SQLException e) {
             System.out.println("❌ UPDATE USER FAILED:");
             e.printStackTrace();

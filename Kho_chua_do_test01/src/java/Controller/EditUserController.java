@@ -4,6 +4,8 @@ import DAL.UserDAO;
 import DAL.RoleDAO;
 import DAL.WarehouseDAO;
 import DAL.ShiftDAO;
+import DAL.BranchDAO;
+import Model.Branch;
 import Model.User;
 import Model.Role;
 import Model.Warehouse;
@@ -36,12 +38,12 @@ public class EditUserController extends HttpServlet {
 
             UserDAO userDAO = new UserDAO();
             RoleDAO roleDAO = new RoleDAO();
-            WarehouseDAO warehouseDAO = new WarehouseDAO();
+            BranchDAO branchDAO = new BranchDAO();
             ShiftDAO shiftDAO = new ShiftDAO();
 
             User user = userDAO.getUserById(userId);
             List<Role> roles = roleDAO.getAllRoles();
-            List<Warehouse> warehouses = warehouseDAO.getAllWarehouses();
+            List<Branch> branches = branchDAO.getAllBranches();
             List<Shift> shifts = shiftDAO.getAll();
 
             if (user == null) {
@@ -51,7 +53,7 @@ public class EditUserController extends HttpServlet {
 
             request.setAttribute("user", user);
             request.setAttribute("roles", roles);
-            request.setAttribute("warehouses", warehouses);
+            request.setAttribute("branches", branches);
             request.setAttribute("shifts", shifts);
 
             request.getRequestDispatcher("/WEB-INF/jsp/admin/EditUser.jsp").forward(request, response);
@@ -94,6 +96,7 @@ public class EditUserController extends HttpServlet {
                 String genderParam = request.getParameter("gender");
                 String dobParam = request.getParameter("dob");
                 String roleParam = request.getParameter("roleID");
+                String branchParam = request.getParameter("branchID");
                 String warehouseParam = request.getParameter("warehouseID");
                 String isActiveParam = request.getParameter("isActive");
 
@@ -103,35 +106,49 @@ public class EditUserController extends HttpServlet {
                     return;
                 }
 
+                // --- Gán dữ liệu mới ---
                 user.setFullName(fullName);
                 user.setEmail(email);
                 user.setPhone(phone);
                 user.setAddress(address);
 
+                // Giới tính
                 if (genderParam != null) {
                     user.setGender("Nam".equalsIgnoreCase(genderParam));
                 } else {
                     user.setGender(null);
                 }
 
+                // Ngày sinh
                 if (dobParam != null && !dobParam.isEmpty()) {
                     user.setDob(java.sql.Date.valueOf(dobParam));
                 } else {
                     user.setDob(null);
                 }
 
+                // Vai trò
                 if (roleParam != null && !roleParam.isEmpty()) {
                     user.setRoleId(Integer.parseInt(roleParam));
                 }
 
+                // Chi nhánh
+                if (branchParam != null && !branchParam.isEmpty()) {
+                    user.setBranchId(Integer.parseInt(branchParam));
+                } else {
+                    user.setBranchId(null);
+                }
+
+                // Kho
                 if (warehouseParam != null && !warehouseParam.isEmpty()) {
                     user.setWarehouseId(Integer.parseInt(warehouseParam));
                 } else {
                     user.setWarehouseId(null);
                 }
 
+                // Trạng thái
                 user.setActive("1".equals(isActiveParam));
 
+                // --- Cập nhật ---
                 boolean updated = userDAO.updateUser(user);
 
                 if (updated) {
