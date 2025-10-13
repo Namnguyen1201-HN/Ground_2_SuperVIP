@@ -25,7 +25,7 @@ public class User {
     private String branchName;
     private String warehouseName;
     private String roleName;
-
+    private Integer shiftID;
     // ===== Getters & Setters =====
 
     public int getUserId() {
@@ -179,4 +179,13 @@ public class User {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
+
+    public Integer getShiftID() {
+        return shiftID;
+    }
+
+    public void setShiftID(Integer shiftID) {
+        this.shiftID = shiftID;
+    }
+
 }

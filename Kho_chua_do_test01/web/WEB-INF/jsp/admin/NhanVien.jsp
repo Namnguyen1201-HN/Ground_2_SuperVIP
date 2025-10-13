@@ -112,6 +112,7 @@
                         </form>
                         <div class="btn-group">
                             <a href="AddUser" class="btn add">Thêm nhân viên</a>
+                            <a href="ShiftUser" class="btn add">Ca làm</a>
                             <button type="button" class="btn import">Nhập file</button>
                             <button type="button" class="btn export">Xuất file</button>
                         </div>

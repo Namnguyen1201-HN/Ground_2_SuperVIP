@@ -173,6 +173,60 @@ public class UserDAO extends DataBaseContext {
         return null;
     }
 
+    public boolean deleteUser(int userId) {
+        String sql = "DELETE FROM Users WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateUser(User u) {
+        String sql = "UPDATE Users "
+                + "SET FullName=?, Email=?, Phone=?, Address=?, Gender=?, DOB=?, "
+                + "RoleID=?, WarehouseID=?, IsActive=? "
+                + "WHERE UserID=?";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, u.getFullName());
+            ps.setString(2, u.getEmail());
+            ps.setString(3, u.getPhone());
+            ps.setString(4, u.getAddress());
+
+            if (u.getGender() != null) {
+                ps.setBoolean(5, u.getGender());
+            } else {
+                ps.setNull(5, Types.BIT);
+            }
+
+            if (u.getDob() != null) {
+                ps.setTimestamp(6, new Timestamp(u.getDob().getTime()));
+            } else {
+                ps.setNull(6, Types.TIMESTAMP);
+            }
+
+            ps.setInt(7, u.getRoleId());
+
+            if (u.getWarehouseId() != null) {
+                ps.setInt(8, u.getWarehouseId());
+            } else {
+                ps.setNull(8, Types.INTEGER);
+            }
+
+            ps.setBoolean(9, u.isActive());
+            ps.setInt(10, u.getUserId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("❌ UPDATE USER FAILED:");
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ==============================
     // MAPPING FUNCTION
     // ==============================
