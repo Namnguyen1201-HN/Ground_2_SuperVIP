@@ -49,6 +49,13 @@
                                     <span class="custom-radio"></span>
                                     Đã nghỉ
                                 </label>
+                                <label class="radio-container">
+                                    <input type="radio" name="status" value="pending"
+                                           <%= "pending".equals(request.getAttribute("selectedStatus")) ? "checked" : "" %>
+                                           onchange="this.form.submit()" />
+                                    <span class="custom-radio"></span>
+                                    Chờ phê duyệt
+                                </label>           
                             </div>
                         </div>
 
@@ -112,9 +119,7 @@
                         </form>
                         <div class="btn-group">
                             <a href="AddUser" class="btn add">Thêm nhân viên</a>
-                            <a href="ShiftUser" class="btn add">Ca làm</a>
-                            <button type="button" class="btn import">Nhập file</button>
-                            <button type="button" class="btn export">Xuất file</button>
+                            <a href="ShiftUser" class="btn add">Ca làm</a>                          
                         </div>
                     </div>
 
@@ -123,12 +128,12 @@
                             <tr>
                                 <th>Mã nhân viên</th>
                                 <th>Tên nhân viên</th>
-                                <th>Chi nhánh làm việc</th>
+                                <th>Chi nhánh / Kho</th>
                                 <th>Chức danh</th>
                                 <th>SĐT</th>                              
                                 <th>CMND/CCCD</th>
                                 <th>Email</th>
-                                <th>Thao tác</th>
+                                <th style="text-align: center";>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -140,13 +145,30 @@
                             <tr>
                                 <td><%= u.getUserId() %></td>
                                 <td><%= u.getFullName() %></td>
-                                <td><%= u.getBranchName() != null ? u.getBranchName() : "Chưa có" %></td>
+                                <td>
+                                    <% 
+                                        String icon = "";
+                                        String displayLocation = "Chưa có";
+                                        if (u.getRoleName() != null) {
+                                            if (u.getRoleName().toLowerCase().contains("chi nhánh") || u.getRoleName().toLowerCase().contains("bán hàng")) {
+                                                icon = "<i class='fas fa-building'></i> ";
+                                                displayLocation = (u.getBranchName() != null) ? u.getBranchName() : "Chưa có chi nhánh";
+                                            } else if (u.getRoleName().toLowerCase().contains("kho")) {
+                                                icon = "<i class='fas fa-warehouse'></i> ";
+                                                displayLocation = (u.getWarehouseName() != null) ? u.getWarehouseName() : "Chưa có kho";
+                                            }
+                                        }
+                                    %>
+                                    <%= icon %><%= displayLocation %>
+                                </td>
                                 <td><%= u.getRoleName() != null ? u.getRoleName() : "Chưa có" %></td>
                                 <td><%= u.getPhone() != null ? u.getPhone() : "Chưa có" %></td>                               
                                 <td><%= u.getIdentificationId() != null ? u.getIdentificationId() : "Chưa có" %></td>
                                 <td><%= u.getEmail() != null ? u.getEmail() : "Chưa có" %></td>
-                                <td>
-                                    <a href="EditUser?userId=<%= u.getUserId() %>" class="btn edit">Chi tiết</a>
+                                <td class="action-cell">
+                                    <a href="EditUser?userId=<%= u.getUserId() %>" class="btn-detail">
+                                        <i class="fas fa-eye"></i> Chi tiết
+                                    </a>
                                 </td>
                             </tr>
                             <%

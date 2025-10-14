@@ -10,11 +10,9 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
-@WebServlet(name="AddUserController", urlPatterns={"/AddUser"})
+@WebServlet(name = "AddUserController", urlPatterns = {"/AddUser"})
 public class AddUserController extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
@@ -45,8 +43,16 @@ public class AddUserController extends HttpServlet {
             u.setIdentificationId(request.getParameter("identificationId"));
             u.setAddress(request.getParameter("address"));
             u.setAvaUrl(request.getParameter("avaUrl"));
-            u.setActive("1".equals(request.getParameter("isActive")));
             u.setRoleId(Integer.parseInt(request.getParameter("roleId")));
+
+            // ⚙️ Xử lý trạng thái (0,1,2)
+            String isActiveParam = request.getParameter("isActive");
+            if (isActiveParam != null && !isActiveParam.isEmpty()) {
+                u.setIsActive(Integer.parseInt(isActiveParam));
+            } else {
+                // Mặc định nếu không chọn thì là "Chờ phê duyệt"
+                u.setIsActive(2);
+            }
 
             // branch và warehouse có thể null
             String branchParam = request.getParameter("branchId");
@@ -61,7 +67,7 @@ public class AddUserController extends HttpServlet {
             // gender và dob
             String gender = request.getParameter("gender");
             if (gender != null && !gender.isEmpty()) {
-                u.setGender("1".equals(gender));
+                u.setGender("1".equals(gender)); // 1 = Nam, 0 = Nữ
             }
             String dob = request.getParameter("dob");
             if (dob != null && !dob.isEmpty()) {
@@ -70,7 +76,7 @@ public class AddUserController extends HttpServlet {
 
             boolean created = userDAO.insertUser(u);
             if (created) {
-                response.sendRedirect("NhanVien");
+                response.sendRedirect("NhanVien?success=add");
             } else {
                 request.setAttribute("error", "Không thể thêm nhân viên!");
                 doGet(request, response);

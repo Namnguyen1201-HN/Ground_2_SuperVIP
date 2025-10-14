@@ -74,6 +74,20 @@ public class UserDAO extends DataBaseContext {
         return null;
     }
 
+    public Integer getShiftIdByUserId(int userId) {
+        String sql = "SELECT ShiftID FROM UserShift WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("ShiftID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public User authenticate(String email, String password) {
         try (PreparedStatement ps = connection.prepareStatement(AUTHENTICATE_USER)) {
             ps.setString(1, email);
@@ -118,7 +132,7 @@ public class UserDAO extends DataBaseContext {
                 ps.setNull(6, Types.INTEGER);
             }
             ps.setInt(7, u.getRoleId());
-            ps.setBoolean(8, u.isActive());
+            ps.setInt(8, u.getIsActive());
             if (u.getGender() != null) {
                 ps.setBoolean(9, u.getGender());
             } else {
@@ -229,7 +243,7 @@ public class UserDAO extends DataBaseContext {
             }
 
             // Trạng thái
-            ps.setBoolean(10, u.isActive());
+            ps.setInt(10, u.getIsActive());
 
             // UserID (điều kiện WHERE)
             ps.setInt(11, u.getUserId());
@@ -243,6 +257,45 @@ public class UserDAO extends DataBaseContext {
         return false;
     }
 
+    // 🔹 Cập nhật hoặc thêm ca làm cho nhân viên
+    public void updateUserShift(int userId, int shiftId) {
+        // Nếu nhân viên đã có ca → cập nhật; chưa có → thêm mới
+        String checkSql = "SELECT COUNT(*) FROM UserShift WHERE UserID = ?";
+        String insertSql = "INSERT INTO UserShift (UserID, ShiftID) VALUES (?, ?)";
+        String updateSql = "UPDATE UserShift SET ShiftID = ? WHERE UserID = ?";
+
+        try (PreparedStatement checkPs = connection.prepareStatement(checkSql)) {
+            checkPs.setInt(1, userId);
+            ResultSet rs = checkPs.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                try (PreparedStatement ps = connection.prepareStatement(updateSql)) {
+                    ps.setInt(1, shiftId);
+                    ps.setInt(2, userId);
+                    ps.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement ps = connection.prepareStatement(insertSql)) {
+                    ps.setInt(1, userId);
+                    ps.setInt(2, shiftId);
+                    ps.executeUpdate();
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+// 🔹 Xóa ca làm khi nhân viên không còn được phân ca
+    public void deleteUserShift(int userId) {
+        String sql = "DELETE FROM UserShift WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     // ==============================
     // MAPPING FUNCTION
     // ==============================
@@ -254,7 +307,7 @@ public class UserDAO extends DataBaseContext {
         u.setPhone(rs.getString("Phone"));
         u.setPasswordHash(rs.getString("PasswordHash"));
         u.setRoleId(rs.getInt("RoleID"));
-        u.setActive(rs.getBoolean("IsActive"));
+        u.setIsActive(rs.getInt("IsActive"));
         u.setAvaUrl(rs.getString("AvaUrl"));
         u.setAddress(rs.getString("Address"));
         u.setTaxNumber(rs.getString("TaxNumber"));

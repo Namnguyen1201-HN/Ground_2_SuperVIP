@@ -44,37 +44,43 @@ public class NhanVienController extends HttpServlet {
 
         // ====== LỌC DỮ LIỆU ======
         List<User> filteredUsers = allUsers.stream()
+                // Lọc theo chi nhánh
                 .filter(u -> {
                     if (!"all".equalsIgnoreCase(branch)) {
                         return branch.equalsIgnoreCase(u.getBranchName());
                     }
                     return true;
                 })
+                // Lọc theo vai trò
                 .filter(u -> {
                     if (!"None".equalsIgnoreCase(role)) {
                         return role.equalsIgnoreCase(u.getRoleName());
                     }
                     return true;
                 })
+                // ⚙️ Lọc theo trạng thái
                 .filter(u -> {
                     if (!"all".equalsIgnoreCase(status)) {
-                        if ("active".equalsIgnoreCase(status)) {
-                            return u.isActive();
-                        } else if ("inactive".equalsIgnoreCase(status)) {
-                            return !u.isActive();
+                        switch (status.toLowerCase()) {
+                            case "active":       // Đang làm
+                                return u.getIsActive() == 1;
+                            case "inactive":     // Nghỉ việc
+                                return u.getIsActive() == 0;
+                            case "pending":      // Chờ phê duyệt
+                                return u.getIsActive() == 2;
                         }
                     }
                     return true;
                 })
+                // Lọc theo tìm kiếm
                 .filter(u -> {
                     if (search != null && !search.trim().isEmpty()) {
                         String keyword = search.trim().toLowerCase();
                         if (keyword.matches("\\d+")) {
-                            // tìm theo mã nhân viên chính xác
+                            // tìm theo mã nhân viên
                             int id = Integer.parseInt(keyword);
                             return u.getUserId() == id;
                         } else {
-                            // tìm theo tên, email, sđt
                             return (u.getFullName() != null && u.getFullName().toLowerCase().contains(keyword))
                                     || (u.getEmail() != null && u.getEmail().toLowerCase().contains(keyword))
                                     || (u.getPhone() != null && u.getPhone().toLowerCase().contains(keyword));

@@ -121,6 +121,7 @@
                         <select name="isActive">
                             <option value="1">Đang làm việc</option>
                             <option value="0">Đã nghỉ</option>
+                            <option value="2">Chờ phê duyệt</option>
                         </select>
                     </div>
                 </div>

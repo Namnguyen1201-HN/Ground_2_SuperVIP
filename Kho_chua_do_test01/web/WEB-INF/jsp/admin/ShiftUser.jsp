@@ -72,7 +72,7 @@
                 <table class="table table-bordered table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th><input type="checkbox" id="selectAll"></th>
+                            
                             <th>Mã ca</th>
                             <th>Tên ca làm việc</th>
                             <th>Giờ bắt đầu</th>
@@ -100,7 +100,7 @@
                                     String timeLength = hours + " giờ" + (minutes > 0 ? " " + minutes + " phút" : "");
                         %>
                         <tr>
-                            <td><input type="checkbox" name="shiftCheck" value="<%=shift.getShiftID()%>"></td>
+                            
                             <td><%=shift.getShiftID()%></td>
                             <td><%=shift.getShiftName()%></td>
                             <td class="time-display"><%=shift.getStartTime()%></td>

@@ -12,7 +12,7 @@ public class User {
     private Integer branchId;
     private Integer warehouseId;
     private int roleId;
-    private boolean isActive;
+    private int isActive;
     private Boolean gender; // TRUE = Nam, FALSE = Nữ
     private String avaUrl;
     private String address;
@@ -92,12 +92,12 @@ public class User {
         this.roleId = roleId;
     }
 
-    public boolean isActive() {
+    public int getIsActive() {
         return isActive;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
+    public void setIsActive(int isActive) {
+        this.isActive = isActive;
     }
 
     public Boolean getGender() {

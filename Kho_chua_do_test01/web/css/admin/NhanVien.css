@@ -1,171 +1,172 @@
 /* Reset & base */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif, Arial, sans-serif;
-  color: #333;
-  background: #f5f7fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif, Arial, sans-serif;
+    color: #333;
+    background: #f5f7fa;
 }
 
 /* Layout */
 .container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 /* Content area */
 .content {
-  display: flex;
-  flex: 1;
+    display: flex;
+    flex: 1;
 }
 
 /* Sidebar */
 .sidebar {
-  width: 240px;
-  background: white;
-  padding: 20px;
-  border-right: 1px solid #e0e0e0;
+    width: 240px;
+    background: white;
+    padding: 20px;
+    border-right: 1px solid #e0e0e0;
 }
 
 .sidebar h2 {
-  font-size: 18px;
-  margin-bottom: 16px;
+    font-size: 18px;
+    margin-bottom: 16px;
 }/*
 
-*/.filter-group select,
+*/
+.filter-group select,
 .filter-group input[type="text"] {
-  width: 100%;
-  padding: 6px 8px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 /* Main */
 .main-content {
-  flex: 1;
-  padding: 20px;
+    flex: 1;
+    padding: 20px;
 }
 
 .toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
 }
 
 .search-bar input {
-  width: 300px;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+    width: 300px;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 .btn-group .btn {
-  background: white;
-  border: 1px solid #ccc;
-  margin-left: 8px;
-  padding: 6px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 4px;
+    background: white;
+    border: 1px solid #ccc;
+    margin-left: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
 }
 
 .btn-group .btn.add {
-  border-color: #2979ff;
-  color: #2979ff;
+    border-color: #2979ff;
+    color: #2979ff;
 }
 
 /* Table */
 .emp-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
 }
 
 .emp-table thead {
-  background: #f0f0f0;
+    background: #f0f0f0;
 }
 
 .emp-table th {
-  padding: 12px;
-  text-align: left;
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .emp-table td {
-  padding: 12px;
-  border-bottom: 1px solid #e0e0e0;
-  font-size: 14px;
+    padding: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 14px;
 }
 
 .emp-table .empty {
-  text-align: center;
-  color: #888;
+    text-align: center;
+    color: #888;
 }
 
 /* Info bar */
 .info-bar {
-  background: #fff3cd;
-  padding: 12px 20px;
-  text-align: center;
-  font-size: 14px;
-  color: #856404;
+    background: #fff3cd;
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #856404;
 }
-        
+
 .filter-group {
-  margin-bottom: 16px;
+    margin-bottom: 16px;
 }
 
 .filter-group > label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 .status-radios .radio-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  position: relative;
-  user-select: none;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
 }
 
 /* Ẩn radio mặc định */
 .status-radios input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
 }
 
 /* Khung và dấu chấm tùy chỉnh */
 .custom-radio {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #2979ff;
-  border-radius: 50%;
-  margin-right: 8px;
-  display: inline-block;
-  transition: background-color 0.2s ease;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #2979ff;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-block;
+    transition: background-color 0.2s ease;
 }
 
 /* Khi input được chọn, tô màu nền */
 .status-radios input[type="radio"]:checked + .custom-radio {
-  background-color: #2979ff;
+    background-color: #2979ff;
 }
 
 /* Khoảng cách giữa radio và label */
 .radio-container {
-  margin-right: 24px;
+    margin-right: 24px;
 }
 
 /* Header positioning fix */
@@ -231,3 +232,157 @@ body {
     background: #f2f2f2;
     color: #007bff;
 }
+
+/* Nút Chi tiết */
+.btn-detail {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #2563eb; /* xanh dương */
+    color: #fff;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    font-size: 14px;
+}
+
+.btn-detail i {
+    font-size: 14px;
+}
+
+.btn-detail:hover {
+    background-color: #1d4ed8; /* xanh đậm hơn khi hover */
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-detail:active {
+    transform: scale(0.97);
+}
+
+/* Nếu bạn muốn căn giữa các nút thao tác trong cột */
+.action-cell {
+    text-align: center;
+}
+
+/* =============================== */
+/* SIDEBAR (Bộ lọc nhân viên) */
+/* =============================== */
+
+.sidebar {
+    width: 260px;
+    background: #ffffff;
+    padding: 24px 20px;
+    border-right: 1px solid #e5e7eb;
+    border-radius: 8px 0 0 8px;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.03);
+}
+
+.sidebar h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Nhóm bộ lọc */
+.filter-group {
+    margin-bottom: 20px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 14px;
+}
+
+/* Radio group */
+.status-radios .radio-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #374151;
+    transition: color 0.2s ease;
+}
+
+.status-radios .radio-container:hover {
+    color: #2563eb;
+}
+
+/* Custom radio */
+.custom-radio {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #2563eb;
+    border-radius: 50%;
+    margin-right: 8px;
+    transition: all 0.2s ease;
+}
+
+.status-radios input[type="radio"] {
+    display: none;
+}
+
+.status-radios input[type="radio"]:checked + .custom-radio {
+    background-color: #2563eb;
+    box-shadow: 0 0 0 2px #bfdbfe;
+}
+
+/* Dropdown filters */
+.filter-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #f9fafb;
+    font-size: 14px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.filter-group select:hover {
+    border-color: #2563eb;
+    background: #ffffff;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px #bfdbfe;
+}
+
+/* Form tổng thể */
+.sidebar form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Bo góc + bóng mờ nhẹ cho sidebar */
+.sidebar {
+    border-right: 1px solid #e5e7eb;
+    box-shadow: inset -1px 0 0 #f1f5f9;
+}
+
+/* Khi màn hình nhỏ — cho sidebar xuống dưới */
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+}
+
+
+
+

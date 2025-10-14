@@ -27,7 +27,6 @@
 
             <!-- FORM CHỈNH SỬA NHÂN VIÊN -->
             <form action="EditUser" method="post" id="editUserForm">
-                <!-- Ẩn action và userID để servlet xử lý -->
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="userID" value="<%= user.getUserId() %>">
 
@@ -91,9 +90,9 @@
                         <!-- Vai trò -->
                         <div class="form-group half">
                             <label>Chức danh</label>
-                            <select name="roleID">
+                            <select name="roleID" id="roleSelect">
                                 <% if (roles != null) {
-                                for (Role r : roles) { %>
+                                    for (Role r : roles) { %>
                                 <option value="<%= r.getRoleId() %>" <%= (user.getRoleId() == r.getRoleId()) ? "selected" : "" %>>
                                     <%= r.getRoleName() %>
                                 </option>
@@ -102,10 +101,10 @@
                         </div>
 
                         <!-- Chi nhánh làm việc -->
-                        <div class="form-group half">
+                        <div class="form-group half" id="branchField" style="<%= (user.getRoleId() == 1) ? "" : "display:none;" %>">
                             <label>Chi nhánh làm việc</label>
                             <select name="branchID">
-                                <option value="">-- Không thuộc chi nhánh nào --</option>
+                                <option value="">-- Chưa chọn chi nhánh --</option>
                                 <% if (branches != null) {
             for (Branch b : branches) { %>
                                 <option value="<%= b.getBranchId() %>"
@@ -116,22 +115,38 @@
                             </select>
                         </div>
 
+                        <!-- Kho làm việc -->
+                        <div class="form-group half" id="warehouseField" style="<%= (user.getRoleId() == 3) ? "" : "display:none;" %>">
+                            <label>Kho làm việc</label>
+                            <select name="warehouseID">
+                                <option value="">-- Chưa chọn kho --</option>
+                                <% if (warehouses != null) {
+            for (Warehouse w : warehouses) { %>
+                                <option value="<%= w.getWarehouseId() %>"
+                                        <%= (user.getWarehouseId() != null && user.getWarehouseId().equals(w.getWarehouseId())) ? "selected" : "" %>>
+                                    <%= w.getWarehouseName() %>
+                                </option>
+                                <% } } %>
+                            </select>
+                        </div>
+
                         <!-- Trạng thái -->
                         <div class="form-group half">
                             <label>Trạng thái</label>
                             <select name="isActive">
-                                <option value="1" <%= user.isActive() ? "selected" : "" %>>Đang làm việc</option>
-                                <option value="0" <%= !user.isActive() ? "selected" : "" %>>Nghỉ việc</option>
+                                <option value="1" <%= (user.getIsActive() == 1) ? "selected" : "" %>>Đang làm việc</option>
+                                <option value="0" <%= (user.getIsActive() == 0) ? "selected" : "" %>>Nghỉ việc</option>
+                                <option value="2" <%= (user.getIsActive() == 2) ? "selected" : "" %>>Chờ phê duyệt</option>
                             </select>
                         </div>
 
                         <!-- Ca làm -->
                         <div class="form-group half">
-                            <label>Ca làm (chỉ hiển thị)</label>
-                            <select name="shiftID" disabled>
+                            <label>Ca làm</label>
+                            <select name="shiftID">
                                 <option value="">-- Chưa phân ca --</option>
                                 <% if (shifts != null) {
-            for (Shift s : shifts) { %>
+                                    for (Shift s : shifts) { %>
                                 <option value="<%= s.getShiftID() %>"
                                         <%= (user.getShiftID() != null && user.getShiftID().equals(s.getShiftID())) ? "selected" : "" %>>
                                     <%= s.getShiftName() %>
@@ -139,7 +154,6 @@
                                 <% } } %>
                             </select>
                         </div>
-
                     </div>
                 </div>
 
@@ -161,14 +175,40 @@
                         <i class="fas fa-trash"></i> Sa thải
                     </a>
                 </div>
-            </form> <!-- Kết thúc form editUserForm -->
+            </form>
 
-            <!-- Form xóa nhân viên (đặt ngoài form chính để không bị lỗi nested form) -->
+            <!-- Form xóa nhân viên (POST riêng để tránh nested form) -->
             <form id="deleteForm" action="EditUser" method="post" style="display:none;">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="userId" value="<%= user.getUserId() %>">
             </form>
-
         </div>
+
+        <!-- Script hiển thị động phần Chi nhánh / Kho -->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const roleSelect = document.getElementById("roleSelect");
+                const branchField = document.getElementById("branchField");
+                const warehouseField = document.getElementById("warehouseField");
+
+                function toggleFields() {
+                    const role = parseInt(roleSelect.value);
+
+                    // Nếu là Quản lý kho -> hiện kho
+                    if (role === 3) {
+                        branchField.style.display = "none";
+                        warehouseField.style.display = "block";
+                    }
+                    // Các vai trò khác (quản lý chi nhánh, nhân viên bán hàng, v.v...) -> hiện chi nhánh
+                    else {
+                        branchField.style.display = "block";
+                        warehouseField.style.display = "none";
+                    }
+                }
+
+                roleSelect.addEventListener("change", toggleFields);
+                toggleFields(); // Chạy khi load trang
+            });
+        </script>
     </body>
 </html>

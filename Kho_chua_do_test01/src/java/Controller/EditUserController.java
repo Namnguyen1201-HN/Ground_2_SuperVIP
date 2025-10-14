@@ -12,7 +12,6 @@ import Model.Warehouse;
 import Model.Shift;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -39,21 +38,30 @@ public class EditUserController extends HttpServlet {
             UserDAO userDAO = new UserDAO();
             RoleDAO roleDAO = new RoleDAO();
             BranchDAO branchDAO = new BranchDAO();
+            WarehouseDAO warehouseDAO = new WarehouseDAO();
             ShiftDAO shiftDAO = new ShiftDAO();
 
             User user = userDAO.getUserById(userId);
-            List<Role> roles = roleDAO.getAllRoles();
-            List<Branch> branches = branchDAO.getAllBranches();
-            List<Shift> shifts = shiftDAO.getAll();
-
             if (user == null) {
                 response.sendRedirect("NhanVien");
                 return;
             }
 
+            // 🔹 Lấy danh sách ca làm + ca hiện tại
+            List<Shift> shifts = shiftDAO.getAll();
+            Integer currentShiftId = userDAO.getShiftIdByUserId(userId);
+            user.setShiftID(currentShiftId);
+
+            // 🔹 Lấy danh sách role, branch, warehouse
+            List<Role> roles = roleDAO.getAllRoles();
+            List<Branch> branches = branchDAO.getAllBranches();
+            List<Warehouse> warehouses = warehouseDAO.getAllWarehouses();
+
+            // 🔹 Đẩy dữ liệu sang JSP
             request.setAttribute("user", user);
             request.setAttribute("roles", roles);
             request.setAttribute("branches", branches);
+            request.setAttribute("warehouses", warehouses);
             request.setAttribute("shifts", shifts);
 
             request.getRequestDispatcher("/WEB-INF/jsp/admin/EditUser.jsp").forward(request, response);
@@ -73,20 +81,13 @@ public class EditUserController extends HttpServlet {
         UserDAO userDAO = new UserDAO();
 
         try {
-            // ========== SA THẢI NHÂN VIÊN ==========
             if ("delete".equals(action)) {
                 int userId = Integer.parseInt(request.getParameter("userId"));
                 boolean deleted = userDAO.deleteUser(userId);
-
-                if (deleted) {
-                    response.sendRedirect("NhanVien?success=delete");
-                } else {
-                    response.sendRedirect("NhanVien?error=delete_failed");
-                }
+                response.sendRedirect(deleted ? "NhanVien?success=delete" : "NhanVien?error=delete_failed");
                 return;
             }
 
-            // ========== CẬP NHẬT NHÂN VIÊN ==========
             if ("update".equals(action)) {
                 int userId = Integer.parseInt(request.getParameter("userID"));
                 String fullName = request.getParameter("fullName");
@@ -98,6 +99,7 @@ public class EditUserController extends HttpServlet {
                 String roleParam = request.getParameter("roleID");
                 String branchParam = request.getParameter("branchID");
                 String warehouseParam = request.getParameter("warehouseID");
+                String shiftParam = request.getParameter("shiftID");
                 String isActiveParam = request.getParameter("isActive");
 
                 User user = userDAO.getUserById(userId);
@@ -106,56 +108,50 @@ public class EditUserController extends HttpServlet {
                     return;
                 }
 
-                // --- Gán dữ liệu mới ---
+                // --- Cập nhật thông tin cơ bản ---
                 user.setFullName(fullName);
                 user.setEmail(email);
                 user.setPhone(phone);
                 user.setAddress(address);
 
-                // Giới tính
                 if (genderParam != null) {
                     user.setGender("Nam".equalsIgnoreCase(genderParam));
-                } else {
-                    user.setGender(null);
                 }
 
-                // Ngày sinh
-                if (dobParam != null && !dobParam.isEmpty()) {
-                    user.setDob(java.sql.Date.valueOf(dobParam));
-                } else {
-                    user.setDob(null);
-                }
+                user.setDob((dobParam != null && !dobParam.isEmpty()) ? java.sql.Date.valueOf(dobParam) : null);
 
-                // Vai trò
                 if (roleParam != null && !roleParam.isEmpty()) {
                     user.setRoleId(Integer.parseInt(roleParam));
                 }
 
-                // Chi nhánh
-                if (branchParam != null && !branchParam.isEmpty()) {
-                    user.setBranchId(Integer.parseInt(branchParam));
-                } else {
-                    user.setBranchId(null);
+                // ⚙️ Sửa lại: set theo kiểu int (0,1,2)
+                if (isActiveParam != null && !isActiveParam.isEmpty()) {
+                    user.setIsActive(Integer.parseInt(isActiveParam));
                 }
 
-                // Kho
-                if (warehouseParam != null && !warehouseParam.isEmpty()) {
-                    user.setWarehouseId(Integer.parseInt(warehouseParam));
-                } else {
+                // --- Cập nhật chi nhánh / kho theo vai trò ---
+                if (user.getRoleId() == 3) { // Quản lý kho
+                    user.setWarehouseId(warehouseParam != null && !warehouseParam.isEmpty()
+                            ? Integer.parseInt(warehouseParam) : null);
+                    user.setBranchId(null);
+                } else { // ✅ Các vai trò còn lại đều thuộc chi nhánh
+                    user.setBranchId(branchParam != null && !branchParam.isEmpty()
+                            ? Integer.parseInt(branchParam) : null);
                     user.setWarehouseId(null);
                 }
 
-                // Trạng thái
-                user.setActive("1".equals(isActiveParam));
-
-                // --- Cập nhật ---
+                // --- Cập nhật thông tin ---
                 boolean updated = userDAO.updateUser(user);
 
-                if (updated) {
-                    response.sendRedirect("NhanVien?success=update");
+                // --- Cập nhật ca làm ---
+                if (shiftParam != null && !shiftParam.isEmpty()) {
+                    int newShiftID = Integer.parseInt(shiftParam);
+                    userDAO.updateUserShift(userId, newShiftID);
                 } else {
-                    response.sendRedirect("NhanVien?error=update_failed");
+                    userDAO.deleteUserShift(userId);
                 }
+
+                response.sendRedirect(updated ? "NhanVien?success=update" : "NhanVien?error=update_failed");
             }
 
         } catch (Exception e) {
@@ -166,6 +162,6 @@ public class EditUserController extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Hiển thị, lưu và xóa nhân viên";
+        return "Hiển thị, cập nhật và xóa nhân viên, với logic vai trò và ca làm";
     }
 }
