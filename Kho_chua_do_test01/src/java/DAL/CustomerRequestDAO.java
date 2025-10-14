@@ -67,7 +67,7 @@ public class CustomerRequestDAO extends DataBaseContext {
         }
         p.setCreatedAt(rs.getTimestamp("CreatedAt"));
         p.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
-        return p;
+        return p;  
     }
 
     public Product getProductById(int id) {
