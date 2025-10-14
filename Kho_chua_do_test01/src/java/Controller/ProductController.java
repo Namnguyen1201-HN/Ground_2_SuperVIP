@@ -1,10 +1,15 @@
 package Controller;
 
 import DAL.ProductDAO;
+import DAL.CategoryDAO;
+import Model.Category;
 import Model.Product;
+
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -25,7 +30,7 @@ public class ProductController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // (khuyến nghị) đảm bảo UTF-8 nếu cần
+        // đảm bảo UTF-8
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
@@ -34,11 +39,11 @@ public class ProductController extends HttpServlet {
 
         try {
             switch (action) {
-                case "add"   -> showAddForm(request, response);
-                case "edit"  -> showEditForm(request, response);
-                case "delete"-> deleteProduct(request, response);
-                case "list"  -> listProducts(request, response);
-                default       -> listProducts(request, response);
+                case "add" -> showAddForm(request, response);
+                case "edit" -> showEditForm(request, response);
+                case "delete" -> deleteProduct(request, response);
+                case "list" -> listProducts(request, response);
+                default -> listProducts(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,7 +64,7 @@ public class ProductController extends HttpServlet {
             switch (action) {
                 case "insert" -> insertProduct(request, response);
                 case "update" -> updateProduct(request, response);
-                default        -> doGet(request, response);
+                default -> doGet(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,42 +73,53 @@ public class ProductController extends HttpServlet {
     }
 
     /* ========================= LISTING ========================= */
-
     private void listProducts(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         String keyword = trimToNull(request.getParameter("keyword"));
-        String categoryIdParam = request.getParameter("categoryId");
-        Integer categoryId = parseIntOrNull(categoryIdParam);
 
-        // stock: all | in | out | belowMin | aboveMax (lọc theo TỔNG tồn kho hệ thống)
+        // HỖ TRỢ NHIỀU CATEGORY:
+        // - Nếu UI gửi nhiều checkbox/select cùng name=categoryId -> dùng getParameterValues.
+        // - Nếu UI gửi 1 chuỗi CSV (?categoryId=1,2,3) -> parse thêm (tùy bạn dùng hay không).
+        String[] rawCatIds = request.getParameterValues("categoryId");
+        List<Integer> categoryIds = parseIntList(rawCatIds);
+
+        // (tùy chọn) hỗ trợ thêm dạng CSV trong 1 param duy nhất
+        if ((categoryIds == null || categoryIds.isEmpty())) {
+            String categoryIdCsv = trimToNull(request.getParameter("categoryId"));
+            List<Integer> fromCsv = parseCsvIntList(categoryIdCsv);
+            if (fromCsv != null && !fromCsv.isEmpty()) {
+                categoryIds = fromCsv;
+            }
+        }
+
+        // stock: all | in | out | belowMin | aboveMax
         String stock = request.getParameter("stock");
         if (stock == null || stock.isBlank()) stock = "all";
 
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
-        // Giữ nguyên API cũ: trả về List<Product> (không kèm TotalQty)
-        List<Product> products = productDAO.findProductsWithThreshold(categoryId, keyword, stock, threshold);
+        // DAO MỚI: nhận List<Integer> categoryIds
+        List<Product> products = productDAO.findProductsWithThreshold(categoryIds, keyword, stock, threshold);
 
-        // Nếu bạn muốn kèm tổng tồn kho cho UI:
-        // var productsWithStock = productDAO.findProductsWithThresholdWithStock(categoryId, keyword, stock, threshold);
-        // request.setAttribute("productsWithStock", productsWithStock);
-         
+        // Đẩy dữ liệu ra view
         request.setAttribute("products", products);
         request.setAttribute("keyword", keyword);
-        request.setAttribute("selectedCategoryId", categoryIdParam);
+        request.setAttribute("selectedCategoryIds", categoryIds); // để JSP giữ trạng thái chọn
         request.setAttribute("stock", stock);
         request.setAttribute("stockThreshold", threshold);
 
+        CategoryDAO categoryDAO = new CategoryDAO();
+        List<Category> categories = categoryDAO.getAll();
+        request.setAttribute("categories", categories);
+
         request.getRequestDispatcher("/WEB-INF/jsp/admin/product.jsp").forward(request, response);
-        
     }
 
     /* ========================= FORMS ========================= */
-
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         request.setAttribute("action", "insert");
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/test.jsp").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
@@ -124,12 +140,10 @@ public class ProductController extends HttpServlet {
     }
 
     /* ========================= CRUD ========================= */
-
     private void insertProduct(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         Product p = extractProductFromRequest(request);
         boolean ok = productDAO.insertProduct(p);
-        // Bạn có thể set message theo ok/false
         response.sendRedirect("product?action=list");
     }
 
@@ -153,25 +167,33 @@ public class ProductController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu hoặc sai định dạng id");
             return;
         }
-        boolean ok = productDAO.deleteProduct(id); // chỉ xóa khi không còn ProductDetails tham chiếu
+        boolean ok = productDAO.deleteProduct(id);
         response.sendRedirect("product?action=list");
     }
 
     /* ========================= HELPERS ========================= */
-
     private Integer parseIntOrNull(String s) {
-        try { return (s == null || s.isBlank()) ? null : Integer.valueOf(s.trim()); }
-        catch (NumberFormatException e) { return null; }
+        try {
+            return (s == null || s.isBlank()) ? null : Integer.valueOf(s.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private int parseIntOrDefault(String s, int def) {
-        try { return (s == null || s.isBlank()) ? def : Integer.parseInt(s.trim()); }
-        catch (NumberFormatException e) { return def; }
+        try {
+            return (s == null || s.isBlank()) ? def : Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            return def;
+        }
     }
 
     private BigDecimal parseBigDecimalOrNull(String s) {
-        try { return (s == null || s.isBlank()) ? null : new BigDecimal(s.trim()); }
-        catch (NumberFormatException e) { return null; }
+        try {
+            return (s == null || s.isBlank()) ? null : new BigDecimal(s.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private String trimToNull(String s) {
@@ -180,9 +202,30 @@ public class ProductController extends HttpServlet {
         return t.isEmpty() ? null : t;
     }
 
+    // NEW: parse mảng String -> List<Integer>
+    private List<Integer> parseIntList(String[] arr) {
+        if (arr == null || arr.length == 0) return null;
+        List<Integer> ids = new ArrayList<>();
+        for (String s : arr) {
+            try {
+                if (s != null && !s.isBlank()) {
+                    ids.add(Integer.valueOf(s.trim()));
+                }
+            } catch (NumberFormatException ignore) { }
+        }
+        return ids.isEmpty() ? null : ids;
+    }
+
+    // (tùy chọn) parse "1,2,3" -> List<Integer>
+    private List<Integer> parseCsvIntList(String csv) {
+        if (csv == null || csv.isBlank()) return null;
+        String[] parts = csv.split(",");
+        return parseIntList(parts);
+    }
+
     /**
-     * Map form -> Product tương thích DAO mới:
-     *  - Cho phép các trường DECIMAL/INT/BOOLEAN là NULL (DAO sẽ set NULL an toàn về DB).
+     * Map form -> Product tương thích DAO:
+     * Cho phép DECIMAL/INT/BOOLEAN là NULL (DAO sẽ set NULL an toàn về DB).
      */
     private Product extractProductFromRequest(HttpServletRequest request) {
         Product p = new Product();
@@ -190,7 +233,7 @@ public class ProductController extends HttpServlet {
 
         // INT (nullable)
         p.setBrandId(parseIntOrNull(request.getParameter("brandId")));
-        p.setCategoryId(parseIntOrNull(request.getParameter("categoryId")));
+        p.setCategoryId(parseIntOrNull(request.getParameter("categoryId"))); // đây là category của SP (1 giá trị), KHÁC với filter nhiều category
         p.setSupplierId(parseIntOrNull(request.getParameter("supplierId")));
 
         // DECIMAL (nullable)
@@ -200,7 +243,7 @@ public class ProductController extends HttpServlet {
 
         p.setImageUrl(trimToNull(request.getParameter("imageUrl")));
 
-        // BOOLEAN (nullable): nếu checkbox không gửi lên -> để NULL (không ép false)
+        // BOOLEAN (nullable)
         String rawIsActive = request.getParameter("isActive");
         Boolean isActive = null;
         if (rawIsActive != null) {
@@ -211,4 +254,3 @@ public class ProductController extends HttpServlet {
         return p;
     }
 }
-

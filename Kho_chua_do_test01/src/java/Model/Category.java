@@ -1,17 +1,32 @@
 package Model;
 
+/**
+ * Model tương ứng với bảng Categories
+ * CREATE TABLE Categories (
+ *     CategoryID INT PRIMARY KEY,
+ *     CategoryName NVARCHAR(100)
+ * );
+ */
 public class Category {
-
-    private int categoryId;
+    private int categoryID;
     private String categoryName;
-    private String description;
 
-    public int getCategoryId() {
-        return categoryId;
+    // --- Constructors ---
+    public Category() {
     }
 
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
+    public Category(int categoryID, String categoryName) {
+        this.categoryID = categoryID;
+        this.categoryName = categoryName;
+    }
+
+    // --- Getters và Setters ---
+    public int getCategoryID() {
+        return categoryID;
+    }
+
+    public void setCategoryID(int categoryID) {
+        this.categoryID = categoryID;
     }
 
     public String getCategoryName() {
@@ -22,11 +37,12 @@ public class Category {
         this.categoryName = categoryName;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    // --- toString() để debug ---
+    @Override
+    public String toString() {
+        return "Category{" +
+                "categoryID=" + categoryID +
+                ", categoryName='" + categoryName + '\'' +
+                '}';
     }
 }

@@ -1,4 +1,3 @@
-
 package DAL;
 
 import Model.Product;
@@ -6,20 +5,19 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * ProductDAO — tương thích schema mới:
  *  - Bảng Products: (ProductID, ProductName, BrandID, CategoryID, SupplierID,
  *    CostPrice, RetailPrice, ImageURL, VAT, CreatedAt, IsActive)
- *  - Không còn Quantity/ExpiryDate/UpdatedAt trong Products.
- *  - Tồn kho nằm ở InventoryProducts/WarehouseProducts (tổng theo hệ thống hoặc theo chi nhánh/kho nếu cần).
+ *  - Tồn kho tổng nằm ở InventoryProducts/ProductDetails.
  */
 public class ProductDAO extends DataBaseContext {
 
     /* ===================== READ ===================== */
 
-    // Lấy toàn bộ danh sách sản phẩm (chỉ thông tin bảng Products)
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
         String sql = """
@@ -34,13 +32,11 @@ public class ProductDAO extends DataBaseContext {
                 list.add(mapRowToProduct(rs));
             }
         } catch (SQLException e) {
-            // TODO: dùng logger của bạn thay vì printStackTrace
             e.printStackTrace();
         }
         return list;
     }
 
-    // Lấy sản phẩm theo ID
     public Product getProductById(int id) {
         String sql = """
             SELECT ProductID, ProductName, BrandID, CategoryID, SupplierID,
@@ -58,7 +54,6 @@ public class ProductDAO extends DataBaseContext {
         return null;
     }
 
-    // Tìm kiếm theo tên
     public List<Product> searchProductsByName(String keyword) {
         List<Product> list = new ArrayList<>();
         String sql = """
@@ -79,7 +74,6 @@ public class ProductDAO extends DataBaseContext {
         return list;
     }
 
-    // Lấy sản phẩm theo CategoryID
     public List<Product> getProductsByCategory(int categoryId) {
         List<Product> list = new ArrayList<>();
         String sql = """
@@ -102,7 +96,6 @@ public class ProductDAO extends DataBaseContext {
 
     /* ===================== CREATE ===================== */
 
-    // Thêm sản phẩm (bảng Products)
     public boolean insertProduct(Product p) {
         String sql = """
             INSERT INTO Products
@@ -129,7 +122,6 @@ public class ProductDAO extends DataBaseContext {
 
     /* ===================== UPDATE ===================== */
 
-    // Cập nhật sản phẩm theo ID
     public boolean updateProduct(Product p) {
         String sql = """
             UPDATE Products
@@ -164,7 +156,6 @@ public class ProductDAO extends DataBaseContext {
 
     /* ===================== DELETE ===================== */
 
-    // Xóa sản phẩm theo ID — CHỈ xóa khi không còn ProductDetails tham chiếu
     public boolean deleteProduct(int id) {
         String sql = """
             DELETE FROM Products
@@ -176,18 +167,13 @@ public class ProductDAO extends DataBaseContext {
             ps.setInt(2, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            // Gợi ý: parse e.getErrorCode() để trả message thân thiện cho client
             e.printStackTrace();
         }
         return false;
     }
 
     /* ===================== STOCK FILTER ===================== */
-    /**
-     * Tổng tồn kho hệ thống dựa trên SUM(InventoryProducts.Quantity)
-     *
-     * @return Danh sách Product (không kèm tồn kho). Giữ method cũ để backward-compatible.
-     */
+    /** BẢN CŨ: 1 categoryId (giữ để tương thích) */
     public List<Product> findProductsWithThreshold(Integer categoryId, String keyword, String stock, int threshold) {
         List<Product> list = new ArrayList<>();
 
@@ -211,15 +197,17 @@ public class ProductDAO extends DataBaseContext {
             params.add("%" + keyword.trim() + "%");
         }
 
-        sql.append(" GROUP BY p.ProductID, p.ProductName, p.BrandID, p.CategoryID, p.SupplierID, ")
-           .append(" p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive ");
+        sql.append("""
+            GROUP BY p.ProductID, p.ProductName, p.BrandID, p.CategoryID, p.SupplierID,
+                     p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive
+        """);
 
         switch (stock == null ? "" : stock) {
             case "in"       -> sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) > 0 ");
             case "out"      -> sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) = 0 ");
             case "belowMin" -> { sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) < ? "); params.add(threshold); }
             case "aboveMax" -> { sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) > ? "); params.add(threshold); }
-            default         -> { /* không filter tồn kho */ }
+            default         -> { }
         }
 
         sql.append(" ORDER BY p.ProductID ");
@@ -227,9 +215,7 @@ public class ProductDAO extends DataBaseContext {
         try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    list.add(mapRowToProduct(rs));
-                }
+                while (rs.next()) list.add(mapRowToProduct(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -237,9 +223,90 @@ public class ProductDAO extends DataBaseContext {
         return list;
     }
 
-    /**
-     * Phiên bản trả về cả tổng tồn kho (DTO ProductWithStock) để dùng cho UI.
-     */
+    /** BẢN MỚI: nhiều categoryIds (để controller gọi) */
+    public List<Product> findProductsWithThreshold(List<Integer> categoryIds, String keyword, String stock, int threshold) {
+    // 0) fallback sang bản cũ để chắc chắn đường 1-id vẫn hoạt động
+    if (categoryIds == null || categoryIds.isEmpty()) {
+        return findProductsWithThreshold((Integer) null, keyword, stock, threshold);
+    }
+    if (categoryIds.size() == 1) {
+        return findProductsWithThreshold(categoryIds.get(0), keyword, stock, threshold);
+    }
+
+    List<Product> list = new ArrayList<>();
+
+    // 1) SQL base
+    StringBuilder sql = new StringBuilder("""
+        SELECT p.ProductID, p.ProductName, p.BrandID, p.CategoryID, p.SupplierID,
+               p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive,
+               SUM(ISNULL(ip.Quantity,0)) AS TotalQty
+        FROM Products p
+        LEFT JOIN ProductDetails pd ON pd.ProductID = p.ProductID
+        LEFT JOIN InventoryProducts ip ON ip.ProductDetailID = pd.ProductDetailID
+        WHERE 1=1
+    """);
+
+    // 2) IN (?, ?, ?)
+    sql.append(" AND p.CategoryID IN (")
+       .append(String.join(",", java.util.Collections.nCopies(categoryIds.size(), "?")))
+       .append(") ");
+
+    boolean hasKeyword = keyword != null && !keyword.isBlank();
+    if (hasKeyword) {
+        sql.append(" AND p.ProductName LIKE ? ");
+    }
+
+    sql.append("""
+        GROUP BY p.ProductID, p.ProductName, p.BrandID, p.CategoryID, p.SupplierID,
+                 p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive
+    """);
+
+    boolean hasThreshold = false;
+    String effStock = (stock == null ? "" : stock);
+    switch (effStock) {
+        case "in"  -> sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) > 0 ");
+        case "out" -> sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) = 0 ");
+        case "belowMin" -> { sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) < ? "); hasThreshold = true; }
+        case "aboveMax" -> { sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) > ? "); hasThreshold = true; }
+        default -> { /* no having */ }
+    }
+
+    sql.append(" ORDER BY p.ProductID ");
+
+    try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+        int idx = 1;
+
+        // 3) bind IN params (từng categoryId)
+        for (Integer catId : categoryIds) {
+            ps.setInt(idx++, catId);
+        }
+
+        // 4) bind keyword (nếu có)
+        if (hasKeyword) {
+            ps.setString(idx++, "%" + keyword.trim() + "%");
+        }
+
+        // 5) bind threshold (nếu có HAVING dùng threshold)
+        if (hasThreshold) {
+            ps.setInt(idx++, threshold);
+        }
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowToProduct(rs));
+            }
+        }
+    } catch (SQLException e) {
+        // Gợi ý log thêm để dễ soi
+        e.printStackTrace();
+        // Bạn có thể tạm throw để thấy stacktrace trên trình duyệt:
+        // throw new RuntimeException(e);
+    }
+    return list;
+}
+
+
+    /** BẢN CŨ + STOCK: trả ProductWithStock cho UI */
     public List<ProductWithStock> findProductsWithThresholdWithStock(Integer categoryId, String keyword, String stock, int threshold) {
         List<ProductWithStock> list = new ArrayList<>();
 
@@ -263,8 +330,10 @@ public class ProductDAO extends DataBaseContext {
             params.add("%" + keyword.trim() + "%");
         }
 
-        sql.append(" GROUP BY p.ProductID, p.ProductName, p.BrandID, p.CategoryID, p.SupplierID, ")
-           .append(" p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive ");
+        sql.append("""
+            GROUP BY p.ProductID, p.ProductName, p.BrandID, p.CategoryID, p.SupplierID,
+                     p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive
+        """);
 
         switch (stock == null ? "" : stock) {
             case "in"       -> sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) > 0 ");
@@ -278,6 +347,73 @@ public class ProductDAO extends DataBaseContext {
 
         try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Product prod = mapRowToProduct(rs);
+                    Integer totalQty = rs.getObject("TotalQty") == null ? null : rs.getInt("TotalQty");
+                    if (rs.wasNull()) totalQty = null;
+                    list.add(new ProductWithStock(prod, totalQty));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /** BẢN MỚI + STOCK: nhiều categoryIds */
+    public List<ProductWithStock> findProductsWithThresholdWithStock(List<Integer> categoryIds, String keyword, String stock, int threshold) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return findProductsWithThresholdWithStock((Integer) null, keyword, stock, threshold);
+        }
+        if (categoryIds.size() == 1) {
+            return findProductsWithThresholdWithStock(categoryIds.get(0), keyword, stock, threshold);
+        }
+
+        List<ProductWithStock> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("""
+            SELECT p.ProductID, p.ProductName, p.BrandID, p.CategoryID, p.SupplierID,
+                   p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive,
+                   SUM(ISNULL(ip.Quantity,0)) AS TotalQty
+            FROM Products p
+            LEFT JOIN ProductDetails pd ON pd.ProductID = p.ProductID
+            LEFT JOIN InventoryProducts ip ON ip.ProductDetailID = pd.ProductDetailID
+            WHERE 1=1
+        """);
+        List<Object> params = new ArrayList<>();
+
+        sql.append(" AND p.CategoryID IN (")
+           .append(String.join(",", Collections.nCopies(categoryIds.size(), "?")))
+           .append(") ");
+        params.addAll(categoryIds);
+
+        if (keyword != null && !keyword.isBlank()) {
+            sql.append(" AND p.ProductName LIKE ?");
+            params.add("%" + keyword.trim() + "%");
+        }
+
+        sql.append("""
+            GROUP BY p.ProductID, p.ProductName, p.BrandID, p.CategoryID, p.SupplierID,
+                     p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive
+        """);
+
+        switch (stock == null ? "" : stock) {
+            case "in"       -> sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) > 0 ");
+            case "out"      -> sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) = 0 ");
+            case "belowMin" -> { sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) < ? "); params.add(threshold); }
+            case "aboveMax" -> { sql.append(" HAVING SUM(ISNULL(ip.Quantity,0)) > ? "); params.add(threshold); }
+            default         -> { }
+        }
+
+        sql.append(" ORDER BY p.ProductID ");
+
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Object p : params) {
+                if (p instanceof Integer i) ps.setInt(idx++, i);
+                else ps.setObject(idx++, p);
+            }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Product prod = mapRowToProduct(rs);
@@ -308,7 +444,6 @@ public class ProductDAO extends DataBaseContext {
         int supId = rs.getInt("SupplierID");
         if (!rs.wasNull()) p.setSupplierId(supId);
 
-        // DECIMAL -> BigDecimal (cho phép NULL)
         BigDecimal cost = rs.getBigDecimal("CostPrice");
         p.setCostPrice(cost);
         BigDecimal retail = rs.getBigDecimal("RetailPrice");
