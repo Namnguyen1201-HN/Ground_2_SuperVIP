@@ -3,23 +3,19 @@
 <%@ page import="java.util.List" %>
 <%@ page import="Model.User" %>
 <%@ page import="Model.Branch" %>
-<%@ page import="Model.Department" %>
 <%@ page import="Model.Role" %>
 <html lang="vi">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Danh sách nhân viên</title>
-        <link
-            href="css/admin/NhanVien.css"
-            rel="stylesheet"
-            type="text/css"
-            />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <link href="css/admin/NhanVien.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
-        <%@ include file="../includes/header.jsp" %>
-        <div class="container">            
+        <div class="container">
+
+            <!-- Header -->
+            <%@ include file="../admin/header_admin.jsp" %>
 
             <!-- Sidebar + Main -->
             <div class="content">
@@ -30,7 +26,7 @@
 
                         <!-- Trạng thái -->
                         <div class="filter-group">
-                            <label>Trạng thái nhân viên</label>                         
+                            <label>Trạng thái nhân viên</label>
                             <div class="status-radios">
                                 <label class="radio-container">
                                     <input type="radio" name="status" value="all"
@@ -54,9 +50,9 @@
                                     Đã nghỉ
                                 </label>
                             </div>
-
-                            <!-- Chức danh -->
                         </div>
+
+                        <!-- Chi nhánh -->
                         <div class="filter-group">
                             <select name="branch" onchange="this.form.submit()">
                                 <option value="all" <%= "all".equals(request.getAttribute("selectedBranch")) ? "selected" : "" %>>
@@ -68,7 +64,8 @@
                                     if (branches != null) {
                                         for (Branch b : branches) {
                                 %>
-                                <option value="<%= b.getBranchName() %>" <%= b.getBranchName().equals(selectedBranch) ? "selected" : "" %>>
+                                <option value="<%= b.getBranchName() %>"
+                                        <%= b.getBranchName().equals(selectedBranch) ? "selected" : "" %>>
                                     <%= b.getBranchName() %>
                                 </option>
                                 <%
@@ -77,30 +74,12 @@
                                 %>
                             </select>
                         </div>
-                        <div class="filter-group">
-                            <select name="department" onchange="this.form.submit()">
-                                <option value="all" <%= "all".equals(request.getAttribute("selectedDepartment")) ? "selected" : "" %>>
-                                    Tất cả phòng ban
-                                </option>
-                                <%
-                                    List<Department> departments = (List<Department>) request.getAttribute("departments");
-                                    String selectedDept = (String) request.getAttribute("selectedDepartment");
-                                    if (departments != null) {
-                                        for (Department d : departments) {
-                                %>
-                                <option value="<%= d.getDepartmentName() %>" <%= d.getDepartmentName().equals(selectedDept) ? "selected" : "" %>>
-                                    <%= d.getDepartmentName() %>
-                                </option>
-                                <%
-                                        }
-                                    }
-                                %>
-                            </select>
-                        </div>
+
+                        <!-- Vai trò -->
                         <div class="filter-group">
                             <select name="role" onchange="this.form.submit()">
                                 <option value="None" <%= "None".equals(request.getAttribute("selectedRole")) ? "selected" : "" %>>
-                                    None
+                                    Tất cả vai trò
                                 </option>
                                 <%
                                     List<Role> roles = (List<Role>) request.getAttribute("roles");
@@ -108,7 +87,8 @@
                                     if (roles != null) {
                                         for (Role r : roles) {
                                 %>
-                                <option value="<%= r.getRoleName() %>" <%= r.getRoleName().equals(selectedRole) ? "selected" : "" %>>
+                                <option value="<%= r.getRoleName() %>"
+                                        <%= r.getRoleName().equals(selectedRole) ? "selected" : "" %>>
                                     <%= r.getRoleName() %>
                                 </option>
                                 <%
@@ -125,15 +105,16 @@
                     <div class="toolbar">
                         <form action="NhanVien" method="get" class="search-bar">
                             <div>
-                                <input type="text" name="search" placeholder="Tìm theo mã, tên nhân viên"
+                                <input type="text" name="search"
+                                       placeholder="Tìm theo mã, tên nhân viên"
                                        value="<%= request.getAttribute("searchKeyword") != null ? request.getAttribute("searchKeyword") : "" %>" />
-
                             </div>
                         </form>
                         <div class="btn-group">
                             <a href="AddUser" class="btn add">Thêm nhân viên</a>
-                            <button class="btn import">Nhập file</button>
-                            <button class="btn export">Xuất file</button>
+                            <a href="ShiftUser" class="btn add">Ca làm</a>
+                            <button type="button" class="btn import">Nhập file</button>
+                            <button type="button" class="btn export">Xuất file</button>
                         </div>
                     </div>
 
@@ -143,31 +124,29 @@
                                 <th>Mã nhân viên</th>
                                 <th>Tên nhân viên</th>
                                 <th>Chi nhánh làm việc</th>
-                                <th>Phòng ban</th>
                                 <th>Chức danh</th>
-                                <th>SĐT</th>
+                                <th>SĐT</th>                              
                                 <th>CMND/CCCD</th>
                                 <th>Email</th>
-                                <th>Thao tác</th> 
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             <%
-                                List<Model.User> users = (List<Model.User>) request.getAttribute("users");
+                                List<User> users = (List<User>) request.getAttribute("users");
                                 if (users != null && !users.isEmpty()) {
-                                    for (Model.User u : users) {
+                                    for (User u : users) {
                             %>
                             <tr>
                                 <td><%= u.getUserId() %></td>
                                 <td><%= u.getFullName() %></td>
-                                <td><%= u.getBranchName() != null ? u.getBranchName() : "Chưa có" %></td>   
-                                <td><%= u.getDepartmentName() != null ? u.getDepartmentName() : "Chưa có" %></td>
+                                <td><%= u.getBranchName() != null ? u.getBranchName() : "Chưa có" %></td>
                                 <td><%= u.getRoleName() != null ? u.getRoleName() : "Chưa có" %></td>
-                                <td><%= u.getPhone() != null ? u.getPhone() : "Chưa có" %></td>
-                                <td><%= u.getIdentifierCode() != null ? u.getIdentifierCode() : "Chưa có" %></td>
+                                <td><%= u.getPhone() != null ? u.getPhone() : "Chưa có" %></td>                               
+                                <td><%= u.getIdentificationId() != null ? u.getIdentificationId() : "Chưa có" %></td>
                                 <td><%= u.getEmail() != null ? u.getEmail() : "Chưa có" %></td>
                                 <td>
-                                    <a href="EditUser?userId=<%= u.getUserId() %>" class="btn edit">Chi tiết</a>                            
+                                    <a href="EditUser?userId=<%= u.getUserId() %>" class="btn edit">Chi tiết</a>
                                 </td>
                             </tr>
                             <%
@@ -176,7 +155,7 @@
                             %>
                             <tr>
                                 <td colspan="8" class="empty">
-                                    Gian hàng chưa có nhân viên hoặc tên/mã nhân viên bạn tìm kiếm không tồn tại.
+                                    Hiện chưa có nhân viên nào hoặc kết quả tìm kiếm không tồn tại.
                                 </td>
                             </tr>
                             <%
@@ -184,18 +163,42 @@
                             %>
                         </tbody>
                     </table>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <%
+                            Integer currentPage = (Integer) request.getAttribute("currentPage");
+                            Integer totalPages = (Integer) request.getAttribute("totalPages");
+                            if (currentPage != null && totalPages != null && totalPages > 1) {
+                        %>
+                        <div>
+                            <% if (currentPage > 1) { %>
+                            <a href="NhanVien?page=<%= currentPage - 1 %>">&laquo; Trước</a>
+                            <% } %>
+
+                            <% for (int i = 1; i <= totalPages; i++) { %>
+                            <% if (i == currentPage) { %>
+                            <span class="current"><%= i %></span>
+                            <% } else { %>
+                            <a href="NhanVien?page=<%= i %>"><%= i %></a>
+                            <% } %>
+                            <% } %>
+
+                            <% if (currentPage < totalPages) { %>
+                            <a href="NhanVien?page=<%= currentPage + 1 %>">Sau &raquo;</a>
+                            <% } %>
+                        </div>
+                        <%
+                            }
+                        %>
+                    </div>
                 </main>
             </div>
 
-            <!-- Info bar -->
+            <!-- Footer -->
             <footer class="info-bar">
-                <p>
-
-                </p>
+                <p></p>
             </footer>
-        </div>      
-
+        </div>
     </body>
-
 </html>
-

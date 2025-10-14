@@ -12,7 +12,7 @@
     </head>
     <body>
         <!-- Header -->
-        <%@ include file="../includes/header.jsp" %>
+        <%@ include file="../admin/header_admin.jsp" %>
 
         <!-- Main Content -->
         <main class="main-content">

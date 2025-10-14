@@ -12,7 +12,7 @@
     </head>
     <body>
         <div class="container-fluid">
-            <%@ include file="../includes/header.jsp" %>
+            <%@ include file="../admin/header_admin.jsp" %>
             <div class="content">
                 <main class="main-content">
                     <div class="toolbar d-flex justify-content-between align-items-center">

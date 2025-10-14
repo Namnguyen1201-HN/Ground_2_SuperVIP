@@ -9,14 +9,12 @@ public class RoleDAO extends DataBaseContext {
 
     public List<Role> getAllRoles() {
         List<Role> list = new ArrayList<>();
-        String sql = "SELECT RoleId, RoleName FROM Roles";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
+        String sql = "SELECT RoleID, RoleName FROM Roles";
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Role r = new Role(
-                        rs.getInt("RoleId"),
-                        rs.getString("RoleName")
-                );
+                Role r = new Role();
+                r.setRoleId(rs.getInt("RoleID"));
+                r.setRoleName(rs.getString("RoleName"));
                 list.add(r);
             }
         } catch (SQLException e) {

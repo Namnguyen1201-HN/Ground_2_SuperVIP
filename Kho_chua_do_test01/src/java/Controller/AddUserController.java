@@ -2,8 +2,8 @@ package Controller;
 
 import DAL.UserDAO;
 import DAL.BranchDAO;
-import DAL.DepartmentDAO;
 import DAL.RoleDAO;
+import DAL.WarehouseDAO;
 import Model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,6 +11,7 @@ import jakarta.servlet.http.*;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @WebServlet(name="AddUserController", urlPatterns={"/AddUser"})
@@ -18,17 +19,15 @@ public class AddUserController extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();
     private final BranchDAO branchDAO = new BranchDAO();
-    private final DepartmentDAO departmentDAO = new DepartmentDAO();
     private final RoleDAO roleDAO = new RoleDAO();
+    private final WarehouseDAO warehouseDAO = new WarehouseDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // load dropdown data
         request.setAttribute("branches", branchDAO.getAllBranches());
-        request.setAttribute("departments", departmentDAO.getAllDepartments());
         request.setAttribute("roles", roleDAO.getAllRoles());
-
+        request.setAttribute("warehouses", warehouseDAO.getAllWarehouses());
         request.getRequestDispatcher("/WEB-INF/jsp/admin/AddUser.jsp").forward(request, response);
     }
 
@@ -37,22 +36,49 @@ public class AddUserController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
-        User u = new User();
-        u.setFullName(request.getParameter("fullName"));
-        u.setUsername(request.getParameter("username"));
-        u.setEmail(request.getParameter("email"));
-        u.setPhone(request.getParameter("phone"));
-        u.setIdentifierCode(request.getParameter("identifierCode"));
-        u.setDepartmentId(Integer.parseInt(request.getParameter("departmentId")));
-        u.setRoleId(Integer.parseInt(request.getParameter("roleId")));
-        u.setActive("1".equals(request.getParameter("isActive")));
-        u.setCreatedAt(new Timestamp(new Date().getTime()));
+        try {
+            User u = new User();
+            u.setFullName(request.getParameter("fullName"));
+            u.setEmail(request.getParameter("email"));
+            u.setPasswordHash(request.getParameter("password"));
+            u.setPhone(request.getParameter("phone"));
+            u.setIdentificationId(request.getParameter("identificationId"));
+            u.setAddress(request.getParameter("address"));
+            u.setAvaUrl(request.getParameter("avaUrl"));
+            u.setActive("1".equals(request.getParameter("isActive")));
+            u.setRoleId(Integer.parseInt(request.getParameter("roleId")));
 
-        boolean created = userDAO.insertUser(u);
-        if (created) {
-            response.sendRedirect("NhanVien");
-        } else {
-            request.setAttribute("error", "Không thể thêm nhân viên!");
+            // branch và warehouse có thể null
+            String branchParam = request.getParameter("branchId");
+            String warehouseParam = request.getParameter("warehouseId");
+            if (branchParam != null && !branchParam.isEmpty()) {
+                u.setBranchId(Integer.parseInt(branchParam));
+            }
+            if (warehouseParam != null && !warehouseParam.isEmpty()) {
+                u.setWarehouseId(Integer.parseInt(warehouseParam));
+            }
+
+            // gender và dob
+            String gender = request.getParameter("gender");
+            if (gender != null && !gender.isEmpty()) {
+                u.setGender("1".equals(gender));
+            }
+            String dob = request.getParameter("dob");
+            if (dob != null && !dob.isEmpty()) {
+                u.setDob(new SimpleDateFormat("yyyy-MM-dd").parse(dob));
+            }
+
+            boolean created = userDAO.insertUser(u);
+            if (created) {
+                response.sendRedirect("NhanVien");
+            } else {
+                request.setAttribute("error", "Không thể thêm nhân viên!");
+                doGet(request, response);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Lỗi dữ liệu đầu vào!");
             doGet(request, response);
         }
     }

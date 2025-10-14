@@ -11,14 +11,14 @@
     <body>
         <!-- Header -->
         <div>
-            <%@ include file="../includes/header.jsp" %>
+            <%@ include file="../admin/header_admin.jsp" %>
         </div>
 
         <!-- Layout chính: sidebar + nội dung -->
         <div class="container-fluid mt-3">
             <div class="row">
                 <!-- Sidebar bên trái -->
-                <%@ include file="../includes/sidebar-store.jsp" %>
+                <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
                 <!-- Nội dung chính bên phải -->
                 <div class="col-md-9">

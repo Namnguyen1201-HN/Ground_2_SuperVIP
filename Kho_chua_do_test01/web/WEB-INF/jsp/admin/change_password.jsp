@@ -9,16 +9,16 @@
         <link href="css/admin/change_password.css" rel="stylesheet">
     </head>
     <body class="bg-light">
-        <%@ include file="../includes/header.jsp" %>
+        <%@ include file="../admin/header_admin.jsp" %>
 
         <div class="container-fluid py-4">
             <div class="row">
                 <!-- Sidebar -->
-                <%@ include file="../includes/sidebar-store.jsp" %>
+                <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
                 <!-- Main Content -->
                 <div class="col-md-9">
-                    <div class="card shadow-sm">
+                    <div class="card shadow-sm" style="width: 1000px;">
                         <div class="card-body">
                             <h5 class="mb-4">
                                 <i class="bi bi-lock-fill text-primary me-2"></i> Đổi mật khẩu

@@ -2,7 +2,7 @@ package Model;
 
 public class Role {
     private int roleId;
-    private String roleName; // Admin, InventoryManager, StoreManager, Supplier, Salesperson
+    private String roleName;
 
     public Role() {}
 

@@ -1,0 +1,125 @@
+body {
+    background-color: #f5f6fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.staff-edit-container {
+    max-width: 850px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.staff-edit-header {
+    border-bottom: 2px solid #2196F3;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+
+.staff-edit-header h2 {
+    color: #2196F3;
+    font-weight: 600;
+}
+
+.section-card {
+    border: 1px solid #ddd;
+    border-left: 4px solid #2196F3;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+    margin-bottom: 25px;
+}
+
+.section-title {
+    color: #2196F3;
+    font-weight: 600;
+    font-size: 18px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 45%;
+}
+
+.form-group.full {
+    flex: 1 1 100%;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+input, select, textarea {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px 0px;
+    font-size: 14px;
+    width: 100%;
+}
+
+input:disabled {
+    background-color: #f0f0f0;
+}
+
+textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+}
+
+.btn-save {
+    background-color: #28a745;
+}
+.btn-save:hover {
+    background-color: #218838;
+}
+
+.btn-back {
+    background-color: #6c757d;
+}
+.btn-back:hover {
+    background-color: #5a6268;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+}
+.btn-delete:hover {
+    background-color: #c82333;
+}

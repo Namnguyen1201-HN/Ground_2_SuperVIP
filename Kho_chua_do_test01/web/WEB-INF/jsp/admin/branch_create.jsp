@@ -10,11 +10,11 @@
         
     </head>
     <body>
-        <%@ include file="../includes/header.jsp" %>
+        <%@ include file="../admin/header_admin.jsp" %>
 
         <div class="container-fluid mt-3">
             <div class="row">
-                <%@ include file="../includes/sidebar-store.jsp" %>
+                <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
                 <div class="col-md-9">
                     <div class="branch-form-container">

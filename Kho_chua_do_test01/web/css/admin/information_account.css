@@ -4,7 +4,6 @@ body {
 .sidebar {
     background: white;
     border-right: 1px solid #dee2e6;
-    min-height: 100vh;
     padding: 20px;
 }
 .sidebar a {

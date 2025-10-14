@@ -1,20 +1,21 @@
 package Model;
 
-import java.util.Date;
-
 public class Branch {
+
     private int branchId;
     private String branchName;
-    private String location;
-    private Date createdAt;
+    private String address;
+    private String phone;
+    private boolean isActive;
 
     public Branch() {}
 
-    public Branch(int branchId, String branchName, String location, Date createdAt) {
+    public Branch(int branchId, String branchName, String address, String phone, boolean isActive) {
         this.branchId = branchId;
         this.branchName = branchName;
-        this.location = location;
-        this.createdAt = createdAt;
+        this.address = address;
+        this.phone = phone;
+        this.isActive = isActive;
     }
 
     public int getBranchId() {
@@ -33,19 +34,27 @@ public class Branch {
         this.branchName = branchName;
     }
 
-    public String getLocation() {
-        return location;
+    public String getAddress() {
+        return address;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public String getPhone() {
+        return phone;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }

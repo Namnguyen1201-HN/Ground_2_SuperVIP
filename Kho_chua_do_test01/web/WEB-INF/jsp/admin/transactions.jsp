@@ -9,7 +9,7 @@
         <link href="css/admin/Transactions.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
-        <%@ include file="../includes/header.jsp" %>
+        <%@ include file="../admin/header_admin.jsp" %>
         <div class="container-fluid">          
             <div class="content">
                 <main class="main-content transactions-page" style="width:100%">
