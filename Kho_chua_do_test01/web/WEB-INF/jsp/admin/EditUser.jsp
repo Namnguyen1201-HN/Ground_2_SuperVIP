@@ -109,7 +109,7 @@
             for (Branch b : branches) { %>
                                 <option value="<%= b.getBranchId() %>"
                                         <%= (user.getBranchId() != null && user.getBranchId().equals(b.getBranchId())) ? "selected" : "" %>>
-                                    <%= b.getBranchName() %>
+                                    <%= b.getBranchName() %> 
                                 </option>
                                 <% } } %>
                             </select>
@@ -197,11 +197,11 @@
                     // Nếu là Quản lý kho -> hiện kho
                     if (role === 3) {
                         branchField.style.display = "none";
-                        warehouseField.style.display = "block";
+                        warehouseField.style.display = "flex";
                     }
                     // Các vai trò khác (quản lý chi nhánh, nhân viên bán hàng, v.v...) -> hiện chi nhánh
                     else {
-                        branchField.style.display = "block";
+                        branchField.style.display = "flex";
                         warehouseField.style.display = "none";
                     }
                 }
