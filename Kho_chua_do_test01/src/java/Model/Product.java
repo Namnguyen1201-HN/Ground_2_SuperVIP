@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class Product {
+
     private Integer productId;          // IDENTITY
     private String productName;         // NVARCHAR(255)
     private Integer brandId;            // FK -> Brands
@@ -15,39 +16,122 @@ public class Product {
     private BigDecimal vat;             // DECIMAL(18,2)
     private LocalDateTime createdAt;    // DEFAULT GETDATE()
     private Boolean isActive;           // BIT
+    private String brandName;
+    private String categoryName;
+    private String supplierName;
 
-    public Product() {}
+    public Product() {
+    }
 
-    public Integer getProductId() { return productId; }
-    public void setProductId(Integer productId) { this.productId = productId; }
+    public Integer getProductId() {
+        return productId;
+    }
 
-    public String getProductName() { return productName; }
-    public void setProductName(String productName) { this.productName = productName; }
+    public void setProductId(Integer productId) {
+        this.productId = productId;
+    }
 
-    public Integer getBrandId() { return brandId; }
-    public void setBrandId(Integer brandId) { this.brandId = brandId; }
+    public String getProductName() {
+        return productName;
+    }
 
-    public Integer getCategoryId() { return categoryId; }
-    public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
 
-    public Integer getSupplierId() { return supplierId; }
-    public void setSupplierId(Integer supplierId) { this.supplierId = supplierId; }
+    public Integer getBrandId() {
+        return brandId;
+    }
 
-    public BigDecimal getCostPrice() { return costPrice; }
-    public void setCostPrice(BigDecimal costPrice) { this.costPrice = costPrice; }
+    public void setBrandId(Integer brandId) {
+        this.brandId = brandId;
+    }
 
-    public BigDecimal getRetailPrice() { return retailPrice; }
-    public void setRetailPrice(BigDecimal retailPrice) { this.retailPrice = retailPrice; }
+    public Integer getCategoryId() {
+        return categoryId;
+    }
 
-    public String getImageUrl() { return imageUrl; }
-    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public void setCategoryId(Integer categoryId) {
+        this.categoryId = categoryId;
+    }
 
-    public BigDecimal getVat() { return vat; }
-    public void setVat(BigDecimal vat) { this.vat = vat; }
+    public Integer getSupplierId() {
+        return supplierId;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setSupplierId(Integer supplierId) {
+        this.supplierId = supplierId;
+    }
 
-    public Boolean getIsActive() { return isActive; }
-    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+    public BigDecimal getCostPrice() {
+        return costPrice;
+    }
+
+    public void setCostPrice(BigDecimal costPrice) {
+        this.costPrice = costPrice;
+    }
+
+    public BigDecimal getRetailPrice() {
+        return retailPrice;
+    }
+
+    public void setRetailPrice(BigDecimal retailPrice) {
+        this.retailPrice = retailPrice;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public BigDecimal getVat() {
+        return vat;
+    }
+
+    public void setVat(BigDecimal vat) {
+        this.vat = vat;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public String getBrandName() {
+        return brandName;
+    }
+
+    public void setBrandName(String brandName) {
+        this.brandName = brandName;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
+    }
 }
