@@ -1,104 +1,174 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link href="css/admin/test.css" rel="stylesheet" type="text/css"/>
-    <title>Chi Tiết Sản Phẩm</title>
-    <link rel="stylesheet" href="styles.css">
+    <link href="${pageContext.request.contextPath}/css/admin/test.css" rel="stylesheet" type="text/css"/>
+    <title>Chi Tiết / Chỉnh Sửa Sản Phẩm</title>
+    <style>
+        .product-detail-card { max-width: 980px; margin: 0 auto; }
+        .product-content { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
+        .product-image { width: 100%; height: auto; border-radius: 8px; object-fit: cover; }
+        .info-group { margin-bottom: 14px; }
+        .info-label { display:block; font-weight:600; margin-bottom:6px; }
+        .row-2 { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .action-buttons { display:flex; gap:10px; margin-top: 18px; }
+        input[type="text"], input[type="number"], input[type="url"], select {
+            width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px;
+        }
+        .btn { padding: 8px 14px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; }
+        .btn-primary { background: #2563eb; color: #fff; }
+        .btn-secondary { background: #fff; border-color:#d1d5db; }
+        .page-title { margin-bottom: 16px; }
+        .preview-wrap { position: relative; }
+        .hint { color:#6b7280; font-size:12px; margin-top:6px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="product-detail-card">
-            <h1 class="page-title">Thông Tin Chi Tiết Sản Phẩm</h1>
-            
-            <div class="product-content">
-                <!-- Product Image Section -->
-                <div class="product-image-section">
-                    <img src="${product.imageURL != null ? product.imageURL : 'https://via.placeholder.com/400x400?text=No+Image'}" 
-                         alt="${product.productName}" 
-                         class="product-image">
+<div class="container">
+    <div class="product-detail-card">
+        <h1 class="page-title">Chi Tiết / Chỉnh Sửa Sản Phẩm</h1>
+
+        <div class="product-content">
+            <!-- Cột ảnh -->
+            <div class="product-image-section">
+                <div class="preview-wrap">
+                    <img id="previewImg"
+                         src="${product.imageUrl != null ? product.imageUrl : 'https://via.placeholder.com/400x400?text=No+Image'}"
+                         alt="${product.productName}" class="product-image">
                 </div>
+                <div class="info-group">
+                    <label class="info-label">Ảnh (URL)</label>
+                    <input type="url" id="imageUrlInput" form="productEditForm"
+                           name="imageUrl"
+                           value="${product.imageUrl}" placeholder="https://..."/>
+                    <div class="hint">Dán link ảnh để xem trước ngay.</div>
+                </div>
+            </div>
 
-                <!-- Product Information Section -->
-                <div class="product-info-section">
+            <!-- Cột thông tin & FORM -->
+            <div class="product-info-section">
+                <form id="productEditForm" action="${pageContext.request.contextPath}/product" method="post">
+                    <!-- Hành động -->
+                    <input type="hidden" name="action" value="update"/>
+                    <input type="hidden" name="id" value="${product.productId}"/>
+
                     <div class="info-group">
-                        <label class="info-label">Mã Sản Phẩm:</label>
-                        <div class="info-value">${product.productID}</div>
-                    </div>
-
-                    <div class="info-group">
-                        <label class="info-label">Tên Sản Phẩm:</label>
-                        <div class="info-value product-name">${product.productName}</div>
-                    </div>
-
-                    <div class="info-row">
-                        <div class="info-group">
-                            <label class="info-label">Mã Thương Hiệu:</label>
-                            <div class="info-value">${product.brandID}</div>
-                        </div>
-
-                        <div class="info-group">
-                            <label class="info-label">Mã Danh Mục:</label>
-                            <div class="info-value">${product.categoryID}</div>
-                        </div>
+                        <label class="info-label">Mã Sản Phẩm</label>
+                        <input type="text" value="${product.productId}" disabled/>
                     </div>
 
                     <div class="info-group">
-                        <label class="info-label">Mã Nhà Cung Cấp:</label>
-                        <div class="info-value">${product.supplierID}</div>
+                        <label class="info-label">Tên Sản Phẩm</label>
+                        <input type="text" name="name" value="${product.productName}" required/>
                     </div>
 
-                    <div class="info-row">
+                    <div class="row-2">
                         <div class="info-group">
-                            <label class="info-label">Giá Vốn:</label>
-                            <div class="info-value price">
-                                <fmt:formatNumber value="${product.costPrice}" type="currency" currencySymbol="₫"/>
-                            </div>
+                            <label class="info-label">Thương Hiệu</label>
+                            <c:choose>
+                                <c:when test="${not empty brands}">
+                                    <select name="brandName">
+                                        <option value="">-- Chọn thương hiệu --</option>
+                                        <c:forEach var="b" items="${brands}">
+                                            <option value="${b.name}"
+                                                    ${product.brandName == b.name ? 'selected' : ''}>${b.name}</option>
+                                        </c:forEach>
+                                    </select>
+                                </c:when>
+                                <c:otherwise>
+                                    <input type="text" name="brandName" value="${product.brandName}" placeholder="Nhập tên thương hiệu"/>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
 
                         <div class="info-group">
-                            <label class="info-label">Giá Bán Lẻ:</label>
-                            <div class="info-value price retail-price">
-                                <fmt:formatNumber value="${product.retailPrice}" type="currency" currencySymbol="₫"/>
-                            </div>
+                            <label class="info-label">Danh Mục</label>
+                            <c:choose>
+                                <c:when test="${not empty categories}">
+                                    <select name="categoryName">
+                                        <option value="">-- Chọn danh mục --</option>
+                                        <c:forEach var="c" items="${categories}">
+                                            <option value="${c.categoryName}"
+                                                    ${product.categoryName == c.categoryName ? 'selected' : ''}>${c.categoryName}</option>
+                                        </c:forEach>
+                                    </select>
+                                </c:when>
+                                <c:otherwise>
+                                    <input type="text" name="categoryName" value="${product.categoryName}" placeholder="Nhập tên danh mục"/>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
 
-                    <div class="info-row">
+                    <div class="info-group">
+                        <label class="info-label">Nhà Cung Cấp</label>
+                        <c:choose>
+                            <c:when test="${not empty suppliers}">
+                                <select name="supplierName">
+                                    <option value="">-- Chọn NCC --</option>
+                                    <c:forEach var="s" items="${suppliers}">
+                                        <option value="${s.name}"
+                                                ${product.supplierName == s.name ? 'selected' : ''}>${s.name}</option>
+                                    </c:forEach>
+                                </select>
+                            </c:when>
+                            <c:otherwise>
+                                <input type="text" name="supplierName" value="${product.supplierName}" placeholder="Nhập tên NCC"/>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+
+                    <div class="row-2">
                         <div class="info-group">
-                            <label class="info-label">VAT (%):</label>
-                            <div class="info-value">${product.vat}%</div>
+                            <label class="info-label">Giá Vốn</label>
+                            <input type="number" step="0.01" name="costPrice" value="${product.costPrice}" />
                         </div>
 
                         <div class="info-group">
-                            <label class="info-label">Số Lượng:</label>
-                            <div class="info-value quantity">
-                                <span class="quantity-badge ${product.quantity > 0 ? 'in-stock' : 'out-of-stock'}">
-                                    ${product.quantity} ${product.quantity > 0 ? 'Còn hàng' : 'Hết hàng'}
-                                </span>
-                            </div>
+                            <label class="info-label">Giá Bán Lẻ</label>
+                            <input type="number" step="0.01" name="retailPrice" value="${product.retailPrice}" />
+                        </div>
+                    </div>
+
+                    <div class="row-2">
+                        <div class="info-group">
+                            <label class="info-label">VAT (%)</label>
+                            <input type="number" step="0.01" name="vat" value="${product.vat}" />
+                        </div>
+
+                        <div class="info-group" style="display:flex;align-items:center;gap:10px; margin-top:28px;">
+                            <input type="checkbox" id="isActive" name="isActive"
+                                   ${product.isActive ? 'checked' : ''}/>
+                            <label for="isActive" class="info-label" style="margin:0;">Đang kinh doanh</label>
                         </div>
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="editProduct()">Chỉnh Sửa</button>
-                        <button class="btn btn-secondary" onclick="goBack()">Quay Lại</button>
+                        <button type="submit" class="btn btn-primary">💾 Lưu</button>
+                        <a href="${pageContext.request.contextPath}/product?action=list" class="btn btn-secondary">❌ Hủy</a>
+                        <a href="${pageContext.request.contextPath}/product?action=detail&id=${product.productId}" class="btn btn-secondary">↩️ Xem lại chi tiết</a>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
+
     </div>
+</div>
 
-    <script>
-        function editProduct() {
-            window.location.href = 'edit-product.jsp?id=${product.productID}';
-        }
-
-        function goBack() {
-            window.history.back();
-        }
-    </script>
+<script>
+    // Xem trước ảnh ngay khi đổi URL
+    const imageUrlInput = document.getElementById('imageUrlInput');
+    const previewImg = document.getElementById('previewImg');
+    if (imageUrlInput && previewImg) {
+        imageUrlInput.addEventListener('input', function() {
+            const v = this.value && this.value.trim().length ? this.value.trim() : 'https://via.placeholder.com/400x400?text=No+Image';
+            previewImg.src = v;
+        });
+    }
+</script>
 </body>
 </html>
