@@ -1,9 +1,8 @@
-
-
 package Controller;
 
-import DAL.LogDAO;
-import Model.Log;
+import DAL.AnnouncementDAO;
+import Model.Announcement;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -17,36 +16,35 @@ import java.util.List;
  *
  * @author TieuPham
  */
-@WebServlet(name="TongQuanController", urlPatterns={"/TongQuan"})
+@WebServlet(name = "TongQuanController", urlPatterns = {"/TongQuan"})
 public class TongQuanController extends HttpServlet {
-   
-    
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        
-        LogDAO dao = new LogDAO();
-        List<Log> logs = dao.getRecentLogs(5); // lấy 5 log gần nhất
-        request.setAttribute("logs", logs);
-        
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/TongQuan.jsp").forward(request, response);
-    } 
 
-    
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("text/html;charset=UTF-8");
+
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
+            throws ServletException, IOException {
 
-    
+        AnnouncementDAO dao = new AnnouncementDAO();
+        List<Announcement> announcements = dao.getLatestAnnouncements(10); // lấy 10 thông báo mới nhất
+
+        request.setAttribute("announcements", announcements);
+
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/TongQuan.jsp")
+                .forward(request, response);
+
+    }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         processRequest(request, response);
     }
 
-    
     @Override
     public String getServletInfo() {
         return "Short description";

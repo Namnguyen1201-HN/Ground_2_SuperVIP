@@ -103,42 +103,27 @@
 
             <!-- Right Sidebar -->
             <aside class="sidebar">
-                <!-- Promotion Card -->
-                <div class="sidebar-card promo-card">
-                    <div class="promo-content">
-                        <h3>Nhận Hóa đơn điện tử</h3>
-                        <p>8 chữ ký số - MIỄN PHÍ</p>
-                        <button class="promo-button">Kích hoạt ngay</button>
-                    </div>
-                </div>
-
-                <!-- QR Code Section -->
-                <div class="sidebar-card qr-section">
-                    <h3>TSMS ra mắt kênh CSKH</h3>
-                    <p>Zalo Official Account</p>
-                    <div class="qr-code">📱</div>
-                    <button class="promo-button" style="background: #2563eb; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem;">QUÉT TẠI ĐÂY</button>
-                </div>
-
+                
                 <!-- Notifications -->
                 <div class="sidebar-card notifications-section">
                     <h3>THÔNG BÁO</h3>
 
                     <%
-                        List<Model.Log> logs = (List<Model.Log>) request.getAttribute("logs");
-                        if (logs != null && !logs.isEmpty()) {
-                            for (Model.Log log : logs) {
+                        List<Model.Announcement> anns = (List<Model.Announcement>) request.getAttribute("announcements");
+                        if (anns != null && !anns.isEmpty()) {
+                            for (Model.Announcement a : anns) {
                     %>
                     <div class="notification-item">
-                        <div class="notification-icon warning">⚠️</div>
+                        <div class="notification-icon info">🔔</div>
                         <div class="notification-content">
                             <p>
-                                [<%= log.getTableName() %>]
-                                <strong><%= log.getAction() %></strong>
-                                (Record ID: <%= log.getRecordId() %>)
+                                <strong><%= a.getTitle() %></strong>  
+                                <br/>
+                                <%= a.getDescription() %>
                             </p>
                             <div class="time">
-                                <%= log.getCreatedAt() %>
+                                Bởi <%= a.getFromUserName() != null ? a.getFromUserName() : "Hệ thống" %> |
+                                <%= new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(a.getCreatedAt()) %>
                             </div>
                         </div>
                     </div>
@@ -212,8 +197,8 @@
                     this.classList.add('active');
                 });
             });
-            
-            
+
+
         </script>
     </body>
 </html>
