@@ -1,72 +1,68 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package Controller;
 
+import DAL.WarehouseDAO;
+import Model.Warehouse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author TieuPham
- */
-@WebServlet(name="WareHouseCreateController", urlPatterns={"/WareHouseCreate"})
+@WebServlet(name = "WareHouseCreateController", urlPatterns = {"/WareHouseCreate"})
 public class WareHouseCreateController extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(request, response);
-    } 
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
-
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+            throws ServletException, IOException {
+        // Hiển thị trang tạo mới
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(request, response);
     }
 
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+        String name = request.getParameter("warehouseName");
+        String address = request.getParameter("address");
+        String phone = request.getParameter("phone");
+
+        // ⚙️ Kiểm tra dữ liệu đầu vào
+        if (name == null || name.trim().isEmpty()
+                || address == null || address.trim().isEmpty()
+                || phone == null || phone.trim().isEmpty()) {
+
+            request.setAttribute("message", "Vui lòng nhập đầy đủ thông tin kho tổng!");
+            request.setAttribute("msgType", "danger");
+            request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(request, response);
+            return;
+        }
+
+        Warehouse w = new Warehouse();
+        w.setWarehouseName(name.trim());
+        w.setAddress(address.trim());
+        w.setPhone(phone.trim());
+        w.setActive(true); // Mặc định kho mới là hoạt động
+
+        WarehouseDAO dao = new WarehouseDAO();
+        boolean success = dao.insertWarehouse(w);
+
+        if (success) {
+            // ✅ Lưu thành công, chuyển hướng về trang danh sách
+            request.getSession().setAttribute("flashMessage", "Tạo kho tổng mới thành công!");
+            request.getSession().setAttribute("flashType", "success");
+            response.sendRedirect("WareHouseManagement");
+        } else {
+            // ❌ Lưu thất bại
+            request.setAttribute("message", "Không thể tạo kho tổng. Vui lòng thử lại!");
+            request.setAttribute("msgType", "danger");
+            request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(request, response);
+        }
+    }
+
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Tạo kho tổng mới";
+    }
 }

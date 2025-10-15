@@ -28,6 +28,73 @@
     border-radius: 6px;
 }
 
+/* --- Nút và hàng nút --- */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+/* Nút xám đồng bộ (Quay lại + Đặt lại) */
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563;
+}
+
+/* Nút xanh lá cho hành động chính */
+.btn-success {
+    background-color: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #15803d;
+}
+
+/* Căn chỉnh icon và text đều nhau */
+.btn-secondary i,
+.btn-success i {
+    margin-right: 4px;
+}
+
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.3s;
+    text-decoration: none; /* 💡 NGĂN GẠCH CHÂN */
+}
+
 .btn {
     border-radius: 6px;
     font-weight: 500;

@@ -1,81 +1,66 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package Controller;
 
+import DAL.BranchDAO;
+import Model.Branch;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author TieuPham
- */
-@WebServlet(name="BranchCreateController", urlPatterns={"/BranchCreate"})
+@WebServlet(name = "BranchCreateController", urlPatterns = {"/BranchCreate"})
 public class BranchCreateController extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        
-    } 
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+            throws ServletException, IOException {
         request.getRequestDispatcher("/WEB-INF/jsp/admin/branch_create.jsp").forward(request, response);
-    } 
+    }
 
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+
         String name = request.getParameter("branchName");
         String address = request.getParameter("address");
         String phone = request.getParameter("phone");
 
-        // Validate & save to DB
-        // new BranchDAO().insert(new Branch(name, address, phone));
+        // Validation cơ bản
+        if (name == null || name.trim().isEmpty()
+                || address == null || address.trim().isEmpty()
+                || phone == null || phone.trim().isEmpty()) {
+            request.setAttribute("message", "Vui lòng nhập đầy đủ thông tin!");
+            request.setAttribute("msgType", "danger");
+            request.getRequestDispatcher("/WEB-INF/jsp/admin/branch_create.jsp").forward(request, response);
+            return;
+        }
 
-        response.sendRedirect("BranchManagement");
+        Branch b = new Branch();
+        b.setBranchName(name.trim());
+        b.setAddress(address.trim());
+        b.setPhone(phone.trim());
+        b.setActive(true);
+
+        BranchDAO dao = new BranchDAO();
+        boolean success = dao.insertBranch(b);
+
+        if (success) {
+            // ✅ Lưu thành công → quay lại trang quản lý
+            request.getSession().setAttribute("flashMessage", "Tạo chi nhánh mới thành công!");
+            request.getSession().setAttribute("flashType", "success");
+            response.sendRedirect("BranchManagement");
+        } else {
+            // ❌ Lỗi → hiển thị lại form
+            request.setAttribute("message", "Không thể tạo chi nhánh. Vui lòng thử lại!");
+            request.setAttribute("msgType", "danger");
+            request.getRequestDispatcher("/WEB-INF/jsp/admin/branch_create.jsp").forward(request, response);
+        }
     }
 
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Tạo chi nhánh mới";
+    }
 }

@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="Model.Branch" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -14,13 +16,13 @@
             <%@ include file="../admin/header_admin.jsp" %>
         </div>
 
-        <!-- Layout chính: sidebar + nội dung -->
+        <!-- Layout chính -->
         <div class="container-fluid mt-3">
             <div class="row">
-                <!-- Sidebar bên trái -->
+                <!-- Sidebar -->
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
-                <!-- Nội dung chính bên phải -->
+                <!-- Nội dung chính -->
                 <div class="col-md-9">
                     <div class="branch-container">
                         <div class="branch-header">
@@ -42,26 +44,96 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td><strong>Hà Nội</strong></td>
-                                        <td>Từ Liêm Hà Nội</td>
-                                        <td>12345678901</td>
-                                        <td><span class="status active">HOẠT ĐỘNG</span></td>
-                                        <td><button class="btn-delete"><i class="fas fa-trash"></i> Xóa</button></td>
+                                    <%
+                                    List<Branch> branches = (List<Branch>) request.getAttribute("branches");
+                                    if (branches != null && !branches.isEmpty()) {
+                                        for (Branch b : branches) {
+                                    %>
+                                    <tr class="branch-row" 
+                                        data-id="<%= b.getBranchId() %>" 
+                                        data-name="<%= b.getBranchName() %>" 
+                                        data-address="<%= b.getAddress() %>" 
+                                        data-phone="<%= b.getPhone() %>" 
+                                        data-active="<%= b.isActive() %>">
+                                        <td><strong><%= b.getBranchName() %></strong></td>
+                                        <td><%= b.getAddress() %></td>
+                                        <td><%= b.getPhone() %></td>
+                                        <td><span class="status <%= b.isActive() ? "active" : "inactive" %>"><%= b.isActive() ? "HOẠT ĐỘNG" : "TẠM NGỪNG" %></span></td>
+                                        <td>
+                                            <form action="BranchManagement" method="post" onsubmit="return confirm('Xóa chi nhánh này?');">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="branchId" value="<%= b.getBranchId() %>">
+                                                <button type="submit" class="btn-delete"><i class="fas fa-trash"></i> Xóa</button>
+                                            </form>
+                                        </td>
                                     </tr>
-                                    <tr>
-                                        <td><strong>HCM</strong></td>
-                                        <td>Tân Bình HCM</td>
-                                        <td>01234567890</td>
-                                        <td><span class="status active">HOẠT ĐỘNG</span></td>
-                                        <td><button class="btn-delete"><i class="fas fa-trash"></i> Xóa</button></td>
-                                    </tr>
+                                    <%
+                                        }
+                                    } else {
+                                    %>
+                                    <tr><td colspan="5" style="text-align:center;">Không có chi nhánh nào</td></tr>
+                                    <% } %>
                                 </tbody>
+
+                                <div id="editModal" class="edit-form">
+                                    <form action="BranchManagement" method="post">
+                                        <input type="hidden" name="action" value="update">
+                                        <input type="hidden" id="branchId" name="branchId">
+
+                                        <h4><i class="fa fa-edit"></i> Chỉnh sửa chi nhánh</h4>
+
+                                        <label>Tên chi nhánh *</label>
+                                        <input type="text" id="branchName" name="branchName" class="form-control" required>
+
+                                        <label>Địa chỉ *</label>
+                                        <input type="text" id="address" name="address" class="form-control" required>
+
+                                        <label>Số điện thoại *</label>
+                                        <input type="text" id="phone" name="phone" class="form-control" required>
+
+                                        <div style="margin-top:10px;">
+                                            <input type="checkbox" id="isActive" name="isActive">
+                                            <label for="isActive">Chi nhánh đang hoạt động</label>
+                                        </div>
+
+                                        <div class="text-end" style="margin-top:15px;">
+                                            <button type="button" class="btn btn-secondary" onclick="hideModal()">Hủy</button>
+                                            <button type="submit" class="btn btn-success">Cập nhật</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div id="overlay" class="modal-overlay"></div>
+
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+
+        <script>
+            const rows = document.querySelectorAll(".branch-row");
+            const modal = document.getElementById("editModal");
+            const overlay = document.getElementById("overlay");
+
+            rows.forEach(row => {
+                row.addEventListener("click", () => {
+                    document.getElementById("branchId").value = row.dataset.id;
+                    document.getElementById("branchName").value = row.dataset.name;
+                    document.getElementById("address").value = row.dataset.address;
+                    document.getElementById("phone").value = row.dataset.phone;
+                    document.getElementById("isActive").checked = row.dataset.active === "true";
+                    modal.style.display = "block";
+                    overlay.style.display = "block";
+                });
+            });
+
+            function hideModal() {
+                modal.style.display = "none";
+                overlay.style.display = "none";
+            }
+        </script>
+
     </body>
 </html>

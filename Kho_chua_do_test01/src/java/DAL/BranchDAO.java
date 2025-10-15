@@ -26,6 +26,46 @@ public class BranchDAO extends DataBaseContext {
         return list;
     }
 
+    public boolean deleteBranch(int id) {
+        String sql = "DELETE FROM Branches WHERE BranchID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateBranch(Branch b) {
+        String sql = "UPDATE Branches SET BranchName=?, Address=?, Phone=?, IsActive=? WHERE BranchID=?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, b.getBranchName());
+            ps.setString(2, b.getAddress());
+            ps.setString(3, b.getPhone());
+            ps.setBoolean(4, b.isActive());
+            ps.setInt(5, b.getBranchId());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean insertBranch(Branch b) {
+        String sql = "INSERT INTO Branches (BranchName, Address, Phone, IsActive) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, b.getBranchName());
+            ps.setString(2, b.getAddress());
+            ps.setString(3, b.getPhone());
+            ps.setBoolean(4, true); // mặc định chi nhánh mới hoạt động
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // không biết của ai nên chưa sửa sau khi thay Database mới
     public Branch getBranchById(int id) {
         String sql = "SELECT BranchId, BranchName, Location, CreatedAt FROM CompanyBranches WHERE BranchId = ?";

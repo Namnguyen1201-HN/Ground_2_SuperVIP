@@ -33,21 +33,28 @@
                                 </div>
                             </div>
 
-                            <form>
+                            <form action="ChangePassWord" method="post">
                                 <div class="mb-3">
                                     <label class="form-label">Mật khẩu hiện tại <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" placeholder="Nhập mật khẩu hiện tại">
+                                    <input type="password" name="currentPassword" class="form-control" placeholder="Nhập mật khẩu hiện tại" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Mật khẩu mới <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" placeholder="Nhập mật khẩu mới">
+                                    <input type="password" name="newPassword" class="form-control" placeholder="Nhập mật khẩu mới" required>
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" placeholder="Nhập lại mật khẩu mới">
+                                    <input type="password" name="confirmPassword" class="form-control" placeholder="Nhập lại mật khẩu mới" required>
                                 </div>
+
+                                <% String msg = (String) request.getAttribute("message");
+                                   String type = (String) request.getAttribute("msgType");
+                                   if (msg != null) { %>
+                                <div class="alert alert-<%= type != null ? type : "info" %>"><%= msg %></div>
+                                <% } %>
+
                                 <div class="text-end">
-                                    <button type="button" class="btn btn-secondary me-2">
+                                    <button type="reset" class="btn btn-secondary me-2">
                                         <i class="bi bi-arrow-counterclockwise"></i> Hủy bỏ
                                     </button>
                                     <button type="submit" class="btn btn-primary">
