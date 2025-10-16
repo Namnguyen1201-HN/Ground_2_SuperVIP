@@ -6,7 +6,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>TSMS - Tổng quan</title>
+        <title>WMS - Tổng quan</title>
         <link href="css/admin/TongQuan.css" rel="stylesheet" type="text/css"/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     </head>
@@ -103,7 +103,7 @@
 
             <!-- Right Sidebar -->
             <aside class="sidebar">
-                
+
                 <!-- Notifications -->
                 <div class="sidebar-card notifications-section">
                     <h3>THÔNG BÁO</h3>
@@ -137,38 +137,81 @@
                     %>
                 </div>
 
-                <!-- Recent Activities -->
-                <div class="sidebar-card activities-section">
-                    <h3>CÁC HOẠT ĐỘNG GẦN ĐÂY</h3>
-                    <div class="activity-item">
-                        <div class="activity-icon error">🔴</div>
-                        <div class="activity-content">
-                            <p><strong>hoang minh kien</strong> vừa <strong>nhập hàng</strong> với giá trị <strong>0</strong></p>
-                            <div class="time">41 phút trước</div>
+                <!-- CÁC HOẠT ĐỘNG GẦN ĐÂY -->
+                <div class="activities" style="padding: 16px; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px;">
+                        <i style="color: #2196f3; font-size: 18px; margin-right: 8px;"></i>
+                        <h4 style="margin: 0; color: #1a1a1a; font-size: 18px; font-weight: 600;">CÁC HOẠT ĐỘNG GẦN ĐÂY</h4>
+                    </div>
+
+                    <%
+                        List<Model.AnnouncementDTO> activityLogs = (List<Model.AnnouncementDTO>) request.getAttribute("activityLogs");
+
+                        if (activityLogs != null && !activityLogs.isEmpty()) {
+                            for (Model.AnnouncementDTO log : activityLogs) {
+
+                                String bgColor;
+                                String iconClass;
+
+                                if ("Đơn hàng".equals(log.getCategory())) {
+                                    bgColor = "#e3f2fd";
+                                    iconClass = "fa-shopping-cart";
+                                } else if ("Nhập hàng".equals(log.getCategory()) || "Xuất kho".equals(log.getCategory())) {
+                                    bgColor = "#ede7f6";
+                                    iconClass = "fa-dolly";
+                                } else {
+                                    bgColor = "#fff3e0";
+                                    iconClass = "fa-dollar-sign";
+                                }
+                    %>
+
+                    <div class="activity-card" style="display: flex; background: #f9f9f9; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 16px; margin-bottom: 12px; gap: 12px;">
+                        <div style="flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: <%= bgColor %>;">
+                            <i class="fas <%= iconClass %>" style="color: #333;"></i>
+                        </div>
+
+                        <div style="flex: 1; font-size: 13px;">
+                            <% if ("Đơn hàng".equals(log.getCategory())) { %>
+                            <div style="font-weight: 600; margin-bottom: 4px;">Đơn hàng mới</div>
+                            <div>Mã: <%= log.getRawDescription() %></div>
+                            <div>Người tạo: <%= log.getSenderName() %></div>
+                            <div>Chi nhánh: <%= log.getLocationName() %></div>
+                            <div>Tổng tiền: <%= log.getDescription() %></div>
+
+                            <% } else if ("Nhập hàng".equals(log.getCategory()) || "Xuất kho".equals(log.getCategory())) { %>
+                            <div style="font-weight: 600; margin-bottom: 4px;"><%= log.getCategory() %></div>
+                            <div>Người gửi: <%= log.getSenderName() %></div>
+                            <div>Gửi từ: <%= log.getFromLocation() %></div>
+                            <div>Đến: <%= log.getToLocation() %></div>
+                            <div>Ghi chú: <%= log.getRawDescription() %></div>
+
+                            <% } else { %>
+                            <div style="font-weight: 600; margin-bottom: 4px;"><%= log.getStatus() %></div>
+                            <div>Danh mục: <%= log.getCategory() %></div>
+                            <div>Số tiền: <%= log.getDescription() %></div>
+                            <div>Mô tả: <%= log.getRawDescription() %></div>
+                            <div>Chi nhánh: <%= log.getLocationName() %></div>
+                            <div>Người ghi: <%= log.getSenderName() %></div>
+                            <% } %>
+
+                            <div style="margin-top: 6px; font-size: 12px; color: #888;">
+                                <i class="fas fa-clock" style="margin-right: 4px;"></i>
+                                <%= new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(log.getCreatedAt()) %>
+                            </div>
                         </div>
                     </div>
-                    <div class="activity-item">
-                        <div class="activity-icon info">🔵</div>
-                        <div class="activity-content">
-                            <p><strong>hoang minh kien</strong> vừa <strong>bán đơn hàng</strong> với giá trị <strong>4,886,000</strong></p>
-                            <div class="time">41 phút trước</div>
-                        </div>
+
+                    <% 
+                            } // end for
+                        } else { 
+                    %>
+                    <div style="text-align: center; padding: 32px 0; color: #9e9e9e;">
+                        <i class="fas fa-history" style="font-size: 32px; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p style="margin: 0; font-size: 14px;">Chưa có hoạt động nào</p>
                     </div>
-                    <div class="activity-item">
-                        <div class="activity-icon info">🔵</div>
-                        <div class="activity-content">
-                            <p><strong>Nguyễn Lê Hùng Cường</strong> vừa <strong>bán đơn hàng</strong> với giá trị <strong>1,396,000</strong></p>
-                            <div class="time">một ngày trước</div>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon error">🔴</div>
-                        <div class="activity-content">
-                            <p><strong>Nguyễn Lê Hùng Cường</strong> vừa <strong>nhập hàng</strong> với giá trị <strong>0</strong></p>
-                            <div class="time">một ngày trước</div>
-                        </div>
-                    </div>
+                    <% } %>
                 </div>
+                
             </aside>
         </main>
 

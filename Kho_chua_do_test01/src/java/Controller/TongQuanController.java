@@ -2,6 +2,7 @@ package Controller;
 
 import DAL.AnnouncementDAO;
 import Model.Announcement;
+import Model.AnnouncementDTO;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,10 +31,16 @@ public class TongQuanController extends HttpServlet {
             throws ServletException, IOException {
 
         AnnouncementDAO dao = new AnnouncementDAO();
-        List<Announcement> announcements = dao.getLatestAnnouncements(10); // lấy 10 thông báo mới nhất
+        // lấy danh sách thông báo mới nhất
+        List<Announcement> announcements = dao.getLatestAnnouncements(4);
 
+        // Lấy danh sách hoạt động gần đây
+        List<AnnouncementDTO> activityLogs = dao.getRecentActivities(4);
+
+        // Gán vào request      
         request.setAttribute("announcements", announcements);
-
+        request.setAttribute("activityLogs", activityLogs);
+        
         request.getRequestDispatcher("/WEB-INF/jsp/admin/TongQuan.jsp")
                 .forward(request, response);
 
