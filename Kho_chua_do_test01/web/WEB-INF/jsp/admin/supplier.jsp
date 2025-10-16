@@ -129,7 +129,22 @@
                 <nav class="nav-menu">
                     <a href="TongQuan" class="nav-item">Tổng quan</a>
                     <a href="product" class="nav-item">Hàng hóa</a>
-                    <a href="Transactions" class="nav-item">Giao dịch</a>
+                    <div class="nav-item dropdown
+                        ${fn:contains(pageContext.request.requestURI, 'Transactions') 
+                        or fn:contains(pageContext.request.requestURI, 'Orders') 
+                        ? 'active' : ''}">
+                        <a href="#" class="dropdown-toggle">
+                            <span class="icon-transactions"></span>
+                            Giao dịch
+                            <i class="fas fa-caret-down" style="margin-left:5px;"></i>
+                        </a>
+                        <div class="dropdown-menu">
+                            <a href="Orders" class="dropdown-item
+                            ${fn:contains(pageContext.request.requestURI, 'Orders') ? 'active' : ''}">
+                                Đơn hàng
+                            </a>
+                        </div>
+                    </div>
                     <div class="nav-item dropdown
                          ${fn:contains(pageContext.request.requestURI, 'Supplier') 
                            or fn:contains(pageContext.request.requestURI, 'Customer') 

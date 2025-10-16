@@ -60,50 +60,63 @@ public class OrderDAO extends DataBaseContext {
         }
     }
 
-    public PagedOrders search(Integer branchId, String status, String keyword,
-            String customerName, String productName,
-            java.sql.Timestamp fromDate, java.sql.Timestamp toDate,
-            int page, int pageSize) {
+    public PagedOrders search(
+            Integer branchId,
+            String status,
+            String keyword,
+            java.sql.Timestamp fromDate,
+            java.sql.Timestamp toDate,
+            Double minSpent,
+            Double maxSpent,
+            int page,
+            int pageSize) {
+
         List<Order> list = new ArrayList<>();
         List<Object> params = new ArrayList<>();
         StringBuilder where = new StringBuilder(" WHERE 1=1 ");
+
         if (branchId != null) {
-            where.append(" AND BranchID = ?");
+            where.append(" AND o.BranchID = ?");
             params.add(branchId);
         }
         if (status != null && !status.isBlank()) {
-            where.append(" AND OrderStatus = ?");
+            where.append(" AND o.OrderStatus = ?");
             params.add(status);
         }
         if (keyword != null && !keyword.isBlank()) {
-            where.append(" AND (CAST(OrderID AS NVARCHAR(20)) LIKE ? OR PaymentMethod LIKE ? OR Notes LIKE ?) ");
+            where.append(" AND (CAST(o.OrderID AS NVARCHAR(20)) LIKE ? OR o.PaymentMethod LIKE ? OR o.Notes LIKE ?)");
             String kw = "%" + keyword.trim() + "%";
             params.add(kw);
             params.add(kw);
             params.add(kw);
         }
-        if (customerName != null && !customerName.isBlank()) {
-            where.append(" AND EXISTS (SELECT 1 FROM Customers c WHERE c.CustomerID = Orders.CustomerID AND c.FullName LIKE ?) ");
-            params.add("%" + customerName.trim() + "%");
-        }
-        if (productName != null && !productName.isBlank()) {
-            where.append(" AND EXISTS (SELECT 1 FROM OrderDetails od JOIN ProductDetails pd ON pd.ProductDetailID = od.ProductDetailID JOIN Products p ON p.ProductID = pd.ProductID WHERE od.OrderID = Orders.OrderID AND p.ProductName LIKE ?) ");
-            params.add("%" + productName.trim() + "%");
-        }
         if (fromDate != null) {
-            where.append(" AND CreatedAt >= ?");
+            where.append(" AND o.CreatedAt >= ?");
             params.add(fromDate);
         }
         if (toDate != null) {
-            where.append(" AND CreatedAt <= ?");
+            where.append(" AND o.CreatedAt <= ?");
             params.add(toDate);
+        }
+        if (minSpent != null) {
+            where.append(" AND o.GrandTotal >= ?");
+            params.add(BigDecimal.valueOf(minSpent));
+        }
+        if (maxSpent != null) {
+            where.append(" AND o.GrandTotal <= ?");
+            params.add(BigDecimal.valueOf(maxSpent));
         }
 
         int offset = Math.max(0, (page - 1) * pageSize);
 
-        String sql = "SELECT * FROM Orders" + where + " ORDER BY OrderID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-        String countSql = "SELECT COUNT(*) FROM Orders" + where;
+        String sql = """
+        SELECT * FROM Orders o
+    """ + where + " ORDER BY o.OrderID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String countSql = "SELECT COUNT(*) FROM Orders o" + where;
+
         int total = 0;
+
+        // Đếm tổng
         try (PreparedStatement cps = connection.prepareStatement(countSql)) {
             for (int i = 0; i < params.size(); i++) {
                 cps.setObject(i + 1, params.get(i));
@@ -117,6 +130,7 @@ public class OrderDAO extends DataBaseContext {
             e.printStackTrace();
         }
 
+        // Lấy danh sách đơn hàng
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             int idx = 1;
             for (Object p : params) {
@@ -132,6 +146,7 @@ public class OrderDAO extends DataBaseContext {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return new PagedOrders(list, total, page, pageSize);
     }
 

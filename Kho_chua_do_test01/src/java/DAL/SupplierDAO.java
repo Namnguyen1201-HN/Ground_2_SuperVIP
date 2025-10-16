@@ -99,18 +99,18 @@ public class SupplierDAO extends DataBaseContext {
         List<Supplier> data = new ArrayList<>();
         String sql = """
         SELECT * FROM Suppliers
-        WHERE SupplierId LIKE ? OR SupplierName LIKE ? OR ContactName LIKE ? OR Phone LIKE ? OR Email LIKE ?
+        WHERE SupplierId LIKE ? OR SupplierName LIKE ? OR ContactName LIKE ?
         ORDER BY SupplierId
         OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
     """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             String kw = "%" + keyword + "%";
-            for (int i = 1; i <= 5; i++) {
+            for (int i = 1; i <= 3; i++) {
                 ps.setString(i, kw);
             }
             int offset = (pageIndex - 1) * pageSize;
-            ps.setInt(6, offset);
-            ps.setInt(7, pageSize);
+            ps.setInt(4, offset);
+            ps.setInt(5, pageSize);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Supplier s = new Supplier();
