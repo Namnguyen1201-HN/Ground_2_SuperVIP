@@ -12,7 +12,7 @@ public class User {
     private Integer branchId;
     private Integer warehouseId;
     private int roleId;
-    private int isActive;
+    private int isActive; // 0=Nghỉ,1=Đang làm,2=Chờ phê duyệt
     private Boolean gender; // TRUE = Nam, FALSE = Nữ
     private String avaUrl;
     private String address;
@@ -26,6 +26,8 @@ public class User {
     private String warehouseName;
     private String roleName;
     private Integer shiftID;
+    private String branchAddress;
+    private String warehouseAddress;
     // ===== Getters & Setters =====
 
     public int getUserId() {

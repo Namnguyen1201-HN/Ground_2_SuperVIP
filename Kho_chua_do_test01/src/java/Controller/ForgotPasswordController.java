@@ -31,8 +31,8 @@ public class ForgotPasswordController extends HttpServlet {
                 request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
             }
         } else {
-            // Show forgot password form
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
+            // Show forgot password form (no token)
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ForgotPassword.jsp").forward(request, response);
         }
     }
 
@@ -57,7 +57,7 @@ public class ForgotPasswordController extends HttpServlet {
         // Validate email input
         if (email == null || email.trim().isEmpty()) {
             request.setAttribute("errorMessage", "Vui lòng nhập địa chỉ email.");
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ForgotPassword.jsp").forward(request, response);
             return;
         }
         
@@ -65,7 +65,7 @@ public class ForgotPasswordController extends HttpServlet {
         if (!isValidEmail(email)) {
             request.setAttribute("errorMessage", "Địa chỉ email không hợp lệ.");
             request.setAttribute("email", email);
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/ForgotPassword.jsp").forward(request, response);
             return;
         }
         
@@ -122,8 +122,8 @@ public class ForgotPasswordController extends HttpServlet {
             // For security reasons, don't reveal that the email doesn't exist
             request.setAttribute("successMessage", "Nếu địa chỉ email tồn tại trong hệ thống, một email đặt lại mật khẩu sẽ được gửi đến địa chỉ email của bạn.");
         }
-        
-        request.getRequestDispatcher("/WEB-INF/jsp/includes/ResetPassword.jsp").forward(request, response);
+        // Always return to forgot password page after submitting email
+        request.getRequestDispatcher("/WEB-INF/jsp/includes/ForgotPassword.jsp").forward(request, response);
     }
     
     private void handleResetPassword(HttpServletRequest request, HttpServletResponse response)

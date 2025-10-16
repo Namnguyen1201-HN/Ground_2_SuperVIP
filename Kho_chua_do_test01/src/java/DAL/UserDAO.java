@@ -45,6 +45,23 @@ public class UserDAO extends DataBaseContext {
     private static final String GET_USER_BY_PHONE
             = SELECT_ALL_USERS + " WHERE u.Phone = ?";
 
+    // Forgot password helpers
+    private static final String GET_USER_BY_EMAIL_SIMPLE =
+            "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, u.RoleID, u.IsActive " +
+            "FROM Users u WHERE u.Email = ?";
+
+    private static final String INSERT_RESET_TOKEN =
+            "INSERT INTO PasswordResetTokens (userId, token, expiryDate) VALUES (?, ?, DATEADD(day, 1, GETDATE()))";
+
+    private static final String VALIDATE_RESET_TOKEN =
+            "SELECT COUNT(*) FROM PasswordResetTokens WHERE token = ? AND expiryDate > GETDATE()";
+
+    private static final String SELECT_USERID_BY_TOKEN =
+            "SELECT TOP 1 userId FROM PasswordResetTokens WHERE token = ? AND expiryDate > GETDATE()";
+
+    private static final String DELETE_TOKEN =
+            "DELETE FROM PasswordResetTokens WHERE token = ?";
+
     // ==============================
     // METHODS
     // ==============================
@@ -113,6 +130,82 @@ public class UserDAO extends DataBaseContext {
             e.printStackTrace();
         }
         return false;
+    }
+
+    // ==============================
+    // Forgot password methods
+    // ==============================
+    public User getUserByEmail(String email) {
+        try (PreparedStatement ps = connection.prepareStatement(GET_USER_BY_EMAIL_SIMPLE)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("UserID"));
+                    u.setFullName(rs.getString("FullName"));
+                    u.setEmail(rs.getString("Email"));
+                    u.setPhone(rs.getString("Phone"));
+                    u.setPasswordHash(rs.getString("PasswordHash"));
+                    u.setRoleId(rs.getInt("RoleID"));
+                    u.setIsActive(rs.getInt("IsActive"));
+                    return u;
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
+    }
+
+    public boolean createPasswordResetToken(int userId, String token) {
+        try (PreparedStatement ps = connection.prepareStatement(INSERT_RESET_TOKEN)) {
+            ps.setInt(1, userId);
+            ps.setString(2, token);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
+    }
+
+    public boolean isValidResetToken(String token) {
+        try (PreparedStatement ps = connection.prepareStatement(VALIDATE_RESET_TOKEN)) {
+            ps.setString(1, token);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
+    }
+
+    public boolean resetPassword(String token, String newPassword) throws SQLException {
+        boolean original = connection.getAutoCommit();
+        try {
+            connection.setAutoCommit(false);
+            Integer uid = null;
+            try (PreparedStatement ps = connection.prepareStatement(SELECT_USERID_BY_TOKEN)) {
+                ps.setString(1, token);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) uid = rs.getInt("userId");
+                }
+            }
+            if (uid == null) { connection.rollback(); return false; }
+
+            try (PreparedStatement ps = connection.prepareStatement(UPDATE_USER_PASSWORD)) {
+                ps.setString(1, newPassword);
+                ps.setInt(2, uid);
+                if (ps.executeUpdate() == 0) { connection.rollback(); return false; }
+            }
+
+            try (PreparedStatement ps = connection.prepareStatement(DELETE_TOKEN)) {
+                ps.setString(1, token);
+                ps.executeUpdate();
+            }
+
+            connection.commit();
+            return true;
+        } catch (SQLException ex) {
+            connection.rollback();
+            throw ex;
+        } finally {
+            connection.setAutoCommit(original);
+        }
     }
 
     public boolean insertUser(User u) {
