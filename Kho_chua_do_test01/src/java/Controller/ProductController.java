@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class ProductController extends HttpServlet {
 
     private static final int DEFAULT_STOCK_THRESHOLD = 30;
+    private static final int DEFAULT_BRANCH_ID_FOR_QTY = 1; // nếu không chọn chi nhánh, dùng 1
     private ProductDAO productDAO;
 
     @Override
@@ -38,12 +39,12 @@ public class ProductController extends HttpServlet {
 
         try {
             switch (action) {
-                case "add" -> showAddForm(request, response);
-                case "edit" -> showEditForm(request, response);
+                case "add"    -> showAddForm(request, response);
+                case "edit"   -> showEditForm(request, response);   // -> ProductForm.jsp
                 case "delete" -> deleteProduct(request, response);
-                case "list" -> listProducts(request, response);
-                case "detail" -> showDetail(request, response); 
-                default -> listProducts(request, response);
+                case "detail" -> showDetail(request, response);     // -> test.jsp
+                case "list"   -> listProducts(request, response);
+                default       -> listProducts(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -64,7 +65,7 @@ public class ProductController extends HttpServlet {
             switch (action) {
                 case "insert" -> insertProduct(request, response);
                 case "update" -> updateProduct(request, response);
-                default -> doGet(request, response);
+                default       -> doGet(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,24 +78,25 @@ public class ProductController extends HttpServlet {
             throws Exception {
         String keyword = trimToNull(request.getParameter("keyword"));
 
-        // HỖ TRỢ NHIỀU CATEGORY THEO TÊN:
+        // Lọc theo NHIỀU categoryName (tên) + tồn kho
         String[] rawCatNames = request.getParameterValues("categoryName");
         List<String> categoryNames = parseStrList(rawCatNames);
-
         if (categoryNames == null || categoryNames.isEmpty()) {
             String categoryNameCsv = trimToNull(request.getParameter("categoryName"));
             List<String> fromCsv = parseCsvStrList(categoryNameCsv);
             if (fromCsv != null && !fromCsv.isEmpty()) categoryNames = fromCsv;
         }
 
-        // stock: all | in | out | belowMin | aboveMax
         String stock = request.getParameter("stock");
         if (stock == null || stock.isBlank()) stock = "all";
 
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
-        // DAO NHẬN DANH SÁCH TÊN
-        List<Product> products = productDAO.findProductsWithThresholdByCategoryNames(categoryNames, keyword, stock, threshold);
+        // Gọi DAO lọc + SUM tồn kho (hàm này SELECT có TotalQty)
+        // Lưu ý: đảm bảo DAO đang map TotalQty (dùng mapRowToProductWithQty).
+        List<Product> products = productDAO.findProductsWithThresholdByCategoryNames(
+                categoryNames, keyword, stock, threshold
+        );
 
         // Đẩy dữ liệu ra view
         request.setAttribute("products", products);
@@ -110,13 +112,16 @@ public class ProductController extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/jsp/admin/product.jsp").forward(request, response);
     }
 
-    /* ========================= FORMS ========================= */
+    /* ========================= FORMS/DETAIL ========================= */
+
+    /** Thêm mới → ProductForm.jsp */
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         request.setAttribute("action", "insert");
         request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
     }
 
+    /** Chỉnh sửa → ProductForm.jsp (đúng yêu cầu: từ test.jsp bấm Chỉnh sửa tới form) */
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         Integer id = parseIntOrNull(request.getParameter("id"));
@@ -124,13 +129,32 @@ public class ProductController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu hoặc sai định dạng id");
             return;
         }
-        Product product = productDAO.getProductById(id);
+        // Lấy SP kèm TotalQty để đổ vào form (nếu form có hiển thị)
+        Product product = productDAO.getProductByIdWithQty(id);
         if (product == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy sản phẩm");
             return;
         }
         request.setAttribute("product", product);
         request.setAttribute("action", "update");
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
+    }
+
+    /** Xem chi tiết → test.jsp (từ danh sách bấm “Chi tiết”) */
+    private void showDetail(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+        Integer id = parseIntOrNull(request.getParameter("id"));
+        if (id == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu hoặc sai định dạng id");
+            return;
+        }
+        // Lấy SP kèm TotalQty để hiển thị đẹp ở test.jsp
+        Product product = productDAO.getProductByIdWithQty(id);
+        if (product == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy sản phẩm");
+            return;
+        }
+        request.setAttribute("product", product);
         request.getRequestDispatcher("/WEB-INF/jsp/admin/test.jsp").forward(request, response);
     }
 
@@ -138,6 +162,8 @@ public class ProductController extends HttpServlet {
     private void insertProduct(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         Product p = extractProductFromRequest(request);
+        // giữ nguyên insert (không trả id). Nếu bạn muốn set tồn ngay khi thêm,
+        // hãy đổi sang insertProductReturningId(...) ở DAO rồi gọi setQuantityForProductAtBranch(...).
         productDAO.insertProduct(p);
         response.sendRedirect("product?action=list");
     }
@@ -149,9 +175,24 @@ public class ProductController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu hoặc sai định dạng id");
             return;
         }
+
         Product p = extractProductFromRequest(request);
         p.setProductId(id);
         productDAO.updateProduct(p);
+
+        // ====== (TÙY CHỌN) Cập nhật tồn kho nếu form có gửi quantity ======
+        String rawQty = trimToNull(request.getParameter("quantity"));
+        if (rawQty != null && !rawQty.isBlank()) {
+            try {
+                int newQty = Integer.parseInt(rawQty.trim());
+                int branchId = parseIntOrDefault(request.getParameter("branchId"), DEFAULT_BRANCH_ID_FOR_QTY);
+                productDAO.setQuantityForProductAtBranch(id, branchId, newQty);
+            } catch (NumberFormatException ignore) {
+                // không làm gì nếu không hợp lệ
+            }
+        }
+        // ================================================================
+
         response.sendRedirect("product?action=list");
     }
 
@@ -184,8 +225,6 @@ public class ProductController extends HttpServlet {
         String t = s.trim();
         return t.isEmpty() ? null : t;
     }
-
-    // parse mảng String -> List<String>
     private List<String> parseStrList(String[] arr) {
         if (arr == null || arr.length == 0) return null;
         List<String> out = new ArrayList<>();
@@ -195,7 +234,6 @@ public class ProductController extends HttpServlet {
         }
         return out.isEmpty() ? null : out;
     }
-    // parse "A,B,C" -> List<String>
     private List<String> parseCsvStrList(String csv) {
         if (csv == null || csv.isBlank()) return null;
         String[] parts = csv.split(",");
@@ -207,7 +245,7 @@ public class ProductController extends HttpServlet {
         Product p = new Product();
         p.setProductName(trimToNull(request.getParameter("name")));
 
-        // DÙNG TÊN thay vì ID
+        // Dùng TÊN thay vì ID
         p.setBrandName(trimToNull(request.getParameter("brandName")));
         p.setCategoryName(trimToNull(request.getParameter("categoryName")));
         p.setSupplierName(trimToNull(request.getParameter("supplierName")));
@@ -215,7 +253,6 @@ public class ProductController extends HttpServlet {
         p.setCostPrice(parseBigDecimalOrNull(request.getParameter("costPrice")));
         p.setRetailPrice(parseBigDecimalOrNull(request.getParameter("retailPrice")));
         p.setVat(parseBigDecimalOrNull(request.getParameter("vat")));
-
         p.setImageUrl(trimToNull(request.getParameter("imageUrl")));
 
         String rawIsActive = request.getParameter("isActive");
@@ -226,20 +263,4 @@ public class ProductController extends HttpServlet {
         p.setIsActive(isActive);
         return p;
     }
-    private void showDetail(HttpServletRequest request, HttpServletResponse response)
-        throws Exception {
-    Integer id = parseIntOrNull(request.getParameter("id"));
-    if (id == null) {
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu hoặc sai định dạng id");
-        return;
-    }
-    Product product = productDAO.getProductById(id);
-    if (product == null) {
-        response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy sản phẩm");
-        return;
-    }
-    request.setAttribute("product", product);
-    request.getRequestDispatcher("/WEB-INF/jsp/admin/test.jsp").forward(request, response);
-}
-
 }

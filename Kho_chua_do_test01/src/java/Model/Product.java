@@ -134,4 +134,10 @@ public class Product {
     public void setSupplierName(String supplierName) {
         this.supplierName = supplierName;
     }
+    
+    // Model/Product.java
+private Integer totalQty;        // tổng tồn (read-only từ truy vấn)
+public Integer getTotalQty() { return totalQty; }
+public void setTotalQty(Integer totalQty) { this.totalQty = totalQty; }
+
 }

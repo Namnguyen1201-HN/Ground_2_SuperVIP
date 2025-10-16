@@ -187,6 +187,7 @@
                     <th>Danh mục</th>
                     <th>Thương hiệu</th>
                     <th>Nhà cung cấp</th>
+                    <th>Tồn kho</th>
                     <th>Giá vốn</th>
                     <th>Giá bán</th>
                     <th>VAT</th>
@@ -204,6 +205,7 @@
                         <td>${p.categoryName}</td>
                         <td>${p.brandName}</td>
                         <td>${p.supplierName}</td>
+                        <td>${p.totalQty}</td>
 
                         <td>
                             <c:choose>
