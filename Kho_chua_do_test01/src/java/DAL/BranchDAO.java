@@ -66,23 +66,5 @@ public class BranchDAO extends DataBaseContext {
         return false;
     }
 
-    // không biết của ai nên chưa sửa sau khi thay Database mới
-    public Branch getBranchById(int id) {
-        String sql = "SELECT BranchId, BranchName, Location, CreatedAt FROM CompanyBranches WHERE BranchId = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return new Branch(
-                        rs.getInt("BranchId"),
-                        rs.getString("BranchName"),
-                        rs.getString("Location"),
-                        rs.getTimestamp("CreatedAt")
-                );
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+    
 }
