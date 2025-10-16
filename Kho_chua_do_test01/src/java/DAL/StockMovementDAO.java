@@ -123,7 +123,7 @@ public class StockMovementDAO extends DataBaseContext {
     }
 
     public int create(StockMovementsRequest r) throws SQLException {
-        String sql = "INSERT INTO StockMovementsRequest (FromSupplierID, FromBranchID, FromWarehouseID, ToBranchID, ToWarehouseID, MovementType, CreatedBy, CreatedAt, Note) VALUES (?,?,?,?,?,?,?,?,GETDATE())";
+        String sql = "INSERT INTO StockMovementsRequest (FromSupplierID, FromBranchID, FromWarehouseID, ToBranchID, ToWarehouseID, MovementType, CreatedBy, CreatedAt, Note) VALUES (?,?,?,?,?,?,?,GETDATE(),?)";
         boolean auto = connection.getAutoCommit();
         try {
             connection.setAutoCommit(false);
