@@ -16,21 +16,20 @@ public class Supplier {
     private String contactName;
     private String email;
     private String phone;
-    private String address;
     private Date createdAt;
-    private Product product;
+    private Date updatedAt;
 
     public Supplier() {
     }
 
-    public Supplier(int supplierId, String supplierName, String contactName, String email, String phone, String address, Date createdAt) {
+    public Supplier(int supplierId, String supplierName, String contactName, String email, String phone, Date createdAt, Date updatedAt) {
         this.supplierId = supplierId;
         this.supplierName = supplierName;
         this.contactName = contactName;
         this.email = email;
         this.phone = phone;
-        this.address = address;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public int getSupplierId() {
@@ -73,14 +72,6 @@ public class Supplier {
         this.phone = phone;
     }
 
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -89,16 +80,16 @@ public class Supplier {
         this.createdAt = createdAt;
     }
 
-    public Product getProduct() {
-        return product;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override
     public String toString() {
-        return "Supplier{" + "supplierId=" + supplierId + ", supplierName=" + supplierName + ", contactName=" + contactName + ", email=" + email + ", phone=" + phone + ", address=" + address + ", createdAt=" + createdAt + '}';
+        return "Supplier{" + "supplierId=" + supplierId + ", supplierName=" + supplierName + ", contactName=" + contactName + ", email=" + email + ", phone=" + phone + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
     }
 }
