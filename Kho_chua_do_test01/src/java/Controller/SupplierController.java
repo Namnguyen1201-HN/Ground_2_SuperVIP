@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-
 package Controller;
 
 import DAL.SupplierDAO;
@@ -20,37 +19,43 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-
 /**
  *
  * @author TieuPham
  */
-@WebServlet(name="SupplierController", urlPatterns={"/Supplier"})
+@WebServlet(name = "SupplierController", urlPatterns = {"/Supplier"})
 public class SupplierController extends HttpServlet {
-   private SupplierDAO supplierDAO;
-    
+
+    private SupplierDAO supplierDAO;
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-    } 
-    
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         supplierDAO = new SupplierDAO();
         int pageSize = 10;
         int page;
         try {
             page = Integer.parseInt(request.getParameter("page"));
-            if (page < 1) page = 1;
+            if (page < 1) {
+                page = 1;
+            }
         } catch (Exception e) {
             page = 1;
         }
 
         int total = supplierDAO.getTotalSuppliers();
         int totalPages = (int) Math.ceil((double) total / pageSize);
-        if (totalPages == 0) totalPages = 1;
-        if (page > totalPages) page = totalPages;
+        if (totalPages == 0) {
+            totalPages = 1;
+        }
+        if (page > totalPages) {
+            page = totalPages;
+        }
 
         List<Supplier> suppliers = supplierDAO.getSuppliersPaged(page, pageSize);
         int startIndex = total == 0 ? 0 : (page - 1) * pageSize + 1;
@@ -64,16 +69,60 @@ public class SupplierController extends HttpServlet {
         request.setAttribute("endSupplier", endIndex);
         RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/admin/supplier.jsp");
         dispatcher.forward(request, response);
-    } 
-
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        doGet(request, response);
     }
 
-    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if ("search".equalsIgnoreCase(action)) {
+            handleSearch(request, response);
+        }
+    }
+
+    private void handleSearch(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        String keyword = request.getParameter("keyword");
+        if (keyword == null) {
+            // Nếu không có keyword trong request, lấy lại từ session (khi chuyển trang)
+            keyword = (String) request.getSession().getAttribute("searchKeyword");
+            if (keyword == null) {
+                keyword = "";
+            }
+        } else {
+            // Lưu keyword mới vào session
+            request.getSession().setAttribute("searchKeyword", keyword);
+        }
+
+        int page = 1;
+        int pageSize = 10;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            page = Integer.parseInt(pageParam);
+        }
+
+        SupplierDAO dao = new SupplierDAO();
+        int totalSuppliers = dao.getTotalSuppliersByKeyword(keyword);
+        int totalPages = (int) Math.ceil((double) totalSuppliers / pageSize);
+        List<Supplier> suppliers = dao.searchSuppliersPaged(keyword, page, pageSize);
+
+        int startSupplier = (page - 1) * pageSize + 1;
+        int endSupplier = Math.min(page * pageSize, totalSuppliers);
+
+        request.setAttribute("suppliers", suppliers);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalSuppliers", totalSuppliers);
+        request.setAttribute("startSupplier", startSupplier);
+        request.setAttribute("endSupplier", endSupplier);
+        request.setAttribute("keyword", keyword); // để giữ lại trong ô input
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/jsp/admin/supplier.jsp");
+        dispatcher.forward(request, response);
+    }
+
     @Override
     public String getServletInfo() {
         return "Short description";
