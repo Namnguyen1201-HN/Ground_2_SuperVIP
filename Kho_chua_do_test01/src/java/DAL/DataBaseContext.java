@@ -15,9 +15,10 @@ import java.util.logging.Logger;
  * @author TieuPham
  */
 public class DataBaseContext {
+
     protected Connection connection;
-    public DataBaseContext()
-    {
+
+    public DataBaseContext() {
         //@Students: You are allowed to edit user, pass, url variables to fit 
         //your system configuration
         //You can also add more methods for Database Interaction tasks. CRUD (Insert,Read,Updata,Delete)

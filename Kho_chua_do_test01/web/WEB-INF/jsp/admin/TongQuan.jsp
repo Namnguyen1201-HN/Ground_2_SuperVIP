@@ -6,7 +6,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>TSMS - Tổng quan</title>
+        <title>WMS - Tổng quan</title>
         <link href="css/admin/TongQuan.css" rel="stylesheet" type="text/css"/>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     </head>
@@ -20,36 +20,50 @@
                 <!-- Stats Section -->
                 <section class="stats-section">
                     <h2 class="stats-title">KẾT QUẢ BÁN HÀNG HÔM NAY</h2>
+                    <%
+    Model.DashboardStatsDTO stats = (Model.DashboardStatsDTO) request.getAttribute("stats");
+    if (stats == null) stats = new Model.DashboardStatsDTO();
+                    %>
+
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon revenue">💰</div>
                             <div class="stat-content">
-                                <h3>4,886,000</h3>
-                                <p>1 Hóa đơn - Doanh thu</p>
+                                <h3><%= String.format("%,.0f", stats.getTodayRevenue()) %> ₫</h3>
+                                <p>Doanh thu hôm nay</p>
                             </div>
                         </div>
+
                         <div class="stat-card">
                             <div class="stat-icon orders">📋</div>
                             <div class="stat-content">
-                                <h3>0</h3>
-                                <p>0 phiếu - Trả hàng</p>
+                                <h3><%= stats.getReturnCount() %></h3>
+                                <p>Phiếu trả hàng</p>
                             </div>
                         </div>
+
+                        <%
+    String colorClass1 = stats.getCompareYesterday() >= 0 ? "positive" : "negative";
+    String colorClass2 = stats.getCompareLastMonth() >= 0 ? "positive" : "negative";
+                        %>
+
                         <div class="stat-card">
                             <div class="stat-icon growth">📈</div>
                             <div class="stat-content">
-                                <h3>250.00%</h3>
+                                <h3 class="<%= colorClass1 %>"><%= String.format("%.2f", stats.getCompareYesterday()) %>%</h3>
                                 <p>So với hôm qua</p>
                             </div>
                         </div>
+
                         <div class="stat-card">
                             <div class="stat-icon comparison">📊</div>
                             <div class="stat-content">
-                                <h3>133.33%</h3>
+                                <h3 class="<%= colorClass2 %>"><%= String.format("%.2f", stats.getCompareLastMonth()) %>%</h3>
                                 <p>So với cùng kỳ tháng trước</p>
                             </div>
                         </div>
                     </div>
+                                
                 </section>
 
                 <!-- Chart Section -->
@@ -57,53 +71,135 @@
                     <div class="chart-header">
                         <h2 class="chart-title">DOANH THU THUẦN THÁNG NÀY ℹ️</h2>
                         <div style="display: flex; gap: 1rem; align-items: center;">
+
                             <div class="chart-tabs">
-                                <button class="chart-tab active">Theo ngày</button>
-                                <button class="chart-tab">Theo giờ</button>
-                                <button class="chart-tab">Theo thứ</button>
+                                <a href="TongQuan?viewType=day&period=<%= request.getAttribute("period") %>" 
+                                   class="chart-tab <%= "day".equals(request.getAttribute("viewType")) ? "active" : "" %>">Theo ngày</a>
+                                <a href="TongQuan?viewType=hour&period=<%= request.getAttribute("period") %>" 
+                                   class="chart-tab <%= "hour".equals(request.getAttribute("viewType")) ? "active" : "" %>">Theo giờ</a>
+                                <a href="TongQuan?viewType=weekday&period=<%= request.getAttribute("period") %>" 
+                                   class="chart-tab <%= "weekday".equals(request.getAttribute("viewType")) ? "active" : "" %>">Theo thứ</a>
                             </div>
-                            <select class="chart-dropdown">
-                                <option>Tháng này</option>
-                                <option>Tháng trước</option>
-                                <option>3 tháng gần đây</option>
+
+                            <select class="chart-dropdown" onchange="location.href = 'TongQuan?period=' + this.value + '&viewType=<%= request.getAttribute("viewType") %>'">
+                                <option value="this_month" <%= "this_month".equals(request.getAttribute("period")) ? "selected" : "" %>>Tháng này</option>
+                                <option value="last_month" <%= "last_month".equals(request.getAttribute("period")) ? "selected" : "" %>>Tháng trước</option>
+                                <option value="3months" <%= "3months".equals(request.getAttribute("period")) ? "selected" : "" %>>3 tháng gần đây</option>
                             </select>
+
                         </div>
                     </div>
-                    <div class="chart-container">
-                        <div style="text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
-                            <p>Không có dữ liệu</p>
+                    <div class="chart-container beautiful-table">
+                        <%
+                            List<Model.RevenueStatisticDTO> revenueStats = (List<Model.RevenueStatisticDTO>) request.getAttribute("revenueStats");
+                            if (revenueStats != null && !revenueStats.isEmpty()) {
+                                double total = 0;
+                        %>
+                        <table class="revenue-table">
+                            <thead>
+                                <tr>
+                                    <th>⏱ Thời gian</th>
+                                    <th class="text-right">💰 Doanh thu (VND)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%
+                                    for (Model.RevenueStatisticDTO r : revenueStats) {
+                                        total += r.getTotalRevenue();
+                                %>
+                                <tr>
+                                    <td><%= r.getLabel() %></td>
+                                    <td class="text-right"><%= String.format("%,.0f", r.getTotalRevenue()) %></td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td>Tổng cộng</td>
+                                    <td class="text-right"><%= String.format("%,.0f", total) %></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <% } else { %>
+                        <div class="no-data">
+                            <i class="fas fa-chart-line"></i>
+                            <p>Không có dữ liệu doanh thu</p>
                         </div>
+                        <% } %>
                     </div>
                 </section>
 
                 <!-- Top Products Section -->
+
                 <section class="products-section">
                     <div class="products-header">
-                        <h2 class="products-title">TOP 10 HÀNG HÓA BÁN CHẠY THÁNG NÀY</h2>
-                        <div style="display: flex; gap: 1rem;">
-                            <select class="chart-dropdown">
-                                <option>THEO DOANH THU THUẦN</option>
-                                <option>THEO SỐ LƯỢNG</option>
+                        <h2 class="products-title">
+                            TOP 10 HÀNG HÓA BÁN CHẠY 
+                            <%= "this_month".equals(request.getAttribute("period")) ? "THÁNG NÀY" : "THÁNG TRƯỚC" %>
+                        </h2>
+
+                        <form action="TongQuan" method="GET" style="display: flex; gap: 1rem;">
+                            <select name="sortBy" onchange="this.form.submit()">
+                                <option value="revenue" <%= "revenue".equals(request.getAttribute("sortBy")) ? "selected" : "" %>>THEO DOANH THU THUẦN</option>
+                                <option value="quantity" <%= "quantity".equals(request.getAttribute("sortBy")) ? "selected" : "" %>>THEO SỐ LƯỢNG</option>
                             </select>
-                            <select class="chart-dropdown">
-                                <option>Tháng này</option>
-                                <option>Tháng trước</option>
+
+                            <select name="period" onchange="this.form.submit()">
+                                <option value="this_month" <%= "this_month".equals(request.getAttribute("period")) ? "selected" : "" %>>Tháng này</option>
+                                <option value="last_month" <%= "last_month".equals(request.getAttribute("period")) ? "selected" : "" %>>Tháng trước</option>
                             </select>
-                        </div>
+                        </form>
                     </div>
-                    <div class="chart-container">
-                        <div style="text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 1rem;">📦</div>
+
+                    <div class="products-table" style="padding: 16px; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <%
+                            List<Model.ProductStatisticDTO> topProducts = (List<Model.ProductStatisticDTO>) request.getAttribute("topProducts");
+                            String sortBy = (String) request.getAttribute("sortBy");
+
+                            if (topProducts != null && !topProducts.isEmpty()) {
+                        %>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: #f0f0f0;">
+                                <tr>
+                                    <th style="padding: 8px; text-align: left;">#</th>
+                                    <th style="padding: 8px; text-align: left;">Tên sản phẩm</th>
+                                    <th style="padding: 8px; text-align: right;"><%= "revenue".equals(sortBy) ? "Doanh thu (VND)" : "Số lượng" %></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%
+                                    int i = 1;
+                                    for (Model.ProductStatisticDTO p : topProducts) {
+                                %>
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px;"><%= i++ %></td>
+                                    <td style="padding: 8px;"><%= p.getProductName() %></td>
+                                    <td style="padding: 8px; text-align: right;">
+                                        <%= "revenue".equals(sortBy) 
+                                            ? String.format("%,.0f", p.getRevenue()) 
+                                            : p.getTotalQuantity() %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                        <%
+                            } else {
+                        %>
+                        <div style="text-align: center; color: #9e9e9e; padding: 20px;">
+                            <i class="fas fa-box" style="font-size: 32px; margin-bottom: 12px; opacity: 0.5;"></i>
                             <p>Chưa có dữ liệu sản phẩm</p>
                         </div>
+                        <%
+                            }
+                        %>
                     </div>
                 </section>
             </div>
 
             <!-- Right Sidebar -->
             <aside class="sidebar">
-                
+
                 <!-- Notifications -->
                 <div class="sidebar-card notifications-section">
                     <h3>THÔNG BÁO</h3>
@@ -137,38 +233,81 @@
                     %>
                 </div>
 
-                <!-- Recent Activities -->
-                <div class="sidebar-card activities-section">
-                    <h3>CÁC HOẠT ĐỘNG GẦN ĐÂY</h3>
-                    <div class="activity-item">
-                        <div class="activity-icon error">🔴</div>
-                        <div class="activity-content">
-                            <p><strong>hoang minh kien</strong> vừa <strong>nhập hàng</strong> với giá trị <strong>0</strong></p>
-                            <div class="time">41 phút trước</div>
+                <!-- CÁC HOẠT ĐỘNG GẦN ĐÂY -->
+                <div class="activities" style="padding: 16px; background: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <div style="display: flex; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px;">
+                        <i style="color: #2196f3; font-size: 18px; margin-right: 8px;"></i>
+                        <h4 style="margin: 0; color: #1a1a1a; font-size: 18px; font-weight: 600;">CÁC HOẠT ĐỘNG GẦN ĐÂY</h4>
+                    </div>
+
+                    <%
+                        List<Model.AnnouncementDTO> activityLogs = (List<Model.AnnouncementDTO>) request.getAttribute("activityLogs");
+
+                        if (activityLogs != null && !activityLogs.isEmpty()) {
+                            for (Model.AnnouncementDTO log : activityLogs) {
+
+                                String bgColor;
+                                String iconClass;
+
+                                if ("Đơn hàng".equals(log.getCategory())) {
+                                    bgColor = "#e3f2fd";
+                                    iconClass = "fa-shopping-cart";
+                                } else if ("Nhập hàng".equals(log.getCategory()) || "Xuất kho".equals(log.getCategory())) {
+                                    bgColor = "#ede7f6";
+                                    iconClass = "fa-dolly";
+                                } else {
+                                    bgColor = "#fff3e0";
+                                    iconClass = "fa-dollar-sign";
+                                }
+                    %>
+
+                    <div class="activity-card" style="display: flex; background: #f9f9f9; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); padding: 16px; margin-bottom: 12px; gap: 12px;">
+                        <div style="flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: <%= bgColor %>;">
+                            <i class="fas <%= iconClass %>" style="color: #333;"></i>
+                        </div>
+
+                        <div style="flex: 1; font-size: 13px;">
+                            <% if ("Đơn hàng".equals(log.getCategory())) { %>
+                            <div style="font-weight: 600; margin-bottom: 4px;">Đơn hàng mới</div>
+                            <div>Mã: <%= log.getRawDescription() %></div>
+                            <div>Người tạo: <%= log.getSenderName() %></div>
+                            <div>Chi nhánh: <%= log.getLocationName() %></div>
+                            <div>Tổng tiền: <%= log.getDescription() %></div>
+
+                            <% } else if ("Nhập hàng".equals(log.getCategory()) || "Xuất kho".equals(log.getCategory())) { %>
+                            <div style="font-weight: 600; margin-bottom: 4px;"><%= log.getCategory() %></div>
+                            <div>Người gửi: <%= log.getSenderName() %></div>
+                            <div>Gửi từ: <%= log.getFromLocation() %></div>
+                            <div>Đến: <%= log.getToLocation() %></div>
+                            <div>Ghi chú: <%= log.getRawDescription() %></div>
+
+                            <% } else { %>
+                            <div style="font-weight: 600; margin-bottom: 4px;"><%= log.getStatus() %></div>
+                            <div>Danh mục: <%= log.getCategory() %></div>
+                            <div>Số tiền: <%= log.getDescription() %></div>
+                            <div>Mô tả: <%= log.getRawDescription() %></div>
+                            <div>Chi nhánh: <%= log.getLocationName() %></div>
+                            <div>Người ghi: <%= log.getSenderName() %></div>
+                            <% } %>
+
+                            <div style="margin-top: 6px; font-size: 12px; color: #888;">
+                                <i class="fas fa-clock" style="margin-right: 4px;"></i>
+                                <%= new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(log.getCreatedAt()) %>
+                            </div>
                         </div>
                     </div>
-                    <div class="activity-item">
-                        <div class="activity-icon info">🔵</div>
-                        <div class="activity-content">
-                            <p><strong>hoang minh kien</strong> vừa <strong>bán đơn hàng</strong> với giá trị <strong>4,886,000</strong></p>
-                            <div class="time">41 phút trước</div>
-                        </div>
+
+                    <% 
+                            } // end for
+                        } else { 
+                    %>
+                    <div style="text-align: center; padding: 32px 0; color: #9e9e9e;">
+                        <i class="fas fa-history" style="font-size: 32px; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p style="margin: 0; font-size: 14px;">Chưa có hoạt động nào</p>
                     </div>
-                    <div class="activity-item">
-                        <div class="activity-icon info">🔵</div>
-                        <div class="activity-content">
-                            <p><strong>Nguyễn Lê Hùng Cường</strong> vừa <strong>bán đơn hàng</strong> với giá trị <strong>1,396,000</strong></p>
-                            <div class="time">một ngày trước</div>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon error">🔴</div>
-                        <div class="activity-content">
-                            <p><strong>Nguyễn Lê Hùng Cường</strong> vừa <strong>nhập hàng</strong> với giá trị <strong>0</strong></p>
-                            <div class="time">một ngày trước</div>
-                        </div>
-                    </div>
+                    <% } %>
                 </div>
+
             </aside>
         </main>
 
