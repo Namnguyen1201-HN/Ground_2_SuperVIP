@@ -17,9 +17,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-@WebServlet(name="OrdersController", urlPatterns={"/Orders"})
+@WebServlet(name = "OrdersController", urlPatterns = {"/Orders"})
 public class OrdersController extends HttpServlet {
+
     private OrderDAO orderDAO;
     private OrderDetailDAO detailDAO;
     private UserDAO userDAO;
@@ -47,122 +54,183 @@ public class OrdersController extends HttpServlet {
 //        }
 
         String action = request.getParameter("action");
-        if (action == null) action = "list";
+        if (action == null) {
+            action = "list";
+        }
 
         switch (action) {
             case "detail":
-                try {
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    Model.Order order = orderDAO.getById(id);
-                    request.setAttribute("order", order);
-                    request.setAttribute("items", detailDAO.getByOrder(id));
+                handleDetail(request, response);
+                return;
+            case "delete":
+                handleDelete(request, response);
+                return;
+            default:
+                handleList(request, response);
+                return;
+        }
+    }
 
-                    // Attach display names for detail page
-                    if (order != null) {
-                        Model.User creator = userDAO.getUserById(order.getCreatedBy());
-                        if (creator != null) request.setAttribute("creatorName", creator.getFullName());
-                        if (order.getBranchId() != null) {
-                            java.util.List<Model.Branch> branches = branchDAO.getAllBranches();
-                            if (branches != null) {
-                                for (Model.Branch b : branches) {
-                                    if (b.getBranchId() == order.getBranchId()) {
-                                        request.setAttribute("branchName", b.getBranchName());
-                                        break;
-                                    }
-                                }
+    private void handleDetail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            Order order = orderDAO.getById(id);
+            request.setAttribute("order", order);
+            request.setAttribute("items", detailDAO.getByOrder(id));
+
+            if (order != null) {
+                User creator = userDAO.getUserById(order.getCreatedBy());
+                if (creator != null) request.setAttribute("creatorName", creator.getFullName());
+
+                if (order.getBranchId() != null) {
+                    List<Model.Branch> branches = branchDAO.getAllBranches();
+                    if (branches != null) {
+                        for (Model.Branch b : branches) {
+                            if (b.getBranchId() == order.getBranchId()) {
+                                request.setAttribute("branchName", b.getBranchName());
+                                break;
                             }
                         }
                     }
-                    // Pass all branches for select display
-                    request.setAttribute("allBranches", branchDAO.getAllBranches());
-
-                    // Pass product detail labels for current items
-                    java.util.List<Model.OrderDetail> curItems = detailDAO.getByOrder(id);
-                    java.util.Set<Integer> pdIds = new java.util.HashSet<>();
-                    if (curItems != null) {
-                        for (Model.OrderDetail d : curItems) pdIds.add(d.getProductDetailId());
-                    }
-                    DAL.ProductDetailDAO pddao = new DAL.ProductDetailDAO();
-                    java.util.Map<Integer,String> pdLabels = pddao.getLabelsByIds(pdIds);
-                    request.setAttribute("pdLabels", pdLabels);
-                    java.util.Map<Integer, DAL.ProductDetailDAO.DetailInfo> pdInfos = pddao.getInfoByIds(pdIds);
-                    request.setAttribute("pdInfos", pdInfos);
-
-                    request.getRequestDispatcher("/WEB-INF/jsp/admin/order_detail.jsp").forward(request, response);
-                    return;
-                } catch (NumberFormatException ignored) {}
-                break;
-            case "delete":
-                try {
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    detailDAO.deleteByOrder(id);
-                    orderDAO.delete(id);
-                } catch (NumberFormatException ignored) {}
-                response.sendRedirect("Orders?msg=deleted");
-                return;
-            default:
-                // filters
-                Integer fBranch = null; try { String b = request.getParameter("branch"); if (b!=null && !b.isBlank()) fBranch = Integer.parseInt(b); } catch(Exception ignored) {}
-                String fStatus = request.getParameter("st");
-                String fKw = request.getParameter("q");
-                String fCustomer = request.getParameter("customer");
-                String fProduct = request.getParameter("product");
-                java.sql.Timestamp fFrom = null, fTo = null;
-                try { String fd = request.getParameter("from"); if (fd!=null && !fd.isBlank()) fFrom = java.sql.Timestamp.valueOf(fd + " 00:00:00"); } catch(Exception ignored) {}
-                try { String td = request.getParameter("to"); if (td!=null && !td.isBlank()) fTo = java.sql.Timestamp.valueOf(td + " 23:59:59"); } catch(Exception ignored) {}
-                int page = 1; try { page = Integer.parseInt(request.getParameter("page")); } catch (Exception ignored) {}
-                int pageSize = 10;
-                DAL.OrderDAO.PagedOrders po = orderDAO.search(fBranch, fStatus, fKw, fCustomer, fProduct, fFrom, fTo, page, pageSize);
-                request.setAttribute("orders", po.orders);
-                request.setAttribute("total", po.total);
-                request.setAttribute("page", po.page);
-                request.setAttribute("pageSize", po.pageSize);
-                request.setAttribute("fBranch", fBranch);
-                request.setAttribute("fStatus", fStatus);
-                request.setAttribute("fKw", fKw);
-                request.setAttribute("fCustomer", fCustomer);
-                request.setAttribute("fProduct", fProduct);
-                request.setAttribute("fFrom", request.getParameter("from"));
-                request.setAttribute("fTo", request.getParameter("to"));
-
-                // Build display-name maps for branch and creator
-                java.util.Map<Integer, String> creatorNames = new java.util.HashMap<>();
-                java.util.Map<Integer, String> branchNames = new java.util.HashMap<>();
-
-                // Collect unique creator IDs to avoid many queries
-                java.util.Set<Integer> creatorIds = new java.util.HashSet<>();
-                if (po.orders != null) {
-                    for (Model.Order o : po.orders) {
-                        creatorIds.add(o.getCreatedBy());
-                        if (o.getBranchId() != null) {
-                            branchNames.put(o.getBranchId(), null); // placeholder keys
-                        }
-                    }
                 }
+            }
 
-                // Resolve user names
-                for (Integer uid : creatorIds) {
-                    Model.User u = userDAO.getUserById(uid);
-                    if (u != null) creatorNames.put(uid, u.getFullName());
-                }
+            // for selects in detail page
+            request.setAttribute("allBranches", branchDAO.getAllBranches());
 
-                // Resolve branches via one fetch
-                java.util.List<Model.Branch> branches = branchDAO.getAllBranches();
-                if (branches != null) {
-                    for (Model.Branch b : branches) {
-                        branchNames.put(b.getBranchId(), b.getBranchName());
-                    }
-                }
+            // product detail labels for items
+            List<OrderDetail> curItems = detailDAO.getByOrder(id);
+            Set<Integer> pdIds = new HashSet<>();
+            if (curItems != null) {
+                for (OrderDetail d : curItems) pdIds.add(d.getProductDetailId());
+            }
+            DAL.ProductDetailDAO pddao = new DAL.ProductDetailDAO();
+            Map<Integer, String> pdLabels = pddao.getLabelsByIds(pdIds);
+            request.setAttribute("pdLabels", pdLabels);
+            Map<Integer, DAL.ProductDetailDAO.DetailInfo> pdInfos = pddao.getInfoByIds(pdIds);
+            request.setAttribute("pdInfos", pdInfos);
 
-                request.setAttribute("creatorNames", creatorNames);
-                request.setAttribute("branchNames", branchNames);
-                request.setAttribute("allBranches", branches);
-
-                // Pass message flag for SweetAlert2
-                String msg = request.getParameter("msg");
-                if (msg != null) request.setAttribute("msg", msg);
-                request.getRequestDispatcher("/WEB-INF/jsp/admin/orders.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/admin/order_detail.jsp").forward(request, response);
+        } catch (NumberFormatException ignored) {
+            response.sendRedirect("Orders");
         }
+    }
+
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            detailDAO.deleteByOrder(id);
+            orderDAO.delete(id);
+        } catch (NumberFormatException ignored) {}
+        response.sendRedirect("Orders?msg=deleted");
+    }
+
+    private void handleList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // ---------- read filters ----------
+        Integer fBranch = null;
+        try {
+            // accept either "branch" or "branchId" coming from different versions of the JSP
+            String b = request.getParameter("branch");
+            if (b == null || b.isBlank()) b = request.getParameter("branchId");
+            if (b != null && !b.isBlank() && !"0".equals(b)) {
+                fBranch = Integer.parseInt(b);
+            }
+        } catch (Exception ignored) {}
+
+        String fStatus = request.getParameter("st");
+        String fKw = request.getParameter("q");
+        String fCustomer = request.getParameter("customer");
+        String fProduct = request.getParameter("product");
+
+        // dates (fromDate/toDate expected in yyyy-MM-dd from <input type="date">)
+        Timestamp fFrom = null, fTo = null;
+        try {
+            String fd = request.getParameter("fromDate");
+            if (fd != null && !fd.isBlank()) {
+                fFrom = Timestamp.valueOf(fd + " 00:00:00");
+            }
+        } catch (Exception ignored) {}
+        try {
+            String td = request.getParameter("toDate");
+            if (td != null && !td.isBlank()) {
+                fTo = Timestamp.valueOf(td + " 23:59:59");
+            }
+        } catch (Exception ignored) {}
+
+        // min/max spent (we use Double here; change to BigDecimal if your DAO expects BigDecimal)
+        Double minSpent = null, maxSpent = null;
+        try {
+            String ms = request.getParameter("minSpent");
+            if (ms != null && !ms.isBlank()) minSpent = Double.parseDouble(ms);
+        } catch (Exception ignored) {}
+        try {
+            String mx = request.getParameter("maxSpent");
+            if (mx != null && !mx.isBlank()) maxSpent = Double.parseDouble(mx);
+        } catch (Exception ignored) {}
+
+        // pagination
+        int page = 1;
+        try {
+            page = Integer.parseInt(request.getParameter("page"));
+            if (page < 1) page = 1;
+        } catch (Exception ignored) {}
+        int pageSize = 10;
+
+        // ---------- call DAO ----------
+        OrderDAO.PagedOrders po = orderDAO.search(
+                fBranch, fStatus, fKw, fFrom, fTo, minSpent, maxSpent, page, pageSize
+        );
+
+        // ---------- set attributes for JSP ----------
+        request.setAttribute("orders", po.orders);
+        request.setAttribute("total", po.total);
+        request.setAttribute("page", po.page);
+        request.setAttribute("pageSize", po.pageSize);
+
+        // keep current filter values so JSP can re-populate inputs
+        request.setAttribute("fBranch", fBranch);
+        request.setAttribute("fStatus", fStatus);
+        request.setAttribute("fKw", fKw);
+        request.setAttribute("fCustomer", fCustomer);
+        request.setAttribute("fProduct", fProduct);
+        request.setAttribute("fFromDate", request.getParameter("fromDate"));
+        request.setAttribute("fToDate", request.getParameter("toDate"));
+
+        // expose min/max back to JSP so inputs keep their values
+        request.setAttribute("fMinSpent", request.getParameter("minSpent"));
+        request.setAttribute("fMaxSpent", request.getParameter("maxSpent"));
+
+        // Build display-name maps for branch and creator (minimize DB calls)
+        Map<Integer, String> creatorNames = new HashMap<>();
+        Map<Integer, String> branchNames = new HashMap<>();
+
+        Set<Integer> creatorIds = new HashSet<>();
+        if (po.orders != null) {
+            for (Order o : po.orders) {
+                creatorIds.add(o.getCreatedBy());
+                if (o.getBranchId() != null) branchNames.put(o.getBranchId(), null);
+            }
+        }
+
+        for (Integer uid : creatorIds) {
+            User u = userDAO.getUserById(uid);
+            if (u != null) creatorNames.put(uid, u.getFullName());
+        }
+
+        List<Model.Branch> branches = branchDAO.getAllBranches();
+        if (branches != null) {
+            for (Model.Branch b : branches) branchNames.put(b.getBranchId(), b.getBranchName());
+        }
+
+        request.setAttribute("creatorNames", creatorNames);
+        request.setAttribute("branchNames", branchNames);
+        request.setAttribute("allBranches", branches);
+
+        // Pass message flag for SweetAlert2
+        String msg = request.getParameter("msg");
+        if (msg != null) request.setAttribute("msg", msg);
+
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/orders.jsp").forward(request, response);
     }
 
     @Override
@@ -179,7 +247,8 @@ public class OrdersController extends HttpServlet {
                 }
                 response.sendRedirect("Orders?msg=status-updated");
                 return;
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
         HttpSession session = request.getSession(false);
@@ -191,11 +260,15 @@ public class OrdersController extends HttpServlet {
             User current = (User) session.getAttribute("currentUser");
             Order o = new Order();
             String branchId = request.getParameter("branchId");
-            if (branchId != null && !branchId.isBlank()) o.setBranchId(Integer.parseInt(branchId));
+            if (branchId != null && !branchId.isBlank()) {
+                o.setBranchId(Integer.parseInt(branchId));
+            }
             o.setCreatedBy(current.getUserId());
             o.setOrderStatus(request.getParameter("status"));
             String custId = request.getParameter("customerId");
-            if (custId != null && !custId.isBlank()) o.setCustomerId(Integer.parseInt(custId));
+            if (custId != null && !custId.isBlank()) {
+                o.setCustomerId(Integer.parseInt(custId));
+            }
             o.setPaymentMethod(request.getParameter("paymentMethod"));
             o.setNotes(request.getParameter("notes"));
             o.setGrandTotal(new BigDecimal("0"));
@@ -211,7 +284,8 @@ public class OrdersController extends HttpServlet {
                             d.setProductDetailId(Integer.parseInt(productDetailIds[i]));
                             d.setQuantity(Integer.parseInt(quantities[i]));
                             detailDAO.insert(d);
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
                     }
                 }
             }
@@ -225,10 +299,9 @@ public class OrdersController extends HttpServlet {
                 orderDAO.updateBranch(orderId, branchId);
                 response.sendRedirect("Orders?action=detail&id=" + orderId + "&msg=branch-updated");
                 return;
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
         response.sendRedirect("Orders");
     }
 }
-
-

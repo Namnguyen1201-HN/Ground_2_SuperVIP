@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 
@@ -211,14 +213,44 @@
                 <span class="icon-products"></span>
                 Hàng hóa
             </a>
-            <a href="Transactions" class="nav-item">
-                <span class="icon-transactions"></span>
-                Giao dịch
-            </a>
-            <a href="Supplier" class="nav-item">
-                <span class="icon-partners"></span>
-                Đối tác
-            </a>
+            <div class="nav-item dropdown
+                ${fn:contains(pageContext.request.requestURI, 'Transactions') 
+                or fn:contains(pageContext.request.requestURI, 'Orders') 
+                ? 'active' : ''}">
+                <a href="#" class="dropdown-toggle">
+                    <span class="icon-transactions"></span>
+                    Giao dịch
+                    <i class="fas fa-caret-down" style="margin-left:5px;"></i>
+                </a>
+                <div class="dropdown-menu">
+                    <a href="Orders" class="dropdown-item
+                    ${fn:contains(pageContext.request.requestURI, 'Orders') ? 'active' : ''}">
+                        Đơn hàng
+                    </a>
+                </div>
+            </div>
+            <div class="nav-item dropdown
+                    ${fn:contains(pageContext.request.requestURI, 'Supplier') 
+                    or fn:contains(pageContext.request.requestURI, 'Customer') 
+                    ? 'active' : ''}">
+
+                <a href="#" class="dropdown-toggle">
+                    <span class="icon-partners"></span>
+                    Đối tác
+                    <i class="fas fa-caret-down" style="margin-left:5px;"></i>
+                </a>
+
+                <div class="dropdown-menu">
+                    <a href="Customer" class="dropdown-item
+                        ${fn:contains(pageContext.request.requestURI, 'Customer') ? 'active' : ''}">
+                        Khách hàng
+                    </a>
+                    <a href="Supplier" class="dropdown-item
+                        ${fn:contains(pageContext.request.requestURI, 'Supplier') ? 'active' : ''}">
+                        Nhà cung cấp
+                    </a>
+                </div>
+            </div>
             <a href="NhanVien" class="nav-item">
                 <span class="icon-staff"></span>
                 Nhân viên

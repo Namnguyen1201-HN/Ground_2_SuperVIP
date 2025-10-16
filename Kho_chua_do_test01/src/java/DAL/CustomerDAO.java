@@ -223,10 +223,7 @@ public class CustomerDAO extends DataBaseContext {
             sql.append("""
             AND (
                 CAST(t.CustomerID AS NVARCHAR(50)) LIKE ? OR
-                t.CustomerName LIKE ? OR
-                t.Phone LIKE ? OR
-                t.Address LIKE ? OR
-                CAST(t.TotalSpent AS NVARCHAR(50)) LIKE ?
+                t.CustomerName LIKE ?
             )
         """);
         }
@@ -257,9 +254,6 @@ public class CustomerDAO extends DataBaseContext {
                 String kw = "%" + keyword.trim() + "%";
                 ps.setString(index++, kw); // CustomerID cast
                 ps.setString(index++, kw); // CustomerName
-                ps.setString(index++, kw); // Phone
-                ps.setString(index++, kw); // Address
-                ps.setString(index++, kw); // TotalSpent cast
             }
 
             // 3) Gender

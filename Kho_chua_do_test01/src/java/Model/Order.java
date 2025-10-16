@@ -16,6 +16,23 @@ public class Order {
     private BigDecimal customerPay;
     private BigDecimal changeAmount;
 
+    public Order() {
+    }
+
+    public Order(int orderId, Integer branchId, int createdBy, String orderStatus, Date createdAt, Integer customerId, String paymentMethod, String notes, BigDecimal grandTotal, BigDecimal customerPay, BigDecimal changeAmount) {
+        this.orderId = orderId;
+        this.branchId = branchId;
+        this.createdBy = createdBy;
+        this.orderStatus = orderStatus;
+        this.createdAt = createdAt;
+        this.customerId = customerId;
+        this.paymentMethod = paymentMethod;
+        this.notes = notes;
+        this.grandTotal = grandTotal;
+        this.customerPay = customerPay;
+        this.changeAmount = changeAmount;
+    }
+    
     public int getOrderId() { return orderId; }
     public void setOrderId(int orderId) { this.orderId = orderId; }
 
