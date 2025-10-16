@@ -182,11 +182,11 @@
                 <ul>
                     <li><a href="#"><i class="fas fa-users"></i> Staff management</a></li>
                     <li><a href="#"><i class="fas fa-box"></i> Product management</a></li>
-                    <li><a href="#"><i class="fas fa-shopping-cart"></i> Order management</a></li>
+                    <li><a href="Orders"><i class="fas fa-shopping-cart"></i> Order management</a></li>
                     <li><a href="#"><i class="fas fa-bullhorn"></i> Promotion management</a></li>
-                    <li><a href="#"><i class="fas fa-exchange-alt"></i> Import/Export info</a></li>
+                    <li><a href="InventoryMoves"><i class="fas fa-exchange-alt"></i> Import/Export info</a></li>
                     <li><a href="#"><i class="fas fa-chart-line"></i> Activity log & revenue report</a></li>
-                    <li><a href="#"><i class="fas fa-truck-loading"></i> Warehouse import request</a></li>
+                    <li><a href="InventoryMoves"><i class="fas fa-truck-loading"></i> Warehouse import request</a></li>
                 </ul>
                 <div class="role">Super admin</div>
                 <ul>
@@ -228,7 +228,7 @@
                         <div class="card-icon"><i class="fas fa-users"></i></div>
                         <div class="card-title">Staff Management</div>
                         <div class="card-desc">Quản lý nhân viên, phân quyền, theo dõi hoạt động.</div>
-                        <a href="#" class="card-link">Xem chi tiết</a>
+                        <a href="InventoryMoves" class="card-link">Xem chi tiết</a>
                     </div>
                     <div class="card">
                         <div class="card-icon"><i class="fas fa-box"></i></div>
@@ -240,7 +240,7 @@
                         <div class="card-icon"><i class="fas fa-shopping-cart"></i></div>
                         <div class="card-title">Order Management</div>
                         <div class="card-desc">Quản lý đơn hàng, trạng thái, lịch sử giao dịch.</div>
-                        <a href="#" class="card-link">Xem chi tiết</a>
+                        <a href="Orders" class="card-link">Xem chi tiết</a>
                     </div>
                     <div class="card">
                         <div class="card-icon"><i class="fas fa-bullhorn"></i></div>
@@ -252,7 +252,7 @@
                         <div class="card-icon"><i class="fas fa-exchange-alt"></i></div>
                         <div class="card-title">Import/Export Info</div>
                         <div class="card-desc">Theo dõi nhập/xuất kho, thông báo, xử lý yêu cầu.</div>
-                        <a href="#" class="card-link">Xem chi tiết</a>
+                        <a href="InventoryMoves" class="card-link">Xem chi tiết</a>
                     </div>
                     <div class="card">
                         <div class="card-icon"><i class="fas fa-chart-line"></i></div>

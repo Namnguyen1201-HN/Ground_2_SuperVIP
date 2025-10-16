@@ -3,31 +3,26 @@ package Model;
 import java.util.Date;
 
 public class PasswordResetToken {
-    private int tokenId;
+    private int id;
     private int userId;
     private String token;
     private Date expiryDate;
-    private boolean isUsed;
-    private Date createdAt;
-    
-    public PasswordResetToken() {
-    }
-    
-    public PasswordResetToken(int tokenId, int userId, String token, Date expiryDate, boolean isUsed, Date createdAt) {
-        this.tokenId = tokenId;
+
+    public PasswordResetToken() {}
+
+    public PasswordResetToken(int id, int userId, String token, Date expiryDate) {
+        this.id = id;
         this.userId = userId;
         this.token = token;
         this.expiryDate = expiryDate;
-        this.isUsed = isUsed;
-        this.createdAt = createdAt;
     }
 
-    public int getTokenId() {
-        return tokenId;
+    public int getId() {
+        return id;
     }
 
-    public void setTokenId(int tokenId) {
-        this.tokenId = tokenId;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getUserId() {
@@ -54,19 +49,14 @@ public class PasswordResetToken {
         this.expiryDate = expiryDate;
     }
 
-    public boolean isIsUsed() {
-        return isUsed;
-    }
-
-    public void setIsUsed(boolean isUsed) {
-        this.isUsed = isUsed;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    @Override
+    public String toString() {
+        return "PasswordResetToken{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", token='" + token + '\'' +
+                ", expiryDate=" + expiryDate +
+                '}';
     }
 }
+
