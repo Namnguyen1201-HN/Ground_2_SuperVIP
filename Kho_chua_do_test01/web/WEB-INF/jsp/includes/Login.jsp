@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="header" id="header">
         <div class="header-content">
-            <a href="DashBoard" class="logo">
+            <a href="#" class="logo">
                 <div class="logo-icon">T</div>
                 <span class="logo-text">WM</span>
             </a>
@@ -24,6 +24,7 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="login-container">
+            <!-- Left Visual Section -->
             <div class="login-visual slide-in-left">
                 <div class="login-visual-content">
                     <h2>Chào mừng trở lại!</h2>
@@ -35,7 +36,7 @@
                             </div>
                             <div>
                                 <strong>Báo cáo thời gian thực</strong>
-                                <p>Theo dõi doanh thu và hiệu suất kinh doanh mọi lúc mọi nơi</p>
+                                <p>Theo dõi doanh thu và hiệu suất kinh doanh mỗi lúc mỗi nơi</p>
                             </div>
                         </li>
                         <li>
@@ -53,25 +54,51 @@
                             </div>
                             <div>
                                 <strong>Bảo mật tuyệt đối</strong>
-                                <p>Dữ liệu của bạn được bảo vệ</p>
+                                <p>Dữ liệu của bạn được bảo vệ bằng mã hóa cao</p>
                             </div>
                         </li>
                     </ul>
                 </div>
+
+                <!-- Floating Elements -->
+                <div class="floating-elements">
+                    <div class="floating-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="floating-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="floating-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                </div>
             </div>
 
+            <!-- Right Login Form Section -->
             <div class="login-form-container fade-in">
                 <div class="login-header">
                     <h1>Đăng nhập</h1>
                     <p>Nhập thông tin đăng nhập của bạn để tiếp tục</p>
                 </div>
 
+                <% if (request.getAttribute("error") != null) { %>
+                <div class="error-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="#D00E17" stroke="#D00E17" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 7a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V8a1 1 0 0 1 1-1z" fill="#fff"></path>
+                        <path d="M13 17a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" fill="#fff"></path>
+                    </svg>
+                    <span><%= request.getAttribute("error") %></span>
+                </div>
+                <% } %>
+
                 <form class="login-form" action="Login" method="post" id="loginForm">
                     <div class="form-group">
-                        <label for="username">Tên đăng nhập</label>
+                        <label for="username">Email hoặc Số điện thoại</label>
                         <div class="input-wrapper">
                             <i class="fas fa-user input-icon"></i>
-                            <input type="text" id="username" name="username" class="form-control" placeholder="Nhập tên đăng nhập" required>
+                            <input type="text" id="username" name="username" class="form-control" 
+                                   placeholder="Nhập email hoặc số điện thoại" required autofocus>
                         </div>
                     </div>
 
@@ -79,7 +106,8 @@
                         <label for="password">Mật khẩu</label>
                         <div class="input-wrapper">
                             <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="password" name="password" class="form-control" placeholder="Nhập mật khẩu" required>
+                            <input type="password" id="password" name="password" class="form-control" 
+                                   placeholder="Nhập mật khẩu" required>
                             <button type="button" class="toggle-password" onclick="togglePassword()">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -94,17 +122,6 @@
                         <a href="ForgotPassword" class="forgot-password">Quên mật khẩu?</a>
                     </div>
 
-                    <% if (request.getAttribute("error") != null) { %>
-                    <div class="error-message">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" title="Error">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8 14.667A6.667 6.667 0 1 0 8 1.333a6.667 6.667 0 0 0 0 13.334z" fill="#D00E17" stroke="#D00E17" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M8 4.583a.75.75 0 0 1 .75.75V8a.75.75 0 0 1-1.5 0V5.333a.75.75 0 0 1 .75-.75z" fill="#fff"></path>
-                            <path d="M8.667 10.667a.667.667 0 1 1-1.334 0 .667.667 0 0 1 1.334 0z" fill="#fff"></path>
-                        </svg>
-                        <span><%= request.getAttribute("error") %></span>
-                    </div>
-                    <% } %>
-
                     <button type="submit" class="btn-login" id="loginButton">
                         <i class="fas fa-sign-in-alt"></i>
                         Đăng nhập
@@ -114,46 +131,3 @@
                         Chưa có tài khoản? <a href="Register">Đăng ký ngay</a>
                     </div>
                 </form>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-copyright">
-                © 2025 WM. Tất cả quyền được bảo lưu.
-            </div>
-            <div class="footer-links">
-                <a href="#">Điều khoản sử dụng</a>
-                <a href="#">Chính sách bảo mật</a>
-                <a href="#">Trợ giúp</a>
-                <a href="#">Liên hệ</a>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.querySelector('.toggle-password i');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            const fadeElements = document.querySelectorAll('.fade-in');
-            fadeElements.forEach((element, index) => {
-                element.style.animationDelay = `${index * 0.2}s`;
-            });
-        });
-    </script>
-</body>
-</html>

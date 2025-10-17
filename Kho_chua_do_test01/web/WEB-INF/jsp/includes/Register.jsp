@@ -25,7 +25,7 @@
                     </div>
                     <div class="feature-content">
                         <h3>Báo cáo thời gian thực</h3>
-                        <p>Theo dõi doanh thu và hiệu suất kinh doanh mọi lúc mọi nơi với dashboard trực quan</p>
+                        <p>Theo dõi doanh thu và hiệu suất kinh doanh mỗi lúc mỗi nơi với dashboard trực quan</p>
                     </div>
                 </div>
                 <div class="feature">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="feature-content">
                         <h3>Truy cập đa nền tảng</h3>
-                        <p>Sử dụng WM trên máy tính, tablet và điện thoại di động một cách liền mạch</p>
+                        <p>Sử dụng WM trên máy tính, tablet và điện thoại di động một cách liên mạch</p>
                     </div>
                 </div>
                 <div class="feature">
@@ -43,7 +43,7 @@
                     </div>
                     <div class="feature-content">
                         <h3>Bảo mật tuyệt đối</h3>
-                        <p>Dữ liệu của bạn được bảo vệ</p>
+                        <p>Dữ liệu của bạn được bảo vệ bằng mã hóa cao cấp</p>
                     </div>
                 </div>
             </div>
@@ -56,41 +56,66 @@
             <!-- Header -->
             <div class="form-header">
                 <div class="logo">
-                    <a href="starting" class="logo">
-                        <div class="logo-icon">T</div>
-                        <span class="logo-text">WM</span>
-                    </a>
+                    <div class="logo-icon">T</div>
+                    <span class="logo-text">WM</span>
                 </div>
                 <h2 class="form-title">Đăng ký Tài khoản</h2>
                 <p class="form-subtitle">Nhập thông tin để tạo tài khoản mới</p>
             </div>
 
+            <!-- Success Message -->
+            <% if (request.getAttribute("success") != null) { %>
+            <div class="success-message" id="successMsg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12m0 0L3.41 13.41M4.83 12l5.17-5.17M9 16.17l7.07-7.07" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <span><%= request.getAttribute("success") %></span>
+            </div>
+            <% } %>
+
+            <!-- Error Message -->
+            <% if (request.getAttribute("error") != null) { %>
+            <div class="error-message" id="errorMsg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="#D00E17" stroke="#D00E17" stroke-width="1.5"></path>
+                    <path d="M12 7v5M12 16h.01" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <span><%= request.getAttribute("error") %></span>
+            </div>
+            <% } %>
+
             <!-- Registration Form -->
             <form class="form" action="Register" method="post" id="registerForm">
                 <div class="form-group">
                     <label for="fullName" class="form-label">Họ và tên *</label>
-                    <input type="text" id="fullName" name="fullName" class="form-input" placeholder="Nhập họ và tên đầy đủ" required>
+                    <input type="text" id="fullName" name="fullName" class="form-input" 
+                           placeholder="Nhập họ và tên đầy đủ" required maxlength="100">
                 </div>
 
                 <div class="form-group">
-                    <label for="username" class="form-label">Tên đăng nhập *</label>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="Nhập tên đăng nhập" required>
+                    <label for="identificationId" class="form-label">Căn cước công dân *</label>
+                    <input type="text" id="identificationId" name="identificationId" class="form-input" 
+                           placeholder="Nhập căn cước công dân (9 hoặc 12 chữ số)" required maxlength="12">
+                    <small style="color: #999; font-size: 0.85rem;">Ví dụ: 123456789 hoặc 123456789012</small>
                 </div>
 
                 <div class="form-group">
                     <label for="phone" class="form-label">Số điện thoại *</label>
-                    <input type="tel" id="phone" name="phone" class="form-input" placeholder="Nhập số điện thoại" required>
+                    <input type="tel" id="phone" name="phone" class="form-input" 
+                           placeholder="Nhập số điện thoại (10-11 chữ số)" required maxlength="11">
                 </div>
 
                 <div class="form-group">
                     <label for="email" class="form-label">Email *</label>
-                    <input type="email" id="email" name="email" class="form-input" placeholder="Nhập địa chỉ email" required>
+                    <input type="email" id="email" name="email" class="form-input" 
+                           placeholder="Nhập địa chỉ email" required maxlength="100">
                 </div>
 
                 <div class="form-group">
                     <label for="password" class="form-label">Mật khẩu *</label>
                     <div class="input-wrapper"> 
-                        <input type="password" id="password" name="password" class="form-input" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" required>
+                        <input type="password" id="password" name="password" class="form-input" 
+                               placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" required minlength="6">
                         <button type="button" class="toggle-password" onclick="togglePassword()">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -100,7 +125,8 @@
                 <div class="form-group">
                     <label for="confirmPassword" class="form-label">Xác nhận mật khẩu *</label>
                     <div class="input-wrapper">
-                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" placeholder="Nhập lại mật khẩu" required>
+                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-input" 
+                               placeholder="Nhập lại mật khẩu" required minlength="6">
                         <button type="button" class="toggle-password" onclick="toggleConfirmPassword()">
                             <i class="fas fa-eye"></i>
                         </button>
@@ -113,20 +139,10 @@
                         Tôi đồng ý với 
                         <a href="#" onclick="return false;">Điều khoản dịch vụ</a> 
                         và 
-                        <a href="#" onclick="return false;">Chính sách bảo mật</a> của WM
+                        <a href="#" onclick="return false;">Chính sách bảo mật</a> 
+                        của WM
                     </label>
                 </div>
-
-                <% if (request.getAttribute("error") != null) { %>
-                <div class="error-message">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" title="Error">
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 14.667A6.667 6.667 0 1 0 8 1.333a6.667 6.667 0 0 0 0 13.334z" fill="#D00E17" stroke="#D00E17" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                        <path fill-rule="evenodd" clip-rule="evenodd" d="M8 4.583a.75.75 0 0 1 .75.75V8a.75.75 0 0 1-1.5 0V5.333a.75.75 0 0 1 .75-.75z" fill="#fff"></path>
-                        <path d="M8.667 10.667a.667.667 0 1 1-1.334 0 .667.667 0 0 1 1.334 0z" fill="#fff"></path>
-                    </svg>
-                    <span><%= request.getAttribute("error") %></span>
-                </div>
-                <% } %>
 
                 <button type="submit" class="submit-button" id="submitBtn">
                     Đăng ký
@@ -144,6 +160,7 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.querySelector('#password + .toggle-password i');
+            
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.classList.remove('fa-eye');
@@ -158,6 +175,7 @@
         function toggleConfirmPassword() {
             const confirmPasswordInput = document.getElementById('confirmPassword');
             const toggleIcon = document.querySelector('#confirmPassword + .toggle-password i');
+            
             if (confirmPasswordInput.type === 'password') {
                 confirmPasswordInput.type = 'text';
                 toggleIcon.classList.remove('fa-eye');
@@ -169,6 +187,7 @@
             }
         }
 
+        // Check password match in real-time
         document.getElementById('confirmPassword').addEventListener('input', function () {
             const password = document.getElementById('password').value;
             if (this.value && this.value !== password) {
@@ -182,6 +201,33 @@
             }
         });
 
+        // Validate phone number
+        document.getElementById('phone').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 11);
+        });
+
+        // Validate identification ID
+        document.getElementById('identificationId').addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 12);
+        });
+
+        // Form submit handler
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Mật khẩu xác nhận không khớp!');
+                return false;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Đang đăng ký...';
+        });
+
+        // Animation on page load
         document.addEventListener('DOMContentLoaded', function () {
             const formElements = document.querySelectorAll('.form-group, .checkbox-group, .submit-button, .login-link');
             formElements.forEach((element, index) => {
@@ -193,7 +239,95 @@
                     element.style.transform = 'translateY(0)';
                 }, 100 + index * 100);
             });
+
+            // Auto redirect if success
+            const successMsg = document.getElementById('successMsg');
+            if (successMsg) {
+                setTimeout(() => {
+                    window.location.href = 'Login';
+                }, 2000);
+            }
         });
     </script>
+
+    <style>
+        .success-message {
+            display: flex;
+            color: #4CAF50;
+            font-size: 14px;
+            justify-content: center;
+            gap: 8px;
+            align-items: center;
+            padding: 12px;
+            background: #f1f8e9;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-message {
+            display: flex;
+            color: #D00E17;
+            font-size: 14px;
+            justify-content: center;
+            gap: 8px;
+            align-items: center;
+            padding: 12px;
+            background: #ffebee;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .submit-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 4px;
+        }
+
+        .form-group.error .form-input {
+            border-color: #D00E17;
+        }
+
+        .form-group.show-error::after {
+            content: attr(data-error);
+            color: #D00E17;
+            font-size: 0.8rem;
+            margin-top: 4px;
+            display: block;
+        }
+    </style>
 </body>
 </html>

@@ -4,8 +4,8 @@
  */
 package Controller;
 
+import Model.User;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,40 +13,38 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-@WebServlet(name = "DashBoardController", urlPatterns = {"/DashBoard"})
-public class DashBoardController extends HttpServlet {
+@WebServlet(name = "DashboardController", urlPatterns = {"/DashBoard"})
+public class DashboardController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
+        
+        // Check if user is logged in
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect("Login");
+            return;
+        }
+        
+        // Forward to Dashboard JSP
         request.getRequestDispatcher("/WEB-INF/jsp/includes/Dashboard.jsp").forward(request, response);
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-//        if (session == null || session.getAttribute("currentUser") == null) {
-//            response.sendRedirect("Login");
-//              return;
-//        }            
         processRequest(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-//        if (session == null || session.getAttribute("currentUser") == null) {
-//            response.sendRedirect("Login");
-//            return;
-//        }
         processRequest(request, response);
     }
 
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Dashboard Controller for WM System";
+    }
 }

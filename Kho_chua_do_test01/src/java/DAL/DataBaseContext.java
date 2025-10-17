@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package DAL;
 
 import java.sql.Connection;
@@ -10,27 +6,21 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author TieuPham
- */
 public class DataBaseContext {
     protected Connection connection;
-    public DataBaseContext()
-    {
-        //@Students: You are allowed to edit user, pass, url variables to fit 
-        //your system configuration
-        //You can also add more methods for Database Interaction tasks. CRUD (Insert,Read,Updata,Delete)
-        //But we recommend you to do it in another class
-        // For example : StudentDBContext extends DBContext , 
-        //where StudentDBContext is located in dal package, 
+
+    public DataBaseContext() {
         try {
             String user = "sa";
-            String pass = "123";
-            String url = "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=Lan1";
+            String pass = "123"; // thay đúng mật khẩu SQL Server của bạn
+            String url = "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=Lan1;encrypt=false";
+            
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             connection = DriverManager.getConnection(url, user, pass);
+            System.out.println("✅ Kết nối thành công tới SQL Server!");
         } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("❌ Kết nối thất bại!");
+            ex.printStackTrace();
             Logger.getLogger(DataBaseContext.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
