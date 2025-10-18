@@ -67,23 +67,23 @@
             <input type="hidden" name="action" value="list"/>
 
             <!-- Lọc theo danh mục: DÙNG TÊN -->
-            <div class="filter-content" id="category-filter-content" style="display:block">
-                <label><strong>Loại sản phẩm:</strong></label><br/>
-                <c:forEach var="c" items="${categories}">
-                    <c:set var="checked" value="${selectedCategoryNames != null && selectedCategoryNames.contains(c.categoryName)}"/>
-                    <div class="form-check">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               name="categoryName"
-                               value="${c.categoryName}"
-                               id="cat-${fn:escapeXml(c.categoryName)}"
-                               <c:if test="${checked}">checked</c:if> />
-                        <label class="form-check-label" for="cat-${fn:escapeXml(c.categoryName)}">
-                            ${c.categoryName}
-                        </label>
-                    </div>
-                </c:forEach>
-            </div>
+   <div class="filter-content" id="category-filter-content" style="display:block">
+    <label for="categoryNameSelect"><strong>Loại sản phẩm:</strong></label><br/>
+
+    <select id="categoryNameSelect" name="categoryName" multiple
+            style="width:100%; padding:6px; height:120px;">
+
+        <c:forEach var="c" items="${categories}">
+            <c:set var="selected"
+                   value="${selectedCategoryNames != null && selectedCategoryNames.contains(c.categoryName)}"/>
+            <option value="${c.categoryName}"
+                    <c:if test="${selected}">selected</c:if>>
+                ${c.categoryName}
+            </option>
+        </c:forEach>
+    </select>
+
+</div>
 
             <!-- Tồn kho -->
             <div class="filter-section">
