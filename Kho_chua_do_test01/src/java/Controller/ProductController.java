@@ -2,6 +2,10 @@ package Controller;
 
 import DAL.ProductDAO;
 import DAL.CategoryDAO;
+import DAL.BrandDAO;
+import DAL.SupplierDAO;
+import DAL.BranchDAO;
+
 import Model.Category;
 import Model.Product;
 
@@ -21,11 +25,20 @@ public class ProductController extends HttpServlet {
 
     private static final int DEFAULT_STOCK_THRESHOLD = 30;
     private static final int DEFAULT_BRANCH_ID_FOR_QTY = 1; // nếu không chọn chi nhánh, dùng 1
-    private ProductDAO productDAO;
+
+    private ProductDAO  productDAO;
+    private BrandDAO    brandDAO;
+    private SupplierDAO supplierDAO;
+    private CategoryDAO categoryDAO;
+    private BranchDAO   branchDAO; // dùng cho dropdown chi nhánh khi chỉnh tồn
 
     @Override
     public void init() {
-        productDAO = new ProductDAO();
+        productDAO  = new ProductDAO();
+        brandDAO    = new BrandDAO();
+        supplierDAO = new SupplierDAO();
+        categoryDAO = new CategoryDAO();
+        branchDAO   = new BranchDAO(); // nếu chưa cần dropdown chi nhánh có thể bỏ
     }
 
     @Override
@@ -42,13 +55,14 @@ public class ProductController extends HttpServlet {
                 case "add"    -> showAddForm(request, response);
                 case "edit"   -> showEditForm(request, response);   // -> ProductForm.jsp
                 case "delete" -> deleteProduct(request, response);
-                case "detail" -> showDetail(request, response);     // -> test.jsp
+                case "detail" -> showDetail(request, response);     // -> test.jsp (xem chi tiết)
                 case "list"   -> listProducts(request, response);
                 default       -> listProducts(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi khi xử lý yêu cầu");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Đã xảy ra lỗi khi xử lý yêu cầu");
         }
     }
 
@@ -69,7 +83,8 @@ public class ProductController extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Đã xảy ra lỗi khi xử lý dữ liệu gửi lên");
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Đã xảy ra lỗi khi xử lý dữ liệu gửi lên");
         }
     }
 
@@ -78,7 +93,7 @@ public class ProductController extends HttpServlet {
             throws Exception {
         String keyword = trimToNull(request.getParameter("keyword"));
 
-        // Lọc theo NHIỀU categoryName (tên) + tồn kho
+        // Lọc theo nhiều categoryName (theo tên) + tồn kho
         String[] rawCatNames = request.getParameterValues("categoryName");
         List<String> categoryNames = parseStrList(rawCatNames);
         if (categoryNames == null || categoryNames.isEmpty()) {
@@ -87,13 +102,13 @@ public class ProductController extends HttpServlet {
             if (fromCsv != null && !fromCsv.isEmpty()) categoryNames = fromCsv;
         }
 
+        // stock: all | in | out | belowMin | aboveMax
         String stock = request.getParameter("stock");
         if (stock == null || stock.isBlank()) stock = "all";
 
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
-        // Gọi DAO lọc + SUM tồn kho (hàm này SELECT có TotalQty)
-        // Lưu ý: đảm bảo DAO đang map TotalQty (dùng mapRowToProductWithQty).
+        // DAO có SELECT SUM tồn kho (TotalQty) bên trong
         List<Product> products = productDAO.findProductsWithThresholdByCategoryNames(
                 categoryNames, keyword, stock, threshold
         );
@@ -105,23 +120,23 @@ public class ProductController extends HttpServlet {
         request.setAttribute("stock", stock);
         request.setAttribute("stockThreshold", threshold);
 
-        CategoryDAO categoryDAO = new CategoryDAO();
-        List<Category> categories = categoryDAO.getAll();
-        request.setAttribute("categories", categories);
+        // Sidebar danh mục
+        request.setAttribute("categories", categoryDAO.getAll());
 
         request.getRequestDispatcher("/WEB-INF/jsp/admin/product.jsp").forward(request, response);
     }
 
     /* ========================= FORMS/DETAIL ========================= */
 
-    /** Thêm mới → ProductForm.jsp */
+    /** Thêm mới → ProductForm.jsp (dropdown theo tên) */
     private void showAddForm(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         request.setAttribute("action", "insert");
+        pushLookups(request); // nạp brands/categories/suppliers/(branches)
         request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
     }
 
-    /** Chỉnh sửa → ProductForm.jsp (đúng yêu cầu: từ test.jsp bấm Chỉnh sửa tới form) */
+    /** Sửa → ProductForm.jsp (từ test.jsp bấm Chỉnh sửa sẽ tới form này) */
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         Integer id = parseIntOrNull(request.getParameter("id"));
@@ -129,18 +144,28 @@ public class ProductController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu hoặc sai định dạng id");
             return;
         }
-        // Lấy SP kèm TotalQty để đổ vào form (nếu form có hiển thị)
-        Product product = productDAO.getProductByIdWithQty(id);
+
+        // Lấy kèm tổng tồn để hiện trong form nếu cần
+        Product product;
+        try {
+            product = productDAO.getProductByIdWithQty(id);
+        } catch (NoSuchMethodError | RuntimeException ex) {
+            // fallback nếu DAO của bạn chưa có getProductByIdWithQty
+            product = productDAO.getProductById(id);
+        }
+
         if (product == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy sản phẩm");
             return;
         }
+
         request.setAttribute("product", product);
         request.setAttribute("action", "update");
+        pushLookups(request); // nạp các dropdown
         request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
     }
 
-    /** Xem chi tiết → test.jsp (từ danh sách bấm “Chi tiết”) */
+    /** Xem chi tiết → test.jsp */
     private void showDetail(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         Integer id = parseIntOrNull(request.getParameter("id"));
@@ -148,12 +173,19 @@ public class ProductController extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Thiếu hoặc sai định dạng id");
             return;
         }
-        // Lấy SP kèm TotalQty để hiển thị đẹp ở test.jsp
-        Product product = productDAO.getProductByIdWithQty(id);
+
+        Product product;
+        try {
+            product = productDAO.getProductByIdWithQty(id);
+        } catch (NoSuchMethodError | RuntimeException ex) {
+            product = productDAO.getProductById(id);
+        }
+
         if (product == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Không tìm thấy sản phẩm");
             return;
         }
+
         request.setAttribute("product", product);
         request.getRequestDispatcher("/WEB-INF/jsp/admin/test.jsp").forward(request, response);
     }
@@ -162,9 +194,14 @@ public class ProductController extends HttpServlet {
     private void insertProduct(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         Product p = extractProductFromRequest(request);
-        // giữ nguyên insert (không trả id). Nếu bạn muốn set tồn ngay khi thêm,
-        // hãy đổi sang insertProductReturningId(...) ở DAO rồi gọi setQuantityForProductAtBranch(...).
         productDAO.insertProduct(p);
+
+        // (tùy chọn) nếu muốn set tồn luôn sau khi insert, bạn có thể:
+        // int newId = productDAO.insertProductReturningId(p);
+        // int qty   = parseIntOrDefault(request.getParameter("quantity"), 0);
+        // int branchId = parseIntOrDefault(request.getParameter("branchId"), DEFAULT_BRANCH_ID_FOR_QTY);
+        // productDAO.setQuantityForProductAtBranch(newId, branchId, qty);
+
         response.sendRedirect("product?action=list");
     }
 
@@ -180,18 +217,15 @@ public class ProductController extends HttpServlet {
         p.setProductId(id);
         productDAO.updateProduct(p);
 
-        // ====== (TÙY CHỌN) Cập nhật tồn kho nếu form có gửi quantity ======
+        // (tùy chọn) cập nhật tồn kho nếu form có gửi
         String rawQty = trimToNull(request.getParameter("quantity"));
         if (rawQty != null && !rawQty.isBlank()) {
             try {
                 int newQty = Integer.parseInt(rawQty.trim());
                 int branchId = parseIntOrDefault(request.getParameter("branchId"), DEFAULT_BRANCH_ID_FOR_QTY);
                 productDAO.setQuantityForProductAtBranch(id, branchId, newQty);
-            } catch (NumberFormatException ignore) {
-                // không làm gì nếu không hợp lệ
-            }
+            } catch (NumberFormatException ignore) { /* bỏ qua nếu giá trị không hợp lệ */ }
         }
-        // ================================================================
 
         response.sendRedirect("product?action=list");
     }
@@ -208,23 +242,36 @@ public class ProductController extends HttpServlet {
     }
 
     /* ========================= HELPERS ========================= */
+
+    /** Nạp dữ liệu cho dropdown trong ProductForm.jsp */
+    private void pushLookups(HttpServletRequest req) {
+        req.setAttribute("brands",     brandDAO.getAll());     // [{brandId, brandName}, ...]
+        req.setAttribute("categories", categoryDAO.getAll());  // [{categoryId, categoryName}, ...]
+        req.setAttribute("suppliers",  supplierDAO.getAllSuppliers());  // [{supplierId, supplierName}, ...]
+        req.setAttribute("branches",   branchDAO.getAllBranches());    // dùng cho chọn chi nhánh khi chỉnh tồn
+    }
+
     private Integer parseIntOrNull(String s) {
         try { return (s == null || s.isBlank()) ? null : Integer.valueOf(s.trim()); }
         catch (NumberFormatException e) { return null; }
     }
+
     private int parseIntOrDefault(String s, int def) {
         try { return (s == null || s.isBlank()) ? def : Integer.parseInt(s.trim()); }
         catch (NumberFormatException e) { return def; }
     }
+
     private BigDecimal parseBigDecimalOrNull(String s) {
         try { return (s == null || s.isBlank()) ? null : new BigDecimal(s.trim()); }
         catch (NumberFormatException e) { return null; }
     }
+
     private String trimToNull(String s) {
         if (s == null) return null;
         String t = s.trim();
         return t.isEmpty() ? null : t;
     }
+
     private List<String> parseStrList(String[] arr) {
         if (arr == null || arr.length == 0) return null;
         List<String> out = new ArrayList<>();
@@ -234,18 +281,19 @@ public class ProductController extends HttpServlet {
         }
         return out.isEmpty() ? null : out;
     }
+
     private List<String> parseCsvStrList(String csv) {
         if (csv == null || csv.isBlank()) return null;
         String[] parts = csv.split(",");
         return parseStrList(parts);
     }
 
-    /** Map form -> Product (DÙNG TÊN) */
+    /** Map form -> Product: dùng TÊN (brandName/categoryName/supplierName) */
     private Product extractProductFromRequest(HttpServletRequest request) {
         Product p = new Product();
         p.setProductName(trimToNull(request.getParameter("name")));
 
-        // Dùng TÊN thay vì ID
+        // Dùng TÊN thay vì ID (DAO sẽ resolve -> ID)
         p.setBrandName(trimToNull(request.getParameter("brandName")));
         p.setCategoryName(trimToNull(request.getParameter("categoryName")));
         p.setSupplierName(trimToNull(request.getParameter("supplierName")));
@@ -261,6 +309,7 @@ public class ProductController extends HttpServlet {
             isActive = ("on".equalsIgnoreCase(rawIsActive) || "true".equalsIgnoreCase(rawIsActive));
         }
         p.setIsActive(isActive);
+
         return p;
     }
 }
