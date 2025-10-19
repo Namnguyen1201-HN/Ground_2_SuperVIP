@@ -7,433 +7,337 @@ import java.util.List;
 
 public class UserDAO extends DataBaseContext {
 
-    // ==============================
-    // SQL QUERIES
-    // ==============================
-    private static final String SELECT_ALL_USERS
-            = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, "
-            + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, "
-            + "u.Address, u.TaxNumber, u.WebURL, u.DOB, u.IdentificationID, "
-            + "r.RoleName, b.BranchName, w.WarehouseName "
-            + "FROM Users u "
-            + "LEFT JOIN Roles r ON u.RoleID = r.RoleID "
-            + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
-            + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID";
+    /**
+     * Authenticate user with email/phone and password
+     */
+    public User authenticateUser(String username, String password) {
+        User user = null;
+        String hashedPassword = hashPassword(password);
+        
+        String query = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, "
+                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, "
+                + "r.RoleName, b.BranchName, w.WarehouseName "
+                + "FROM Users u "
+                + "INNER JOIN Roles r ON u.RoleID = r.RoleID "
+                + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
+                + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
+                + "WHERE (u.Email = ? OR u.Phone = ?) AND u.IsActive = 1";
+        
+        try {
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, username);
+            stmt.setString(2, username);
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                String storedPassword = rs.getString("PasswordHash");
+                
+                // Verify password
+                if (verifyPassword(password, storedPassword)) {
+                    user = new User();
+                    user.setUserId(rs.getInt("UserID"));
+                    user.setFullName(rs.getString("FullName"));
+                    user.setEmail(rs.getString("Email"));
+                    user.setPhone(rs.getString("Phone"));
+                    user.setBranchId(rs.getInt("BranchID"));
+                    user.setWarehouseId(rs.getInt("WarehouseID"));
+                    user.setRoleId(rs.getInt("RoleID"));
+                    user.setRoleName(rs.getString("RoleName"));
+                    user.setIsActive(rs.getInt("IsActive"));
+                    user.setGender(rs.getBoolean("Gender"));
+                    user.setAvaUrl(rs.getString("AvaUrl"));
+                    user.setAddress(rs.getString("Address"));
+                    user.setBranchName(rs.getString("BranchName"));
+                    user.setWarehouseName(rs.getString("WarehouseName"));
+                }
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        
+        return user;
+    }
 
-    private static final String GET_USER_BY_ID
-            = SELECT_ALL_USERS + " WHERE u.UserID = ?";
+    /**
+     * Verify password
+     */
+    private boolean verifyPassword(String password, String storedPassword) {
+        // Compare with hashed password
+        return hashPassword(password).equals(storedPassword);
+    }
 
-    private static final String AUTHENTICATE_USER
-            = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, u.RoleID, "
-            + "r.RoleName, u.IsActive, b.BranchName, w.WarehouseName "
-            + "FROM Users u "
-            + "LEFT JOIN Roles r ON u.RoleID = r.RoleID "
-            + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
-            + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
-            + "WHERE u.Email = ? AND u.PasswordHash = ? AND u.IsActive = 1";
+    /**
+     * Hash password using SHA-256
+     */
+    private String hashPassword(String password) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] messageDigest = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : messageDigest) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (java.security.NoSuchAlgorithmException e) {
+            return password;
+        }
+    }
 
-    private static final String INSERT_USER
-            = "INSERT INTO Users (FullName, Email, Phone, PasswordHash, BranchID, WarehouseID, RoleID, IsActive, Gender, AvaUrl, Address, TaxNumber, WebURL, DOB, IdentificationID) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    /**
+     * Get user by ID with full information
+     */
+    public User getUserById(int userID) {
+        User user = null;
+        String query = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, "
+                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, "
+                + "r.RoleName, b.BranchName, w.WarehouseName "
+                + "FROM Users u "
+                + "INNER JOIN Roles r ON u.RoleID = r.RoleID "
+                + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
+                + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
+                + "WHERE u.UserID = ?";
+        
+        try {
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setInt(1, userID);
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                user = new User();
+                user.setUserId(rs.getInt("UserID"));
+                user.setFullName(rs.getString("FullName"));
+                user.setEmail(rs.getString("Email"));
+                user.setPhone(rs.getString("Phone"));
+                user.setBranchId(rs.getInt("BranchID"));
+                user.setWarehouseId(rs.getInt("WarehouseID"));
+                user.setRoleId(rs.getInt("RoleID"));
+                user.setRoleName(rs.getString("RoleName"));
+                user.setIsActive(rs.getInt("IsActive"));
+                user.setAvaUrl(rs.getString("AvaUrl"));
+                user.setAddress(rs.getString("Address"));
+                user.setBranchName(rs.getString("BranchName"));
+                user.setWarehouseName(rs.getString("WarehouseName"));
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        
+        return user;
+    }
 
-    private static final String UPDATE_USER_PASSWORD
-            = "UPDATE Users SET PasswordHash = ? WHERE UserID = ?";
-
-    private static final String CHECK_PHONE_EXISTS
-            = "SELECT COUNT(*) FROM Users WHERE Phone = ?";
-
-    private static final String GET_USER_BY_PHONE
-            = SELECT_ALL_USERS + " WHERE u.Phone = ?";
-
-    // Forgot password helpers
-    private static final String GET_USER_BY_EMAIL_SIMPLE =
-            "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, u.RoleID, u.IsActive " +
-            "FROM Users u WHERE u.Email = ?";
-
-    private static final String INSERT_RESET_TOKEN =
-            "INSERT INTO PasswordResetTokens (userId, token, expiryDate) VALUES (?, ?, DATEADD(day, 1, GETDATE()))";
-
-    private static final String VALIDATE_RESET_TOKEN =
-            "SELECT COUNT(*) FROM PasswordResetTokens WHERE token = ? AND expiryDate > GETDATE()";
-
-    private static final String SELECT_USERID_BY_TOKEN =
-            "SELECT TOP 1 userId FROM PasswordResetTokens WHERE token = ? AND expiryDate > GETDATE()";
-
-    private static final String DELETE_TOKEN =
-            "DELETE FROM PasswordResetTokens WHERE token = ?";
-
-    // ==============================
-    // METHODS
-    // ==============================
+    /**
+     * Get all users
+     */
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        try (PreparedStatement ps = connection.prepareStatement(SELECT_ALL_USERS)) {
-            ResultSet rs = ps.executeQuery();
+        String query = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, "
+                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, "
+                + "r.RoleName, b.BranchName, w.WarehouseName "
+                + "FROM Users u "
+                + "LEFT JOIN Roles r ON u.RoleID = r.RoleID "
+                + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
+                + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID";
+        
+        try {
+            PreparedStatement stmt = connection.prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
+            
             while (rs.next()) {
-                list.add(map(rs));
+                User user = new User();
+                user.setUserId(rs.getInt("UserID"));
+                user.setFullName(rs.getString("FullName"));
+                user.setEmail(rs.getString("Email"));
+                user.setPhone(rs.getString("Phone"));
+                user.setBranchId(rs.getInt("BranchID"));
+                user.setWarehouseId(rs.getInt("WarehouseID"));
+                user.setRoleId(rs.getInt("RoleID"));
+                user.setRoleName(rs.getString("RoleName"));
+                user.setIsActive(rs.getInt("IsActive"));
+                user.setAvaUrl(rs.getString("AvaUrl"));
+                user.setAddress(rs.getString("Address"));
+                user.setBranchName(rs.getString("BranchName"));
+                user.setWarehouseName(rs.getString("WarehouseName"));
+                list.add(user);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            rs.close();
+            stmt.close();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
+        
         return list;
     }
 
-    public User getUserById(int userId) {
-        try (PreparedStatement ps = connection.prepareStatement(GET_USER_BY_ID)) {
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return map(rs);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public Integer getShiftIdByUserId(int userId) {
-        String sql = "SELECT ShiftID FROM UserShift WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("ShiftID");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public User authenticate(String email, String password) {
-        try (PreparedStatement ps = connection.prepareStatement(AUTHENTICATE_USER)) {
-            ps.setString(1, email);
-            ps.setString(2, password); // Có thể đổi sang mã hóa sau
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return map(rs);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
+    /**
+     * Check if phone exists
+     */
     public boolean isPhoneExists(String phone) {
-        try (PreparedStatement ps = connection.prepareStatement(CHECK_PHONE_EXISTS)) {
-            ps.setString(1, phone);
-            ResultSet rs = ps.executeQuery();
+        String query = "SELECT COUNT(*) FROM Users WHERE Phone = ?";
+        try {
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, phone);
+            ResultSet rs = stmt.executeQuery();
+            
             if (rs.next()) {
                 return rs.getInt(1) > 0;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // ==============================
-    // Forgot password methods
-    // ==============================
-    public User getUserByEmail(String email) {
-        try (PreparedStatement ps = connection.prepareStatement(GET_USER_BY_EMAIL_SIMPLE)) {
-            ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    User u = new User();
-                    u.setUserId(rs.getInt("UserID"));
-                    u.setFullName(rs.getString("FullName"));
-                    u.setEmail(rs.getString("Email"));
-                    u.setPhone(rs.getString("Phone"));
-                    u.setPasswordHash(rs.getString("PasswordHash"));
-                    u.setRoleId(rs.getInt("RoleID"));
-                    u.setIsActive(rs.getInt("IsActive"));
-                    return u;
-                }
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return null;
-    }
-
-    public boolean createPasswordResetToken(int userId, String token) {
-        try (PreparedStatement ps = connection.prepareStatement(INSERT_RESET_TOKEN)) {
-            ps.setInt(1, userId);
-            ps.setString(2, token);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) { e.printStackTrace(); }
-        return false;
-    }
-
-    public boolean isValidResetToken(String token) {
-        try (PreparedStatement ps = connection.prepareStatement(VALIDATE_RESET_TOKEN)) {
-            ps.setString(1, token);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return false;
-    }
-
-    public boolean resetPassword(String token, String newPassword) throws SQLException {
-        boolean original = connection.getAutoCommit();
-        try {
-            connection.setAutoCommit(false);
-            Integer uid = null;
-            try (PreparedStatement ps = connection.prepareStatement(SELECT_USERID_BY_TOKEN)) {
-                ps.setString(1, token);
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) uid = rs.getInt("userId");
-                }
-            }
-            if (uid == null) { connection.rollback(); return false; }
-
-            try (PreparedStatement ps = connection.prepareStatement(UPDATE_USER_PASSWORD)) {
-                ps.setString(1, newPassword);
-                ps.setInt(2, uid);
-                if (ps.executeUpdate() == 0) { connection.rollback(); return false; }
-            }
-
-            try (PreparedStatement ps = connection.prepareStatement(DELETE_TOKEN)) {
-                ps.setString(1, token);
-                ps.executeUpdate();
-            }
-
-            connection.commit();
-            return true;
+            rs.close();
+            stmt.close();
         } catch (SQLException ex) {
-            connection.rollback();
-            throw ex;
-        } finally {
-            connection.setAutoCommit(original);
+            ex.printStackTrace();
         }
+        return false;
     }
 
+    /**
+     * Insert new user
+     */
     public boolean insertUser(User u) {
-        try (PreparedStatement ps = connection.prepareStatement(INSERT_USER, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, u.getFullName());
-            ps.setString(2, u.getEmail());
-            ps.setString(3, u.getPhone());
-            ps.setString(4, u.getPasswordHash());
+        String query = "INSERT INTO Users (FullName, Email, Phone, PasswordHash, BranchID, WarehouseID, "
+                + "RoleID, IsActive, Gender, AvaUrl, Address, TaxNumber, WebURL, DOB, IdentificationID) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try {
+            PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            stmt.setString(1, u.getFullName());
+            stmt.setString(2, u.getEmail());
+            stmt.setString(3, u.getPhone());
+            stmt.setString(4, hashPassword(u.getPasswordHash()));
+            
             if (u.getBranchId() != null) {
-                ps.setInt(5, u.getBranchId());
+                stmt.setInt(5, u.getBranchId());
             } else {
-                ps.setNull(5, Types.INTEGER);
+                stmt.setNull(5, Types.INTEGER);
             }
+            
             if (u.getWarehouseId() != null) {
-                ps.setInt(6, u.getWarehouseId());
+                stmt.setInt(6, u.getWarehouseId());
             } else {
-                ps.setNull(6, Types.INTEGER);
+                stmt.setNull(6, Types.INTEGER);
             }
-            ps.setInt(7, u.getRoleId());
-            ps.setInt(8, u.getIsActive());
+            
+            stmt.setInt(7, u.getRoleId());
+            stmt.setInt(8, u.getIsActive());
+            
             if (u.getGender() != null) {
-                ps.setBoolean(9, u.getGender());
+                stmt.setBoolean(9, u.getGender());
             } else {
-                ps.setNull(9, Types.BIT);
+                stmt.setNull(9, Types.BIT);
             }
-            ps.setString(10, u.getAvaUrl());
-            ps.setString(11, u.getAddress());
-            ps.setString(12, u.getTaxNumber());
-            ps.setString(13, u.getWebUrl());
+            
+            stmt.setString(10, u.getAvaUrl());
+            stmt.setString(11, u.getAddress());
+            stmt.setString(12, u.getTaxNumber());
+            stmt.setString(13, u.getWebUrl());
+            
             if (u.getDob() != null) {
-                ps.setTimestamp(14, new Timestamp(u.getDob().getTime()));
+                stmt.setTimestamp(14, new Timestamp(u.getDob().getTime()));
             } else {
-                ps.setNull(14, Types.TIMESTAMP);
+                stmt.setNull(14, Types.TIMESTAMP);
             }
-            ps.setString(15, u.getIdentificationId());
-
-            int rows = ps.executeUpdate();
-            if (rows > 0) {
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    u.setUserId(rs.getInt(1));
-                }
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            
+            stmt.setString(15, u.getIdentificationId());
+            
+            int rows = stmt.executeUpdate();
+            stmt.close();
+            return rows > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
         return false;
     }
 
-    public boolean updatePassword(int userId, String newPassword) {
-        try (PreparedStatement ps = connection.prepareStatement(UPDATE_USER_PASSWORD)) {
-            ps.setString(1, newPassword);
-            ps.setInt(2, userId);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public User getUserByPhone(String phone) {
-        try (PreparedStatement ps = connection.prepareStatement(GET_USER_BY_PHONE)) {
-            ps.setString(1, phone);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return map(rs);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public boolean deleteUser(int userId) {
-        String sql = "DELETE FROM Users WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
+    /**
+     * Update user
+     */
     public boolean updateUser(User u) {
-        String sql = "UPDATE Users "
-                + "SET FullName=?, Email=?, Phone=?, Address=?, Gender=?, DOB=?, "
-                + "RoleID=?, BranchID=?, WarehouseID=?, IsActive=? "
-                + "WHERE UserID=?";
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-
-            ps.setString(1, u.getFullName());
-            ps.setString(2, u.getEmail());
-            ps.setString(3, u.getPhone());
-            ps.setString(4, u.getAddress());
-
-            // Giới tính (có thể null)
+        String query = "UPDATE Users SET FullName=?, Email=?, Phone=?, Address=?, Gender=?, "
+                + "DOB=?, RoleID=?, BranchID=?, WarehouseID=?, IsActive=? WHERE UserID=?";
+        
+        try {
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, u.getFullName());
+            stmt.setString(2, u.getEmail());
+            stmt.setString(3, u.getPhone());
+            stmt.setString(4, u.getAddress());
+            
             if (u.getGender() != null) {
-                ps.setBoolean(5, u.getGender());
+                stmt.setBoolean(5, u.getGender());
             } else {
-                ps.setNull(5, Types.BIT);
+                stmt.setNull(5, Types.BIT);
             }
-
-            // Ngày sinh (có thể null)
+            
             if (u.getDob() != null) {
-                ps.setTimestamp(6, new Timestamp(u.getDob().getTime()));
+                stmt.setTimestamp(6, new Timestamp(u.getDob().getTime()));
             } else {
-                ps.setNull(6, Types.TIMESTAMP);
+                stmt.setNull(6, Types.TIMESTAMP);
             }
-
-            // Vai trò
-            ps.setInt(7, u.getRoleId());
-
-            // Chi nhánh (BranchID)
+            
+            stmt.setInt(7, u.getRoleId());
+            
             if (u.getBranchId() != null) {
-                ps.setInt(8, u.getBranchId());
+                stmt.setInt(8, u.getBranchId());
             } else {
-                ps.setNull(8, Types.INTEGER);
+                stmt.setNull(8, Types.INTEGER);
             }
-
-            // Kho (WarehouseID)
+            
             if (u.getWarehouseId() != null) {
-                ps.setInt(9, u.getWarehouseId());
+                stmt.setInt(9, u.getWarehouseId());
             } else {
-                ps.setNull(9, Types.INTEGER);
+                stmt.setNull(9, Types.INTEGER);
             }
-
-            // Trạng thái
-            ps.setInt(10, u.getIsActive());
-
-            // UserID (điều kiện WHERE)
-            ps.setInt(11, u.getUserId());
-
-            return ps.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            System.out.println("❌ UPDATE USER FAILED:");
-            e.printStackTrace();
+            
+            stmt.setInt(10, u.getIsActive());
+            stmt.setInt(11, u.getUserId());
+            
+            int rows = stmt.executeUpdate();
+            stmt.close();
+            return rows > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
         return false;
     }
 
-    // 🔹 Cập nhật hoặc thêm ca làm cho nhân viên
-    public void updateUserShift(int userId, int shiftId) {
-        // Nếu nhân viên đã có ca → cập nhật; chưa có → thêm mới
-        String checkSql = "SELECT COUNT(*) FROM UserShift WHERE UserID = ?";
-        String insertSql = "INSERT INTO UserShift (UserID, ShiftID) VALUES (?, ?)";
-        String updateSql = "UPDATE UserShift SET ShiftID = ? WHERE UserID = ?";
-
-        try (PreparedStatement checkPs = connection.prepareStatement(checkSql)) {
-            checkPs.setInt(1, userId);
-            ResultSet rs = checkPs.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                try (PreparedStatement ps = connection.prepareStatement(updateSql)) {
-                    ps.setInt(1, shiftId);
-                    ps.setInt(2, userId);
-                    ps.executeUpdate();
-                }
-            } else {
-                try (PreparedStatement ps = connection.prepareStatement(insertSql)) {
-                    ps.setInt(1, userId);
-                    ps.setInt(2, shiftId);
-                    ps.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+    /**
+     * Update password
+     */
+    public boolean updatePassword(int userID, String newPassword) {
+        String query = "UPDATE Users SET PasswordHash = ? WHERE UserID = ?";
+        try {
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, hashPassword(newPassword));
+            stmt.setInt(2, userID);
+            
+            int rows = stmt.executeUpdate();
+            stmt.close();
+            return rows > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
+        return false;
     }
 
-// 🔹 Xóa ca làm khi nhân viên không còn được phân ca
-    public void deleteUserShift(int userId) {
-        String sql = "DELETE FROM UserShift WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    /**
+     * Delete user
+     */
+    public boolean deleteUser(int userID) {
+        String query = "DELETE FROM Users WHERE UserID = ?";
+        try {
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setInt(1, userID);
+            int rows = stmt.executeUpdate();
+            stmt.close();
+            return rows > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
+        return false;
     }
-
-    // ==============================
-    // MAPPING FUNCTION
-    // ==============================
-    private User map(ResultSet rs) throws SQLException {
-        User u = new User();
-        u.setUserId(rs.getInt("UserID"));
-        u.setFullName(rs.getString("FullName"));
-        u.setEmail(rs.getString("Email"));
-        u.setPhone(rs.getString("Phone"));
-        u.setPasswordHash(rs.getString("PasswordHash"));
-        u.setRoleId(rs.getInt("RoleID"));
-        u.setIsActive(rs.getInt("IsActive"));
-        u.setAvaUrl(rs.getString("AvaUrl"));
-        u.setAddress(rs.getString("Address"));
-        u.setTaxNumber(rs.getString("TaxNumber"));
-        u.setWebUrl(rs.getString("WebURL"));
-        u.setIdentificationId(rs.getString("IdentificationID"));
-
-        Timestamp dob = rs.getTimestamp("DOB");
-        if (dob != null) {
-            u.setDob(new java.util.Date(dob.getTime()));
-        }
-
-        // liên kết thông tin từ join
-        u.setRoleName(rs.getString("RoleName"));
-        u.setBranchName(rs.getString("BranchName"));
-        u.setWarehouseName(rs.getString("WarehouseName"));
-
-        // null-safe
-        Object branch = rs.getObject("BranchID");
-        if (branch != null) {
-            u.setBranchId((Integer) branch);
-        }
-
-        Object warehouse = rs.getObject("WarehouseID");
-        if (warehouse != null) {
-            u.setWarehouseId((Integer) warehouse);
-        }
-
-        Object gender = rs.getObject("Gender");
-        if (gender != null) {
-            u.setGender((Boolean) gender);
-        }
-
-        return u;
-    }
-
 }
