@@ -48,10 +48,10 @@ public class OrdersController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-//        if (session == null || session.getAttribute("currentUser") == null) {
-//            response.sendRedirect("Login");
-//            return;
-//        }
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect("Login");
+            return;
+        }
 
         String action = request.getParameter("action");
         if (action == null) {
@@ -110,7 +110,7 @@ public class OrdersController extends HttpServlet {
             Map<Integer, DAL.ProductDetailDAO.DetailInfo> pdInfos = pddao.getInfoByIds(pdIds);
             request.setAttribute("pdInfos", pdInfos);
 
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/order_detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/manager/order_detail.jsp").forward(request, response);
         } catch (NumberFormatException ignored) {
             response.sendRedirect("Orders");
         }
@@ -126,6 +126,11 @@ public class OrdersController extends HttpServlet {
     }
 
     private void handleList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect("Login");
+            return;
+        }
         // ---------- read filters ----------
         Integer fBranch = null;
         try {
@@ -156,7 +161,9 @@ public class OrdersController extends HttpServlet {
                 fTo = Timestamp.valueOf(td + " 23:59:59");
             }
         } catch (Exception ignored) {}
-
+        User user = (User) session.getAttribute("currentUser");
+        int userId = user.getUserId();
+        int roleId = user.getRoleId();
         // min/max spent (we use Double here; change to BigDecimal if your DAO expects BigDecimal)
         Double minSpent = null, maxSpent = null;
         try {
@@ -178,7 +185,7 @@ public class OrdersController extends HttpServlet {
 
         // ---------- call DAO ----------
         OrderDAO.PagedOrders po = orderDAO.search(
-                fBranch, fStatus, fKw, fFrom, fTo, minSpent, maxSpent, page, pageSize
+                fBranch, fStatus, fKw, fFrom, fTo, minSpent, maxSpent, page, pageSize, userId, roleId
         );
 
         // ---------- set attributes for JSP ----------
