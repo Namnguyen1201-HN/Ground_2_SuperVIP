@@ -1,499 +1,252 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt"  prefix="fmt" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Hàng hóa - WR</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Quản lý Hàng hóa - Sale</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/sale/sale.css">
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* bạn có thể giữ lại style cũ của bạn ở đây, tớ rút gọn để tập trung vào JSTL */
+        .header { background: linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%); color:#fff; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+        .header-main { padding: 1rem 2rem; display:flex; align-items:center; gap:2rem; }
+        .logo { display:flex; align-items:center; gap:.5rem; font-size:1.5rem; font-weight:700; }
+        .logo-icon { background:#14b8a6; width:40px; height:40px; border-radius:.5rem; display:flex; align-items:center; justify-content:center; }
+        .nav-menu { display:flex; gap:0; flex:1; }
+        .nav-item { display:flex; align-items:center; gap:.5rem; padding:.75rem 1.5rem; color:rgba(255,255,255,.9); text-decoration:none; border-radius:.5rem; transition:.2s; font-weight:500; }
+        .nav-item:hover, .nav-item.active { background:rgba(255,255,255,.1); color:#fff; }
+        .user-dropdown { position:relative; display:inline-block; }
+        .user-dropdown .dropdown-menu { position:absolute; top:40px; right:0; background:#fff; border:1px solid #ddd; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,.15); min-width:160px; display:none; z-index:1000; }
+        .user-dropdown.active .dropdown-menu { display:block; }
+        .dropdown-item { display:block; padding:10px 14px; color:#333; text-decoration:none; font-size:14px; }
+        .dropdown-item:hover { background:#f2f5ff; color:#0056d6; }
+        .gradient { background:linear-gradient(45deg,#007bff,#00aaff)!important; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; }
+        .container { display:flex; gap:16px; padding:16px; }
+        .sidebar { width:280px; background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:12px; height:fit-content; }
+        .sidebar-section { margin-bottom:14px; }
+        .sidebar-title { font-size:14px; font-weight:700; margin-bottom:10px; }
+        .main-content { flex:1; }
+        .content-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:12px; }
+        .search-bar { display:flex; align-items:center; gap:8px; }
+        .search-input { padding:8px 10px; border:1px solid #d1d5db; border-radius:6px; min-width:260px; }
+        .btn { padding:8px 10px; border-radius:6px; border:1px solid #d1d5db; background:#fff; cursor:pointer; }
+        .btn-primary { background:#2563eb; color:#fff; border-color:#2563eb; }
+        .table-wrapper { background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+        .data-table { width:100%; border-collapse:collapse; }
+        .data-table th, .data-table td { padding:10px 12px; border-bottom:1px solid #f1f5f9; text-align:left; }
+        .data-table thead th { background:#f8fafc; font-size:13px; text-transform:uppercase; letter-spacing:.02em; color:#475569; }
+        .qty-pill { display:inline-block; padding:2px 8px; border-radius:999px; border:1px solid #e5e7eb; font-weight:600; font-size:12px; }
+        .pill-in { background:#ecfdf5; border-color:#10b981; color:#065f46; }
+        .pill-out { background:#fef2f2; border-color:#ef4444; color:#991b1b; }
+        .filter-item { margin-bottom:8px; }
+    </style>
 </head>
 <body>
-  
-<style>
-
-    /* Header Navigation */
-    .header {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white;
-        padding: 0px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-
-    }
-
-    .header-top {
-        background: #f8f9fa;
-        color: #6b7280;
-        padding: 0.5rem 2rem;
-        font-size: 0.875rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .header-top-left {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .header-top-right {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    div.header-main{
-        margin-bottom: 10px;
-    }
-
-    .header-main {
-        padding: 1rem 2rem;
-        display: flex;
-        align-items: center;
-        gap: 2rem;
-    }
-
-    .logo {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 1.5rem;
-        font-weight: bold;
-    }
-
-    .logo-icon {
-        background: #14b8a6;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .nav-menu {
-        display: flex;
-        gap: 0;
-        flex: 1;
-    }
-
-    .nav-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        color: rgba(255,255,255,0.9);
-        text-decoration: none;
-        border-radius: 0.5rem;
-        transition: all 0.2s;
-        font-weight: 500;
-    }
-
-    .nav-item:hover, .nav-item.active {
-        background: rgba(255,255,255,0.1);
-        color: white;
-    }
-
-    .nav-item.active {
-        background: rgba(255,255,255,0.2);
-    }
-
-    /* Icons using CSS */
-    .icon-overview::before {
-        content: "📊";
-    }
-    .icon-products::before {
-        content: "📦";
-    }
-    .icon-transactions::before {
-        content: "💳";
-    }
-    .icon-partners::before {
-        content: "🤝";
-    }
-    .icon-staff::before {
-        content: "👥";
-    }
-    .icon-cashbook::before {
-        content: "💰";
-    }
-    .icon-reports::before {
-        content: "📈";
-    }
-    .icon-online::before {
-        content: "🌐";
-    }
-    .icon-sales::before {
-        content: "🛒";
-    }
-    .icon-building::before {
-        content: "🏢";
-    }
-
-
-    /* --- Dropdown người dùng --- */
-    .user-dropdown {
-        position: relative;
-        display: inline-block;
-    }
-
-    .user-dropdown .dropdown-menu {
-        position: absolute;
-        top: 40px;
-        right: 0;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        min-width: 160px;
-        display: none; /* Ẩn mặc định */
-        z-index: 1000;
-    }
-
-    .user-dropdown.active .dropdown-menu {
-        display: block; /* Hiện khi có class active */
-    }
-
-    .dropdown-item {
-        display: block;
-        padding: 10px 14px;
-        color: #333;
-        text-decoration: none;
-        font-size: 14px;
-    }
-
-    .dropdown-item:hover {
-        background: #f2f5ff;
-        color: #0056d6;
-    }
-
-    /* Icon người dùng */
-    .user-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        text-decoration: none;
-    }
-
-    .user-icon i {
-        color: #fff !important;
-    }
-
-    .gradient {
-        background: linear-gradient(45deg, #007bff, #00aaff) !important ;
-        border-radius: 50%;
-        width: 38px;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Giữ nguyên màu và kiểu icon user trong header */
-    .header .user-icon i {
-        color: #fff !important;
-    }
-    .header .gradient {
-        background: linear-gradient(45deg, #007bff, #00aaff) !important;
-        border-radius: 50% !important;
-    }
-
-
-</style>
 
 <header class="header">
     <div class="header-main">
         <div class="logo">
-            <div class="logo-icon">
-                <span class="icon-building"></span>
-            </div>
+            <div class="logo-icon">🏢</div>
             <span>WM</span>
         </div>
         <nav class="nav-menu">
-            <a href="TongQuan" class="nav-item">
-                <span class="icon-overview"></span>
-                Tổng quan
-            </a>
-            <a href="product" class="nav-item">
-                <span class="icon-products"></span>
-                Hàng hóa
-            </a>
-            <a href="Transactions" class="nav-item">
-                <span class="icon-transactions"></span>
-                Giao dịch
-            </a>
-            <a href="Supplier" class="nav-item">
-                <span class="icon-partners"></span>
-                Đối tác
-            </a>
-            <a href="NhanVien" class="nav-item">
-                <span class="icon-staff"></span>
-                Nhân viên
-            </a>
-            <a href="#" class="nav-item">
-                <span class="icon-cashbook"></span>
-                Khuyến mãi
-            </a>
-            <a href="#" class="nav-item">
-                <span class="icon-reports"></span>
-                Báo cáo
-            </a>
-            
+            <a href="${pageContext.request.contextPath}/TongQuan" class="nav-item"><span>📊</span> Tổng quan</a>
+            <a href="${pageContext.request.contextPath}/sale" class="nav-item active"><span>🛒</span> Bán hàng</a>
+            <a href="${pageContext.request.contextPath}/product" class="nav-item"><span>📦</span> Hàng hóa (Quản trị)</a>
+            <a href="${pageContext.request.contextPath}/Transactions" class="nav-item"><span>💳</span> Giao dịch</a>
+            <a href="${pageContext.request.contextPath}/Supplier" class="nav-item"><span>🤝</span> Đối tác</a>
+            <a href="${pageContext.request.contextPath}/NhanVien" class="nav-item"><span>👥</span> Nhân viên</a>
         </nav>
-
         <div class="header-right">
             <div class="user-dropdown">
-                <a href="#" class="user-icon gradient" id="dropdownToggle">
-                    <i class="fas fa-user-circle fa-2x"></i>
-                </a>
+                <a href="#" class="user-icon gradient" id="dropdownToggle"><i class="fas fa-user-circle fa-2x"></i></a>
                 <div class="dropdown-menu" id="dropdownMenu">
-                    <a href="InformationAccount" class="dropdown-item">Thông tin chi tiết</a>
-                    <a href="Login" class="dropdown-item">Đăng xuất</a>
+                    <a href="${pageContext.request.contextPath}/InformationAccount" class="dropdown-item">Thông tin chi tiết</a>
+                    <a href="${pageContext.request.contextPath}/Login" class="dropdown-item">Đăng xuất</a>
                 </div>
-            </div>      
+            </div>
         </div>
-
     </div>
 </header>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const dropdown = document.querySelector('.user-dropdown');
-        const toggle = document.getElementById('dropdownToggle');
-        const menu = document.getElementById('dropdownMenu');
-
-        toggle.addEventListener('click', function (e) {
-            e.preventDefault();
-            dropdown.classList.toggle('active');
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!dropdown.contains(e.target)) {
-                dropdown.classList.remove('active');
-            }
-        });
-    }); // ✅ đóng hàm
+document.addEventListener('DOMContentLoaded', function () {
+    const dropdown = document.querySelector('.user-dropdown');
+    const toggle = document.getElementById('dropdownToggle');
+    toggle.addEventListener('click', function (e) {
+        e.preventDefault(); dropdown.classList.toggle('active');
+    });
+    document.addEventListener('click', function (e) {
+        if (!dropdown.contains(e.target)) dropdown.classList.remove('active');
+    });
+});
 </script>
 
-    <div class="container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
+<div class="container">
+    <!-- ==== SIDEBAR: BỘ LỌC ==== -->
+    <aside class="sidebar">
+        <!-- Form lọc (gửi GET tới /sale) -->
+        <form action="${pageContext.request.contextPath}/sale" method="get">
+            <input type="hidden" name="action" value="list"/>
+
+            <!-- Nhóm hàng (Danh mục) -->
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Nhóm hàng</h3>
-                <div class="sidebar-tabs">
-                    <button class="tab-btn active">Tạo mới</button>
-                    <button class="tab-btn">Tất cả</button>
+                <div style="max-height:220px; overflow:auto; border:1px solid #e5e7eb; border-radius:6px; padding:8px;">
+                    <c:forEach var="c" items="${categories}">
+                        <c:set var="checked" value="${selectedCategoryNames != null && selectedCategoryNames.contains(c.categoryName)}"/>
+                        <div class="filter-item">
+                            <label style="display:flex; gap:8px; align-items:center;">
+                                <input type="checkbox" name="categoryName" value="${c.categoryName}"
+                                       <c:if test="${checked}">checked</c:if> />
+                                <span>${c.categoryName}</span>
+                            </label>
+                        </div>
+                    </c:forEach>
                 </div>
-                <input type="text" class="sidebar-input" placeholder="Chọn nhóm hàng">
             </div>
 
+            <!-- Tồn kho -->
             <div class="sidebar-section">
                 <h3 class="sidebar-title">Tồn kho</h3>
-                <select class="sidebar-select">
-                    <option>Tất cả</option>
-                    <option>Còn hàng</option>
-                    <option>Hết hàng</option>
-                </select>
-            </div>
+                <div class="filter-item">
+                    <label><input type="radio" name="stock" value="all"      <c:if test="${empty stock || stock=='all'}">checked</c:if> /> Tất cả</label>
+                </div>
+                <div class="filter-item">
+                    <label><input type="radio" name="stock" value="in"       <c:if test="${stock=='in'}">checked</c:if> /> Còn hàng</label>
+                </div>
+                <div class="filter-item">
+                    <label><input type="radio" name="stock" value="out"      <c:if test="${stock=='out'}">checked</c:if> /> Hết hàng</label>
+                </div>
+                <div class="filter-item">
+                    <label><input type="radio" name="stock" value="belowMin" <c:if test="${stock=='belowMin'}">checked</c:if> /> Dưới định mức</label>
+                </div>
+                <div class="filter-item">
+                    <label><input type="radio" name="stock" value="aboveMax" <c:if test="${stock=='aboveMax'}">checked</c:if> /> Vượt định mức</label>
+                </div>
 
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Dự kiến hết hàng</h3>
-                <div class="filter-option">
-                    <input type="radio" id="all-time" name="forecast" checked>
-                    <label for="all-time">Toàn thời gian</label>
-                </div>
-                <div class="filter-option">
-                    <input type="radio" id="custom-date" name="forecast">
-                    <label for="custom-date">Tùy chỉnh</label>
-                </div>
-            </div>
-
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Thời gian tạo</h3>
-                <div class="filter-option">
-                    <input type="radio" id="create-all" name="create-time" checked>
-                    <label for="create-all">Toàn thời gian</label>
-                </div>
-                <div class="filter-option">
-                    <input type="radio" id="create-custom" name="create-time">
-                    <label for="create-custom">Tùy chỉnh</label>
+                <div class="filter-item" style="margin-top:8px;">
+                    <label>Ngưỡng tồn:</label>
+                    <input type="number" min="0" name="stockThreshold"
+                           style="width:100%; padding:6px; border:1px solid #d1d5db; border-radius:6px;"
+                           value="<c:out value='${empty stockThreshold ? 30 : stockThreshold}'/>">
                 </div>
             </div>
 
             <div class="sidebar-section">
-                <h3 class="sidebar-title">Nhà cung cấp</h3>
-                <input type="text" class="sidebar-input" placeholder="Chọn nhà cung cấp">
+                <button type="submit" class="btn btn-primary" style="width:100%;">Lọc</button>
             </div>
+        </form>
+    </aside>
 
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Vị trí</h3>
-                <input type="text" class="sidebar-input" placeholder="Chọn vị trí">
+    <!-- ==== MAIN: DANH SÁCH ==== -->
+    <main class="main-content">
+        <div class="content-header">
+            <h1 class="page-title">Hàng hóa</h1>
+
+            <!-- Tìm kiếm giữ lại filter hiện tại -->
+                <form action="${pageContext.request.contextPath}/product" method="get" class="search-container" style="display:flex;gap:8px;align-items:center">
+                    <input type="hidden" name="action" value="list"/>
+
+                    <!-- Render lại categoryName đang chọn để không mất filter khi tìm -->
+                    <c:forEach var="cn" items="${selectedCategoryNames}">
+                        <input type="hidden" name="categoryName" value="${cn}"/>
+                    </c:forEach>
+
+                    <input type="hidden" name="stock" value="${stock}"/>
+                    <input type="hidden" name="stockThreshold" value="${stockThreshold}"/>
+
+                    <input type="text" name="keyword" class="search-input" placeholder="Theo tên hàng"
+                           value="<c:out value='${keyword}'/>" />
+                    <button type="submit" class="btn btn-outline">Tìm</button>
+                </form>
+
+            <div class="action-buttons">
+                <!-- Với SAHomePage chỉ xem, bạn có thể ẩn các nút CRUD -->
+                <a class="btn" href="#" onclick="alert('Chức năng dành cho quản trị!');return false;">☰</a>
             </div>
+        </div>
 
-            <div class="sidebar-section">
-                <h3 class="sidebar-title">Loại hàng</h3>
-                <input type="text" class="sidebar-input" placeholder="Chọn loại hàng">
-            </div>
-        </aside>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th><input type="checkbox"></th>
+                    <th>ID</th>
+                    <th>Tên hàng</th>
+                    <th>Danh mục</th>
+                    <th>Thương hiệu</th>
+                    <th>Nhà cung cấp</th>
+                    <th>Giá bán</th>
+                    <th>Giá vốn</th>
+                    <th>Tồn kho</th>
+                    <th>Ngày tạo</th>
+                    <th>Chi tiết</th>
+                </tr>
+                </thead>
+                <tbody>
+                <c:choose>
+                    <c:when test="${empty products}">
+                        <tr>
+                            <td colspan="11" style="text-align:center; color:#64748b; padding:18px;">
+                                Không có sản phẩm nào khớp bộ lọc.
+                            </td>
+                        </tr>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="p" items="${products}">
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>${p.productId}</td>
+                                <td>${p.productName}</td>
+                                <td>${p.categoryName}</td>
+                                <td>${p.brandName}</td>
+                                <td>${p.supplierName}</td>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="content-header">
-                <h1 class="page-title">Hàng hóa</h1>
-                <div class="search-bar">
-                    <input type="text" placeholder="Theo mã, tên hàng" class="search-input">
-                    <button class="search-btn">🔄</button>
-                </div>
-                <div class="action-buttons">
-                    <button class="btn btn-primary">+ Tạo mới</button>
-                    <button class="btn btn-secondary">📥 Import file</button>
-                    <button class="btn btn-secondary">📤 Xuất file</button>
-                    <button class="btn btn-secondary">☰</button>
-                    <button class="btn btn-secondary">⚙️</button>
-                    <button class="btn btn-secondary">❓</button>
-                </div>
-            </div>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${not empty p.retailPrice}">
+                                            <fmt:formatNumber value="${p.retailPrice}" type="number" minFractionDigits="0"/> ₫
+                                        </c:when>
+                                        <c:otherwise>-</c:otherwise>
+                                    </c:choose>
+                                </td>
 
-            <!-- Table -->
-            <div class="table-wrapper">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox"></th>
-                            <th>⭐</th>
-                            <th>Mã hàng</th>
-                            <th>Tên hàng</th>
-                            <th>Giá bán</th>
-                            <th>Giá vốn</th>
-                            <th>Tồn kho</th>
-                            <th>Khách đặt</th>
-                            <th>Thời gian tạo</th>
-                            <th>Dự kiến hết hàng</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">TB000014</span></td>
-                            <td class="product-name">Samsung Galaxy Tab S9 5G 128GB</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">TB000013</span></td>
-                            <td class="product-name">Samsung Galaxy Tab S9 5G 128GB</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">TB000012</span></td>
-                            <td class="product-name">iPad Air 6 M2 11" 5G 128GB</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">TB000011</span></td>
-                            <td class="product-name">iPad Air 6 M2 11" 5G 128GB</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">PK000020</span></td>
-                            <td class="product-name">Giá đỡ Laptop/Macbook hợp kim nhôm</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">PK000019</span></td>
-                            <td class="product-name">Miếng dán kính cường lực iPhone 15 Pro Jincase</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">PK000018</span></td>
-                            <td class="product-name">Cáp Baseus Crystal Shine Type-C to Lightning 2M</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">PK000017</span></td>
-                            <td class="product-name">Ốp lưng iPhone 15 Pro Max Nhựa dẻo TPU UNIQ HYBRID Air Fender ID</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>⭐</td>
-                            <td><span class="product-code">PK000016</span></td>
-                            <td class="product-name">Chuột không dây</td>
-                            <td>349,000</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10/10/2025 16:30</td>
-                            <td>---</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${not empty p.costPrice}">
+                                            <fmt:formatNumber value="${p.costPrice}" type="number" minFractionDigits="0"/> ₫
+                                        </c:when>
+                                        <c:otherwise>-</c:otherwise>
+                                    </c:choose>
+                                </td>
 
-            <!-- Footer Notice -->
-            
-        </main>
-    </div>
+                                <td>
+                                    <c:set var="qty" value="${p.totalQty}" />
+                                    <span class="qty-pill <c:out value='${qty != null && qty > 0 ? "pill-in" : "pill-out"}'/>">
+                                        <c:out value='${qty == null ? 0 : qty}'/>
+                                    </span>
+                                </td>
 
-    <!-- Chat Button -->
-    <button class="chat-button">💬 1900 6522</button>
+                                <td><c:out value="${p.createdAt}"/></td>
+
+                                <td>
+                                    <a class="btn" href="${pageContext.request.contextPath}/sale?action=detail&id=${p.productId}">
+                                        Xem
+                                    </a>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
 </body>
 </html>
