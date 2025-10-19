@@ -19,7 +19,7 @@ public class InformationAccountController extends HttpServlet {
             throws ServletException, IOException {
         // ⚙️ Giả sử user đã đăng nhập => lấy từ session
         HttpSession session = request.getSession();
-        User loggedUser = (User) session.getAttribute("user");
+        User loggedUser = (User) session.getAttribute("currentUser");
 
         int userId;
         if (loggedUser != null) {
