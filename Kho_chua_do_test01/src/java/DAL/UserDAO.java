@@ -100,10 +100,8 @@ public class UserDAO extends DataBaseContext {
                 + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
                 + "WHERE u.UserID = ?";
 
-        try {
-            PreparedStatement stmt = connection.prepareStatement(query);
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, userID);
-
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
@@ -112,6 +110,7 @@ public class UserDAO extends DataBaseContext {
                 user.setFullName(rs.getString("FullName"));
                 user.setEmail(rs.getString("Email"));
                 user.setPhone(rs.getString("Phone"));
+                user.setPasswordHash(rs.getString("PasswordHash")); // ✅ thêm dòng này
                 user.setBranchId(rs.getInt("BranchID"));
                 user.setWarehouseId(rs.getInt("WarehouseID"));
                 user.setRoleId(rs.getInt("RoleID"));
@@ -122,8 +121,8 @@ public class UserDAO extends DataBaseContext {
                 user.setBranchName(rs.getString("BranchName"));
                 user.setWarehouseName(rs.getString("WarehouseName"));
             }
+
             rs.close();
-            stmt.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

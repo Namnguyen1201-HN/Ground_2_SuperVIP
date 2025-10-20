@@ -80,7 +80,7 @@ public class AuthenticationFilter implements Filter {
     private boolean isPublicURL(String path) {
         // Các trang public
         String[] publicPaths = {
-            "/Login", "/Register", "/ForgotPassword", "/Dashboard", "/TongQuan", "/", ""
+            "/Login", "/Register", "/ForgotPassword", "/Dashboard", "/", "/", ""
         };
         for (String p : publicPaths) {
             if (path.equals(p) || path.startsWith(p)) {
