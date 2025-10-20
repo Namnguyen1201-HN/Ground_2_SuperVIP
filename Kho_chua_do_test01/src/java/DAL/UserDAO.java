@@ -386,6 +386,36 @@ public class UserDAO extends DataBaseContext {
         return false;
     }
 
+    public User getUserFullById(int userID) {
+        User user = null;
+        String query = "SELECT * FROM Users WHERE UserID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userID);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                user = new User();
+                user.setUserId(rs.getInt("UserID"));
+                user.setFullName(rs.getString("FullName"));
+                user.setEmail(rs.getString("Email"));
+                user.setPhone(rs.getString("Phone"));
+                user.setAddress(rs.getString("Address"));
+                user.setPasswordHash(rs.getString("PasswordHash"));
+                user.setBranchId((Integer) rs.getObject("BranchID"));
+                user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
+                user.setRoleId(rs.getInt("RoleID"));
+                user.setIsActive(rs.getInt("IsActive"));
+                user.setGender((Boolean) rs.getObject("Gender"));
+                user.setDob(rs.getTimestamp("DOB"));
+                user.setIdentificationId(rs.getString("IdentificationID"));
+                user.setTaxNumber(rs.getString("TaxNumber"));
+                user.setWebUrl(rs.getString("WebURL"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
 // Xóa ca làm của nhân viên
     public boolean deleteUserShift(int userId) {
         String sql = "DELETE FROM UserShift WHERE UserID = ?";
