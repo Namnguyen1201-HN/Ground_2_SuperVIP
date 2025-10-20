@@ -33,7 +33,7 @@ public class AuthenticationFilter implements Filter {
 
         // Allow login, register, forgot password pages
         if (path.equals("/Login") || path.equals("/Register") || path.equals("/ForgotPassword") || 
-            path.isEmpty() || path.equals("/") || path.equals("")) {
+            path.equals("/DashBoard") || path.isEmpty() || path.equals("/") || path.equals("")) {
             chain.doFilter(request, response);
             return;
         }
