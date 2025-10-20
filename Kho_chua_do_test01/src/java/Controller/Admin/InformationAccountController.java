@@ -1,4 +1,4 @@
-package Controller;
+package Controller.Admin;
 
 import DAL.BranchDAO;
 import DAL.UserDAO;
@@ -56,7 +56,8 @@ public class InformationAccountController extends HttpServlet {
 
         int userId = Integer.parseInt(request.getParameter("userId"));
         User user = userDAO.getUserById(userId);
-
+        
+        User original = userDAO.getUserById(userId);
         if (user != null) {
             user.setFullName(request.getParameter("fullName"));
             user.setEmail(request.getParameter("email"));
@@ -81,6 +82,10 @@ public class InformationAccountController extends HttpServlet {
                     e.printStackTrace();
                 }
             }
+            
+            user.setRoleId(original.getRoleId());
+            user.setBranchId(original.getBranchId());
+            user.setWarehouseId(original.getWarehouseId());
 
             boolean updated = userDAO.updateUser(user);
             request.setAttribute("msg", updated ? "✅ Cập nhật thông tin thành công!" : "❌ Cập nhật thất bại!");

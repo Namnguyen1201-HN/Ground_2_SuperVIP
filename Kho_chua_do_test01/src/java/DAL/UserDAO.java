@@ -257,11 +257,12 @@ public class UserDAO extends DataBaseContext {
      * Update user
      */
     public boolean updateUser(User u) {
-        String query = "UPDATE Users SET FullName=?, Email=?, Phone=?, Address=?, Gender=?, "
-                + "DOB=?, RoleID=?, BranchID=?, WarehouseID=?, IsActive=? WHERE UserID=?";
+        String query = "UPDATE Users SET FullName=?, Email=?, Phone=?, Address=?, Gender=?, DOB=?, "
+                + "IdentificationID=?, TaxNumber=?, WebURL=?, IsActive=?, "
+                + "RoleID=?, BranchID=?, WarehouseID=? "
+                + "WHERE UserID=?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
 
-        try {
-            PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setString(1, u.getFullName());
             stmt.setString(2, u.getEmail());
             stmt.setString(3, u.getPhone());
@@ -279,25 +280,26 @@ public class UserDAO extends DataBaseContext {
                 stmt.setNull(6, Types.TIMESTAMP);
             }
 
-            stmt.setInt(7, u.getRoleId());
-
-            if (u.getBranchId() != null) {
-                stmt.setInt(8, u.getBranchId());
-            } else {
-                stmt.setNull(8, Types.INTEGER);
-            }
-
-            if (u.getWarehouseId() != null) {
-                stmt.setInt(9, u.getWarehouseId());
-            } else {
-                stmt.setNull(9, Types.INTEGER);
-            }
-
+            stmt.setString(7, u.getIdentificationId());
+            stmt.setString(8, u.getTaxNumber());
+            stmt.setString(9, u.getWebUrl());
             stmt.setInt(10, u.getIsActive());
-            stmt.setInt(11, u.getUserId());
+
+            stmt.setInt(11, u.getRoleId());
+            if (u.getBranchId() != null) {
+                stmt.setInt(12, u.getBranchId());
+            } else {
+                stmt.setNull(12, Types.INTEGER);
+            }
+            if (u.getWarehouseId() != null) {
+                stmt.setInt(13, u.getWarehouseId());
+            } else {
+                stmt.setNull(13, Types.INTEGER);
+            }
+
+            stmt.setInt(14, u.getUserId());
 
             int rows = stmt.executeUpdate();
-            stmt.close();
             return rows > 0;
         } catch (SQLException ex) {
             ex.printStackTrace();
