@@ -99,7 +99,7 @@ public class LoginController extends HttpServlet {
                 session.setAttribute("roleName", user.getRoleName());
                 session.setAttribute("roleID", user.getRoleId());
                 session.setAttribute("branchID", user.getBranchId());
-                session.setAttribute("warehouseID", user.getWarehouseId());
+                session.setAttribute("warehouseId", user.getWarehouseId()); // ✅ dùng key này
                 session.setAttribute("fullName", user.getFullName());
                 session.setAttribute("email", user.getEmail());
                 session.setAttribute("phone", user.getPhone());

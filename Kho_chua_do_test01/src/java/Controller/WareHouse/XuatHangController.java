@@ -1,72 +1,61 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package Controller.WareHouse;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import DAL.StockMovementDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 
-/**
- *
- * @author TieuPham
- */
-@WebServlet(name="XuatHangController", urlPatterns={"/XuatHang"})
+@WebServlet(name = "XuatHangController", urlPatterns = {"/XuatHang"})
 public class XuatHangController extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        request.getRequestDispatcher("/WEB-INF/jsp/warehouse/XuatHang.jsp").forward(request, response);
-    } 
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
+            throws ServletException, IOException {
 
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+        response.setContentType("text/html;charset=UTF-8");
+        HttpSession session = request.getSession(false);
+
+        Integer warehouseId = (session != null) ? (Integer) session.getAttribute("warehouseId") : null;
+        if (warehouseId == null) {
+            request.setAttribute("error", "Không xác định được kho, vui lòng đăng nhập lại!");
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
+            return;
+        }
+
+        // Nhận tham số lọc
+        String fromStr = request.getParameter("fromDate");
+        String toStr = request.getParameter("toDate");
+        String status = request.getParameter("status");
+        String pageStr = request.getParameter("page");
+
+        Timestamp from = null, to = null;
+        try {
+            if (fromStr != null && !fromStr.isEmpty()) {
+                from = Timestamp.valueOf(fromStr + " 00:00:00");
+            }
+            if (toStr != null && !toStr.isEmpty()) {
+                to = Timestamp.valueOf(toStr + " 23:59:59");
+            }
+        } catch (Exception ignored) {
+        }
+
+        int page = 1;
+        try {
+            page = Integer.parseInt(pageStr);
+        } catch (Exception ignored) {
+        }
+
+        // Gọi DAO
+        StockMovementDAO dao = new StockMovementDAO();
+        List<Map<String, Object>> exportOrders = dao.listExportOrders(warehouseId, from, to, status, page, 10);
+
+        // Gửi dữ liệu sang JSP
+        request.setAttribute("exportOrders", exportOrders);
+        request.getRequestDispatcher("/WEB-INF/jsp/warehouse/XuatHang.jsp").forward(request, response);
     }
-
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+    
 }

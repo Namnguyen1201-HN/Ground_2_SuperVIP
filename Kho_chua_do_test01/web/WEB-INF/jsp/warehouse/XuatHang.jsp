@@ -1,10 +1,6 @@
-<%-- 
-    Document   : XuatHang
-    Created on : Oct 10, 2025, 9:21:00 PM
-    Author     : TieuPham
---%>
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -12,7 +8,7 @@
         <title>Danh sách hàng xuất</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
         <link href="css/warehouse/XuatHang.css" rel="stylesheet" type="text/css"/>
-        
+
     </head>
     <body>
         <%@ include file="../warehouse/header-warehouse.jsp" %>
@@ -65,11 +61,35 @@
                             </tr>
                         </thead>
                         <tbody>
+                            <%
+                                List<Map<String, Object>> exportOrders = (List<Map<String, Object>>) request.getAttribute("exportOrders");
+                                if (exportOrders != null && !exportOrders.isEmpty()) {
+                                    int index = 1;
+                                    for (Map<String, Object> order : exportOrders) {
+                            %>
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-3">
-                                    Hiển thị 0 - 0 trong tổng số 0 đơn xuất hàng (Trang 1 / 1)
+                                <td><%= index++ %></td>
+                                <td>#<%= order.get("MovementID") %></td>
+                                <td><%= order.get("ToBranchName") != null ? order.get("ToBranchName") : "—" %></td>
+                                <td><%= order.get("Status") != null ? order.get("Status") : "pending" %></td>
+                                <td><%= order.get("CreatedAt") %></td>
+                                <td><%= order.get("CreatedByName") != null ? order.get("CreatedByName") : "—" %></td>
+                                <td>
+                                    <a href="XuatHangDetail?id=<%= order.get("MovementID") %>" class="btn btn-sm btn-primary">Chi tiết</a>
                                 </td>
                             </tr>
+                            <%
+                                    }
+                                } else {
+                            %>
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-3">
+                                    Không có đơn xuất hàng nào.
+                                </td>
+                            </tr>
+                            <%
+                                }
+                            %>
                         </tbody>
                     </table>
                 </div>

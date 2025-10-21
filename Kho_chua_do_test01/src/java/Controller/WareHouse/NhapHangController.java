@@ -16,14 +16,17 @@ public class NhapHangController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        HttpSession session = request.getSession();
 
-        // 🧑‍💼 Tạm thời set cứng để test
-        Integer warehouseId = (Integer) session.getAttribute("warehouseId");
+        HttpSession session = request.getSession(false);
+        Integer warehouseId = (session != null) ? (Integer) session.getAttribute("warehouseId") : null;
+
         if (warehouseId == null) {
-            warehouseId = 1;
+            request.setAttribute("error", "Không xác định được kho. Vui lòng đăng nhập lại!");
+            request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
+            return;
         }
 
+        // Lọc thời gian
         String fromStr = request.getParameter("fromDate");
         String toStr = request.getParameter("toDate");
         String pageStr = request.getParameter("page");
@@ -49,6 +52,9 @@ public class NhapHangController extends HttpServlet {
         List<Map<String, Object>> importOrders = dao.listImportOrders(warehouseId, from, to, page, 10);
 
         request.setAttribute("importOrders", importOrders);
+        request.setAttribute("warehouseId", warehouseId);
+
         request.getRequestDispatcher("/WEB-INF/jsp/warehouse/NhapHang.jsp").forward(request, response);
     }
+    
 }

@@ -1,72 +1,83 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package Controller.WareHouse;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import DAL.UserDAO;
+import Model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-/**
- *
- * @author TieuPham
- */
-@WebServlet(name="InformationController", urlPatterns={"/Information"})
+@WebServlet(name = "InformationController", urlPatterns = {"/Information"})
 public class InformationController extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        request.getRequestDispatcher("/WEB-INF/jsp/warehouse/Information.jsp").forward(request, response);
-    } 
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
+            throws ServletException, IOException {
 
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+        HttpSession session = request.getSession(false);
+        Integer userId = (Integer) session.getAttribute("userID");
+
+        if (userId == null) {
+            response.sendRedirect("Login");
+            return;
+        }
+
+        UserDAO dao = new UserDAO();
+        User user = dao.getUserFullById(userId);
+        request.setAttribute("user", user);
+        request.getRequestDispatcher("/WEB-INF/jsp/warehouse/Information.jsp").forward(request, response);
     }
 
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
     @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
 
+        HttpSession session = request.getSession(false);
+        Integer userId = (Integer) session.getAttribute("userID");
+
+        if (userId == null) {
+            response.sendRedirect("Login");
+            return;
+        }
+
+        try {
+            UserDAO dao = new UserDAO();
+            User u = dao.getUserFullById(userId);
+
+            u.setFullName(request.getParameter("fullName"));
+            u.setEmail(request.getParameter("email"));
+            u.setPhone(request.getParameter("phone"));
+            u.setAddress(request.getParameter("address"));
+            u.setIdentificationId(request.getParameter("identificationId"));
+
+            String genderStr = request.getParameter("gender");
+            if (genderStr != null) {
+                u.setGender("1".equals(genderStr));
+            }
+
+            String dobStr = request.getParameter("dob");
+            if (dobStr != null && !dobStr.isEmpty()) {
+                Date dob = new SimpleDateFormat("yyyy-MM-dd").parse(dobStr);
+                u.setDob(dob);
+            }
+
+            boolean success = dao.updateUser(u);
+
+            if (success) {
+                request.setAttribute("msg", "✅ Cập nhật thông tin thành công!");
+            } else {
+                request.setAttribute("msg", "❌ Cập nhật thất bại!");
+            }
+
+            request.setAttribute("user", dao.getUserFullById(userId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("msg", "❌ Lỗi: " + e.getMessage());
+        }
+
+        request.getRequestDispatcher("/WEB-INF/jsp/warehouse/Information.jsp").forward(request, response);
+    }
 }

@@ -445,4 +445,73 @@ public class StockMovementDAO extends DataBaseContext {
         return list;
     }
 
+    //Xuất hàng
+    public List<Map<String, Object>> listExportOrders(Integer warehouseId, Timestamp from, Timestamp to, String status, int page, int pageSize) {
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder("""
+        SELECT smr.MovementID,
+               b.BranchName AS ToBranchName,
+               u.FullName AS CreatedByName,
+               smr.CreatedAt,
+               COALESCE(r.ResponseStatus, 'pending') AS Status,
+               smr.Note
+        FROM StockMovementsRequest smr
+        LEFT JOIN Branches b ON smr.ToBranchID = b.BranchID
+        LEFT JOIN Users u ON smr.CreatedBy = u.UserID
+        LEFT JOIN (
+            SELECT MovementID, ResponseStatus,
+                   ROW_NUMBER() OVER (PARTITION BY MovementID ORDER BY ResponseAt DESC) AS rn
+            FROM StockMovementResponses
+        ) r ON smr.MovementID = r.MovementID AND r.rn = 1
+        WHERE smr.MovementType = 'Export'
+          AND smr.FromWarehouseID = ?
+    """);
+
+        // Thêm điều kiện lọc ngày
+        if (from != null) {
+            sql.append(" AND smr.CreatedAt >= ?");
+        }
+        if (to != null) {
+            sql.append(" AND smr.CreatedAt <= ?");
+        }
+        if (status != null && !status.equalsIgnoreCase("Tất cả")) {
+            sql.append(" AND COALESCE(r.ResponseStatus,'pending') = ?");
+        }
+
+        sql.append(" ORDER BY smr.CreatedAt DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            int idx = 1;
+            ps.setInt(idx++, warehouseId);
+            if (from != null) {
+                ps.setTimestamp(idx++, from);
+            }
+            if (to != null) {
+                ps.setTimestamp(idx++, to);
+            }
+            if (status != null && !status.equalsIgnoreCase("Tất cả")) {
+                ps.setString(idx++, status);
+            }
+            ps.setInt(idx++, (page - 1) * pageSize);
+            ps.setInt(idx++, pageSize);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("MovementID", rs.getInt("MovementID"));
+                    row.put("ToBranchName", rs.getString("ToBranchName"));
+                    row.put("CreatedByName", rs.getString("CreatedByName"));
+                    row.put("CreatedAt", rs.getTimestamp("CreatedAt"));
+                    row.put("Status", rs.getString("Status"));
+                    row.put("Note", rs.getString("Note"));
+                    list.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
 }
