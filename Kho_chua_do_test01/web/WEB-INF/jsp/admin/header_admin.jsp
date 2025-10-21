@@ -273,7 +273,7 @@
                 </a>
                 <div class="dropdown-menu" id="dropdownMenu">
                     <a href="InformationAccount" class="dropdown-item">Thông tin chi tiết</a>
-                    <a href="Login" class="dropdown-item">Đăng xuất</a>
+                    <a href="Logout" class="dropdown-item">Đăng xuất</a>
                 </div>
             </div>      
         </div>

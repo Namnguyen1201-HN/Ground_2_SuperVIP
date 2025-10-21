@@ -1,4 +1,4 @@
-package Controller;
+package Controller.Admin;
 
 import DAL.BranchDAO;
 import DAL.UserDAO;
@@ -17,31 +17,30 @@ public class InformationAccountController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // ⚙️ Giả sử user đã đăng nhập => lấy từ session
         HttpSession session = request.getSession();
-        User loggedUser = (User) session.getAttribute("user");
+        User loggedUser = (User) session.getAttribute("currentUser");
 
-        int userId;
         if (loggedUser != null) {
-            userId = loggedUser.getUserId();
-        } else {
-            // Nếu chưa đăng nhập, tạm thời test cứng id = 1
-            userId = 1;
+            // 🔄 Cập nhật lại user đầy đủ từ DB
+            loggedUser = new UserDAO().getUserFullById(loggedUser.getUserId());
+            session.setAttribute("currentUser", loggedUser);
         }
+
+        int userId = (loggedUser != null) ? loggedUser.getUserId() : 1;
 
         UserDAO dao = new UserDAO();
         BranchDAO branchDAO = new BranchDAO();
         WarehouseDAO warehouseDAO = new WarehouseDAO();
 
-        User user = dao.getUserById(userId);
-        // ✅ Tự động đếm số chi nhánh & số kho
+        // ✅ Lấy user đầy đủ thông tin
+        User user = dao.getUserFullById(userId);
+
         int branchCount = branchDAO.getAllBranches().size();
         int warehouseCount = warehouseDAO.getAllWarehouses().size();
 
         request.setAttribute("user", user);
         request.setAttribute("branchCount", branchCount);
         request.setAttribute("warehouseCount", warehouseCount);
-
         request.getRequestDispatcher("/WEB-INF/jsp/admin/information_account.jsp").forward(request, response);
     }
 
@@ -55,7 +54,8 @@ public class InformationAccountController extends HttpServlet {
         WarehouseDAO warehouseDAO = new WarehouseDAO();
 
         int userId = Integer.parseInt(request.getParameter("userId"));
-        User user = userDAO.getUserById(userId);
+        User user = userDAO.getUserFullById(userId);
+        User original = userDAO.getUserFullById(userId);
 
         if (user != null) {
             user.setFullName(request.getParameter("fullName"));
@@ -82,19 +82,27 @@ public class InformationAccountController extends HttpServlet {
                 }
             }
 
+            user.setRoleId(original.getRoleId());
+            user.setBranchId(original.getBranchId());
+            user.setWarehouseId(original.getWarehouseId());
+
             boolean updated = userDAO.updateUser(user);
+
+            if (updated) {
+                // ✅ Cập nhật lại session
+                User refreshed = userDAO.getUserFullById(userId);
+                request.getSession().setAttribute("currentUser", refreshed);
+            }
+
             request.setAttribute("msg", updated ? "✅ Cập nhật thông tin thành công!" : "❌ Cập nhật thất bại!");
         }
 
-        // ✅ Cập nhật lại đếm số chi nhánh & kho để hiển thị đúng
         int branchCount = branchDAO.getAllBranches().size();
         int warehouseCount = warehouseDAO.getAllWarehouses().size();
 
         request.setAttribute("user", user);
         request.setAttribute("branchCount", branchCount);
         request.setAttribute("warehouseCount", warehouseCount);
-
         request.getRequestDispatcher("/WEB-INF/jsp/admin/information_account.jsp").forward(request, response);
     }
-
 }

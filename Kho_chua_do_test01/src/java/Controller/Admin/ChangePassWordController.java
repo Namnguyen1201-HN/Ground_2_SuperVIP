@@ -1,13 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-package Controller;
+package Controller.Admin;
 
 import DAL.UserDAO;
 import Model.User;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,38 +10,46 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-/**
- *
- * @author TieuPham
- */
 @WebServlet(name = "ChangePassWordController", urlPatterns = {"/ChangePassWord"})
 public class ChangePassWordController extends HttpServlet {
 
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(request, response);
+    private String hashSHA256(String password) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(password.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        
-        //Cần phải thay đổi dòng dưới để có thể get đúng session tài khoản đăng nhập
-        User currentUser = (User) session.getAttribute("account"); // giả sử bạn lưu user khi đăng nhập
 
-        if (currentUser == null) {
-            response.sendRedirect("Login");
+        request.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("currentUser") == null) {
+            request.setAttribute("message", "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+            request.setAttribute("msgType", "warning");
+            request.getRequestDispatcher("Logout").forward(request, response);
             return;
         }
 
+        User currentUser = (User) session.getAttribute("currentUser");
+
+        // 🔹 Lấy dữ liệu từ form
         String currentPassword = request.getParameter("currentPassword");
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
@@ -60,10 +63,13 @@ public class ChangePassWordController extends HttpServlet {
             return;
         }
 
-        // 2️⃣ Kiểm tra mật khẩu hiện tại
         UserDAO dao = new UserDAO();
         User dbUser = dao.getUserById(currentUser.getUserId());
-        if (dbUser == null || !dbUser.getPasswordHash().equals(currentPassword)) {
+
+        String hashedInput = hashSHA256(currentPassword);
+
+        // 2️⃣ Kiểm tra mật khẩu hiện tại (nếu có hash, bạn cần sửa đoạn này)
+        if (dbUser == null || dbUser.getPasswordHash() == null || !dbUser.getPasswordHash().equals(hashedInput)) {
             request.setAttribute("message", "Mật khẩu hiện tại không chính xác!");
             request.setAttribute("msgType", "danger");
             request.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(request, response);
@@ -86,10 +92,13 @@ public class ChangePassWordController extends HttpServlet {
         }
 
         // 4️⃣ Cập nhật DB
-        boolean updated = dao.updatePassword(currentUser.getUserId(), newPassword);
+        boolean updated = dao.updatePassword(currentUser.getUserId(), hashSHA256(newPassword));
+
         if (updated) {
-            currentUser.setPasswordHash(newPassword);
-            session.setAttribute("account", currentUser); // cập nhật lại session
+            // Cập nhật lại đối tượng trong session
+            currentUser.setPasswordHash(hashSHA256(newPassword)); // ✅ Lưu đúng dạng hash
+            session.setAttribute("currentUser", currentUser);
+
             request.setAttribute("message", "Đổi mật khẩu thành công!");
             request.setAttribute("msgType", "success");
         } else {
@@ -102,7 +111,6 @@ public class ChangePassWordController extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Short description";
+        return "Controller đổi mật khẩu người dùng (Admin & User)";
     }
-
 }

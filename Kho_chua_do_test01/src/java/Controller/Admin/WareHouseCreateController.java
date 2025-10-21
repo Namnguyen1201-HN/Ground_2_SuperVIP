@@ -1,4 +1,4 @@
-package Controller;
+package Controller.Admin;
 
 import DAL.WarehouseDAO;
 import Model.Warehouse;

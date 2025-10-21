@@ -4,7 +4,9 @@ import Model.StockMovementDetail;
 import Model.StockMovementsRequest;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StockMovementDAO extends DataBaseContext {
 
@@ -99,7 +101,9 @@ public class StockMovementDAO extends DataBaseContext {
                     list.add(d);
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -114,7 +118,9 @@ public class StockMovementDAO extends DataBaseContext {
                     return r;
                 }
             }
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -126,7 +132,9 @@ public class StockMovementDAO extends DataBaseContext {
             ps.setString(2, note);
             ps.setInt(3, id);
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) { e.printStackTrace(); }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -210,10 +218,16 @@ public class StockMovementDAO extends DataBaseContext {
             connection.commit();
             return true;
         } catch (SQLException e) {
-            try { connection.rollback(); } catch (SQLException ignored) {}
+            try {
+                connection.rollback();
+            } catch (SQLException ignored) {
+            }
             e.printStackTrace();
         } finally {
-            try { connection.setAutoCommit(auto); } catch (SQLException ignored) {}
+            try {
+                connection.setAutoCommit(auto);
+            } catch (SQLException ignored) {
+            }
         }
         return false;
     }
@@ -242,7 +256,6 @@ public class StockMovementDAO extends DataBaseContext {
                     if (rs.next()) newId = rs.getInt(1);
                 }
             }
-            if (newId <= 0) { connection.rollback(); return -1; }
 
             if (r.getDetails() != null && !r.getDetails().isEmpty()) {
                 String dsql = "INSERT INTO StockMovementDetail (MovementID, ProductDetailID, Quantity) VALUES (?,?,?)";

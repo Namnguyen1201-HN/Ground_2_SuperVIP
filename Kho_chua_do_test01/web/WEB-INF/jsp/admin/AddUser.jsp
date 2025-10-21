@@ -70,41 +70,8 @@
                 <div class="section-box">
                     <div class="section-header"><i class="fa fa-briefcase"></i> Thông tin công việc</div>
                     <div class="section-body">
-                        <label>Chi nhánh:</label>
-                        <select name="branchId">
-                            <option value="">Không thuộc chi nhánh</option>
-                            <%
-                                List<Branch> branches = (List<Branch>) request.getAttribute("branches");
-                                if (branches != null) {
-                                    for (Branch b : branches) {
-                            %>
-
-                            <option value="<%= b.getBranchId() %>"><%= b.getBranchName() %></option>
-                            <%
-                                    }
-                                }
-                            %>
-                        </select>
-
-
-                        <label>Kho làm việc:</label>
-                        <select name="warehouseId">
-                            <option value="">Không thuộc kho</option>
-                            <%
-                                List<Warehouse> warehouses = (List<Warehouse>) request.getAttribute("warehouses");
-                                if (warehouses != null) {
-                                    for (Warehouse w : warehouses) {
-                            %>
-                            <option value="<%= w.getWarehouseId() %>"><%= w.getWarehouseName() %></option>
-                            <%
-                                    }
-
-                                }
-                            %>
-                        </select>
-
                         <label>Chức danh (Role):</label>
-                        <select name="roleId" required>
+                        <select name="roleId" id="roleId" required onchange="updateFormVisibility()">
                             <%
                                 List<Role> roles = (List<Role>) request.getAttribute("roles");
                                 if (roles != null) {
@@ -116,6 +83,40 @@
                                 }
                             %>
                         </select>
+
+                        <div id="branchSection" style="display: none;">
+                            <label>Chi nhánh:</label>
+                            <select name="branchId" id="branchId">
+                                <option value="">Không thuộc chi nhánh</option>
+                                <%
+                                    List<Branch> branches = (List<Branch>) request.getAttribute("branches");
+                                    if (branches != null) {
+                                        for (Branch b : branches) {
+                                %>
+                                <option value="<%= b.getBranchId() %>"><%= b.getBranchName() %></option>
+                                <%
+                                        }
+                                    }
+                                %>
+                            </select>
+                        </div>
+
+                        <div id="warehouseSection" style="display: none;">
+                            <label>Kho làm việc:</label>
+                            <select name="warehouseId" id="warehouseId">
+                                <option value="">Không thuộc kho</option>
+                                <%
+                                    List<Warehouse> warehouses = (List<Warehouse>) request.getAttribute("warehouses");
+                                    if (warehouses != null) {
+                                        for (Warehouse w : warehouses) {
+                                %>
+                                <option value="<%= w.getWarehouseId() %>"><%= w.getWarehouseName() %></option>
+                                <%
+                                        }
+                                    }
+                                %>
+                            </select>
+                        </div>
 
                         <label>Trạng thái:</label>
                         <select name="isActive">
@@ -134,6 +135,32 @@
                 </div>
             </form>
         </div>
+
+        <script>
+            function updateFormVisibility() {
+                const roleSelect = document.getElementById("roleId");
+                const branchSection = document.getElementById("branchSection");
+                const warehouseSection = document.getElementById("warehouseSection");
+
+                const selectedRole = roleSelect.options[roleSelect.selectedIndex].text.toLowerCase();
+
+// Ẩn hết trước
+                branchSection.style.display = "none";
+                warehouseSection.style.display = "none";
+
+// Logic hiển thị dựa vào Role
+                if (selectedRole.includes("quản lý chi nhánh")) {
+                    branchSection.style.display = "block";
+                } else if (selectedRole.includes("quản lý kho")) {
+                    warehouseSection.style.display = "block";
+                } else if (selectedRole.includes("nhân viên")) {
+                    branchSection.style.display = "block";
+                }
+            }
+
+// Gọi khi trang load lần đầu
+            document.addEventListener("DOMContentLoaded", updateFormVisibility);
+        </script>
     </body>
 
 </html>

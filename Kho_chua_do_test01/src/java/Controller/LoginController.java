@@ -12,6 +12,21 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "LoginController", urlPatterns = {"/Login"})
 public class LoginController extends HttpServlet {
+
+    private String hashSHA256(String password) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(password.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private UserDAO userDAO;
 
     @Override
@@ -25,10 +40,10 @@ public class LoginController extends HttpServlet {
         // Check if user already logged in
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
-            response.sendRedirect("Dashboard");
+            response.sendRedirect("DashBoard");
             return;
         }
-        
+
         request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
     }
 
@@ -53,13 +68,15 @@ public class LoginController extends HttpServlet {
 
         try {
             System.out.println("Calling authenticateUser...");
-            User user = userDAO.authenticateUser(username.trim(), password);
             
+            String hashedPassword = hashSHA256(password.trim());
+            User user = userDAO.authenticateUser(username.trim(), hashedPassword);
+
             System.out.println("User result: " + user);
 
             if (user != null) {
                 System.out.println("User found - ID: " + user.getUserId() + ", Role: " + user.getRoleId() + ", Active: " + user.getIsActive());
-                
+
                 // Check user status
                 if (user.getIsActive() != 1) {
                     System.out.println("ERROR: User not active. Status: " + user.getIsActive());
@@ -85,12 +102,12 @@ public class LoginController extends HttpServlet {
                 if ("on".equals(remember)) {
                     session.setMaxInactiveInterval(30 * 24 * 60 * 60); // 30 days
                 } else {
-                    session.setMaxInactiveInterval(30 * 60); // 30 minutes
+                    session.setMaxInactiveInterval(30 * 60 * 60); // 30 minutes
                 }
 
                 System.out.println("Session created successfully");
                 System.out.println("Redirecting to DashBoard...");
-                
+
                 // Redirect by role
                 redirectByRole(response, user.getRoleId());
             } else {
@@ -104,26 +121,24 @@ public class LoginController extends HttpServlet {
             request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
         }
-        
+
         System.out.println("========== END LOGIN DEBUG ==========");
     }
 
     private void redirectByRole(HttpServletResponse response, int roleID) throws IOException {
         switch (roleID) {
             case 0:
-                response.sendRedirect("DashBoard");
+                response.sendRedirect("TongQuan");
                 break;
             case 1:
-                response.sendRedirect("DashBoard");
+                response.sendRedirect("");
                 break;
             case 2:
-                response.sendRedirect("DashBoard");
+                response.sendRedirect("sale");
                 break;
             case 3:
-                response.sendRedirect("DashBoard");
+                response.sendRedirect("WareHouseProduct");
                 break;
-            default:
-                response.sendRedirect("DashBoard");
         }
     }
 

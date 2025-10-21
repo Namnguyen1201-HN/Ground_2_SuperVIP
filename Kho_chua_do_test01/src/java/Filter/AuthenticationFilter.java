@@ -1,22 +1,46 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.util.*;
 
 @WebFilter(filterName = "AuthenticationFilter", urlPatterns = {"/*"})
 public class AuthenticationFilter implements Filter {
 
+    // 🔒 Bảng quyền truy cập cho từng role
+    private final Map<Integer, List<String>> roleAccessMap = new HashMap<>();
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // ✅ Role 0 – Admin / System Manager
+        roleAccessMap.put(0, Arrays.asList(
+                "/TongQuan", "/NhanVien", "/AddUser", "/BranchManagement", "/ChangePassWord", "/Customer", "/EditUser", "/ShiftUser",
+                "/WarehouseManagement", "/InformationAccount", "/Logout", "/product", "/BranchCreate", "/InventoryMoves", "/Orders",
+                "/Supplier", "/WareHouseCreate"
+        ));
+
+        // ✅ Role 1 – Branch Manager
+        roleAccessMap.put(1, Arrays.asList(
+                "/", "/", "/", "/Logout"
+        ));
+
+        // ✅ Role 2 – Sale
+        roleAccessMap.put(2, Arrays.asList(
+                "/sale", "/", "/", "/", "/Logout"
+        ));
+
+        // ✅ Role 3 – Warehouse Manager
+        roleAccessMap.put(3, Arrays.asList(
+                "/XuatHang", "/WareHouseProduct", "/NhapHang", "/ThongBao", "/Information", "/Logout"
+        ));
+    }
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
+
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
@@ -25,59 +49,79 @@ public class AuthenticationFilter implements Filter {
         String contextPath = httpRequest.getContextPath();
         String path = requestURI.substring(contextPath.length());
 
-        // Allow public URLs (CSS, JS, images, fonts)
+        // ✅ Cho phép truy cập công khai (public pages + static files)
         if (isPublicURL(path)) {
             chain.doFilter(request, response);
             return;
         }
 
-        // Allow login, register, forgot password pages
-        if (path.equals("/Login") || path.equals("/Register") || path.equals("/ForgotPassword") || 
-            path.isEmpty() || path.equals("/") || path.equals("")) {
-            chain.doFilter(request, response);
+        // ✅ Kiểm tra đăng nhập
+        if (session == null || session.getAttribute("currentUser") == null) {
+            httpResponse.sendRedirect(contextPath + "/Login?error=needLogin");
             return;
         }
 
-        // Check if user is logged in
-        if (session == null || session.getAttribute("currentUser") == null) {
-            // User chưa login, redirect về Login
+        // ✅ Lấy roleID của người dùng hiện tại
+        Integer roleID = (Integer) session.getAttribute("roleID");
+        if (roleID == null) {
             httpResponse.sendRedirect(contextPath + "/Login");
             return;
         }
 
-        // User đã login, cho phép truy cập TẤT CẢ trang (không block)
-        chain.doFilter(request, response);
+        // ✅ Kiểm tra quyền truy cập của role
+        if (hasAccess(roleID, path)) {
+            chain.doFilter(request, response);
+        } else {
+            httpResponse.sendRedirect(contextPath + "/AccessDenied.jsp");
+        }
     }
 
-    /**
-     * Check if URL is public (CSS, JS, images, fonts)
-     */
+    // 🟢 Các đường dẫn public (ai cũng vào được)
     private boolean isPublicURL(String path) {
-        if (path.isEmpty() || path.equals("/")) {
-            return true;
+        // Các trang public
+        String[] publicPaths = {
+            "/Login", "/Register", "/ForgotPassword", "/Dashboard", "/", "/", ""
+        };
+        for (String p : publicPaths) {
+            if (path.equals(p) || path.startsWith(p)) {
+                return true;
+            }
         }
-        
-        // Check file extensions
-        String[] publicExtensions = {".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".ico", ".woff", ".woff2", ".ttf", ".eot", ".svg"};
-        for (String ext : publicExtensions) {
+
+        // File tĩnh
+        String[] staticExts = {
+            ".css", ".js", ".png", ".jpg", ".jpeg", ".gif", ".ico", ".woff", ".woff2", ".ttf", ".eot", ".svg"
+        };
+        for (String ext : staticExts) {
             if (path.endsWith(ext)) {
                 return true;
             }
         }
-        
-        // Check folders
+
+        // Thư mục tĩnh
         String[] publicFolders = {"/css/", "/js/", "/images/", "/fonts/", "/assets/", "/lib/"};
         for (String folder : publicFolders) {
             if (path.startsWith(folder)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    // 🔐 Kiểm tra xem role có quyền truy cập URL không
+    private boolean hasAccess(int roleID, String path) {
+        List<String> allowed = roleAccessMap.get(roleID);
+        if (allowed == null) {
+            return false;
+        }
+
+        for (String allow : allowed) {
+            if (path.startsWith(allow)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

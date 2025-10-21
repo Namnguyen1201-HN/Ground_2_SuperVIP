@@ -1,4 +1,4 @@
-package Controller;
+package Controller.Admin;
 
 import DAL.BranchDAO;
 import DAL.RoleDAO;
@@ -41,6 +41,15 @@ public class NhanVienController extends HttpServlet {
         List<Branch> branches = branchDAO.getAllBranches();
         List<Role> roles = roleDAO.getAllRoles();
         List<User> allUsers = userDAO.getAllUsers();
+
+        // ✅ Lấy thông tin người dùng đang đăng nhập
+        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        if (currentUser != null) {
+            // Loại bỏ chính người đang đăng nhập khỏi danh sách
+            allUsers = allUsers.stream()
+                    .filter(u -> u.getUserId() != currentUser.getUserId())
+                    .collect(Collectors.toList());
+        }
 
         // ====== LỌC DỮ LIỆU ======
         List<User> filteredUsers = allUsers.stream()
