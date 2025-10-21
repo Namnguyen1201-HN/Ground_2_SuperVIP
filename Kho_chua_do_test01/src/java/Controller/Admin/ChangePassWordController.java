@@ -92,7 +92,7 @@ public class ChangePassWordController extends HttpServlet {
         }
 
         // 4️⃣ Cập nhật DB
-        boolean updated = dao.updatePassword(currentUser.getUserId(), hashSHA256(newPassword));
+        boolean updated = dao.updatePassword(currentUser.getUserId(), newPassword);
 
         if (updated) {
             // Cập nhật lại đối tượng trong session

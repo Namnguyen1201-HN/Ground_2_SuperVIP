@@ -33,7 +33,7 @@ public class AuthenticationFilter implements Filter {
 
         // ✅ Role 3 – Warehouse Manager
         roleAccessMap.put(3, Arrays.asList(
-                "/XuatHang", "/WareHouseProduct", "/NhapHang", "/ThongBao", "/Information", "/Logout"
+                "/WareHouseProduct", "/NhapHang", "/XuatHang", "/ThongBao", "/Information", "/Logout"
         ));
     }
 

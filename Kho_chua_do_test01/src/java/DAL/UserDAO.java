@@ -10,80 +10,49 @@ public class UserDAO extends DataBaseContext {
     /**
      * Authenticate user with email/phone and password
      */
-    public User authenticateUser(String username, String password) {
+    public User authenticateUser(String username, String hashedPassword) {
         User user = null;
-        String hashedPassword = hashPassword(password);
 
-        String query = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, "
-                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, "
-                + "r.RoleName, b.BranchName, w.WarehouseName "
+        String query = "SELECT u.*, r.RoleName, b.BranchName, w.WarehouseName "
                 + "FROM Users u "
-                + "INNER JOIN Roles r ON u.RoleID = r.RoleID "
+                + "LEFT JOIN Roles r ON u.RoleID = r.RoleID "
                 + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
                 + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
                 + "WHERE (u.Email = ? OR u.Phone = ?) AND u.IsActive = 1";
 
-        try {
-            PreparedStatement stmt = connection.prepareStatement(query);
-            stmt.setString(1, username);
-            stmt.setString(2, username);
-
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username.trim());
+            stmt.setString(2, username.trim());
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                String storedPassword = rs.getString("PasswordHash");
-
-                // Verify password
-                if (verifyPassword(password, storedPassword)) {
+                String storedHash = rs.getString("PasswordHash");
+                if (storedHash != null && storedHash.trim().equalsIgnoreCase(hashedPassword.trim())) {
                     user = new User();
                     user.setUserId(rs.getInt("UserID"));
                     user.setFullName(rs.getString("FullName"));
                     user.setEmail(rs.getString("Email"));
                     user.setPhone(rs.getString("Phone"));
-                    user.setBranchId(rs.getInt("BranchID"));
-                    user.setWarehouseId(rs.getInt("WarehouseID"));
+                    user.setBranchId((Integer) rs.getObject("BranchID"));
+                    user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
                     user.setRoleId(rs.getInt("RoleID"));
                     user.setRoleName(rs.getString("RoleName"));
                     user.setIsActive(rs.getInt("IsActive"));
-                    user.setGender(rs.getBoolean("Gender"));
+                    user.setGender((Boolean) rs.getObject("Gender"));
                     user.setAvaUrl(rs.getString("AvaUrl"));
                     user.setAddress(rs.getString("Address"));
                     user.setBranchName(rs.getString("BranchName"));
                     user.setWarehouseName(rs.getString("WarehouseName"));
+                } else {
+                    System.out.println("⚠️ HASH NOT MATCH");
+                    System.out.println("DB: " + storedHash);
+                    System.out.println("INPUT: " + hashedPassword);
                 }
             }
-            rs.close();
-            stmt.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-
         return user;
-    }
-
-    /**
-     * Verify password
-     */
-    private boolean verifyPassword(String password, String storedPassword) {
-        // Compare with hashed password
-        return hashPassword(password).equals(storedPassword);
-    }
-
-    /**
-     * Hash password using SHA-256
-     */
-    private String hashPassword(String password) {
-        try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] messageDigest = md.digest(password.getBytes());
-            StringBuilder sb = new StringBuilder();
-            for (byte b : messageDigest) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (java.security.NoSuchAlgorithmException e) {
-            return password;
-        }
     }
 
     /**
@@ -197,6 +166,20 @@ public class UserDAO extends DataBaseContext {
     /**
      * Insert new user
      */
+    private String hashPassword(String password) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(password.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public boolean insertUser(User u) {
         String query = "INSERT INTO Users (FullName, Email, Phone, PasswordHash, BranchID, WarehouseID, "
                 + "RoleID, IsActive, Gender, AvaUrl, Address, TaxNumber, WebURL, DOB, IdentificationID) "

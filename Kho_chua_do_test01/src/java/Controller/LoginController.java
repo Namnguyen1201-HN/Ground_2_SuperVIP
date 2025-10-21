@@ -32,18 +32,22 @@ public class LoginController extends HttpServlet {
     @Override
     public void init() {
         userDAO = new UserDAO();
+        System.err.println("[DEBUG] LoginController initialized. userDAO = " + (userDAO != null));
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Check if user already logged in
+        System.err.println("[DEBUG] LoginController.doGet() called");
+
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
+            System.err.println("[DEBUG] User already logged in, redirecting to DashBoard");
             response.sendRedirect("DashBoard");
             return;
         }
 
+        System.err.println("[DEBUG] Forwarding to Login.jsp");
         request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
     }
 
@@ -54,38 +58,40 @@ public class LoginController extends HttpServlet {
         String password = request.getParameter("password");
         String remember = request.getParameter("remember");
 
-        System.out.println("========== LOGIN DEBUG ==========");
-        System.out.println("Username input: " + username);
-        System.out.println("Password input: " + password);
+        System.err.println("========== LOGIN DEBUG ==========");
+        System.err.println("[DEBUG] Received POST /Login");
+        System.err.println("[DEBUG] Username: " + username);
+        System.err.println("[DEBUG] Password (raw): " + password);
+        System.err.println("[DEBUG] Remember me: " + remember);
 
-        // Validate input
         if (username == null || password == null || username.trim().isEmpty() || password.trim().isEmpty()) {
-            System.out.println("ERROR: Empty username or password");
+            System.err.println("[ERROR] Empty username or password");
             request.setAttribute("error", "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!");
             request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
             return;
         }
 
         try {
-            System.out.println("Calling authenticateUser...");
-            
-            String hashedPassword = hashSHA256(password.trim());
-            User user = userDAO.authenticateUser(username.trim(), hashedPassword);
+            System.err.println("[DEBUG] Calling authenticateUser...");
 
-            System.out.println("User result: " + user);
+            String hashedPassword = hashSHA256(password.trim());
+            System.err.println("[DEBUG] Password (hashed): " + hashedPassword);
+
+            System.err.println("[DEBUG] Calling userDAO.authenticateUser...");
+            User user = userDAO.authenticateUser(username.trim(), hashedPassword);
+            System.err.println("[DEBUG] userDAO.authenticateUser() returned: " + user);
 
             if (user != null) {
-                System.out.println("User found - ID: " + user.getUserId() + ", Role: " + user.getRoleId() + ", Active: " + user.getIsActive());
+                System.err.println("[DEBUG] User found - ID: " + user.getUserId()
+                        + ", Role: " + user.getRoleId() + ", Active: " + user.getIsActive());
 
-                // Check user status
                 if (user.getIsActive() != 1) {
-                    System.out.println("ERROR: User not active. Status: " + user.getIsActive());
+                    System.err.println("[ERROR] User not active. Status: " + user.getIsActive());
                     request.setAttribute("error", "Tài khoản của bạn không được kích hoạt!");
                     request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
                     return;
                 }
 
-                // Create session
                 HttpSession session = request.getSession();
                 session.setAttribute("currentUser", user);
                 session.setAttribute("userID", user.getUserId());
@@ -98,46 +104,52 @@ public class LoginController extends HttpServlet {
                 session.setAttribute("email", user.getEmail());
                 session.setAttribute("phone", user.getPhone());
 
-                // Set session timeout
                 if ("on".equals(remember)) {
                     session.setMaxInactiveInterval(30 * 24 * 60 * 60); // 30 days
                 } else {
                     session.setMaxInactiveInterval(30 * 60 * 60); // 30 minutes
                 }
 
-                System.out.println("Session created successfully");
-                System.out.println("Redirecting to DashBoard...");
-
-                // Redirect by role
+                System.err.println("[DEBUG] Session created successfully");
+                System.err.println("[DEBUG] Redirecting to DashBoard...");
                 redirectByRole(response, user.getRoleId());
             } else {
-                System.out.println("ERROR: Authentication failed - User is null");
+                System.err.println("[ERROR] Authentication failed - User is null");
                 request.setAttribute("error", "Tên đăng nhập hoặc mật khẩu không chính xác!");
                 request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
             }
         } catch (Exception e) {
-            System.out.println("ERROR: Exception in login");
+            System.err.println("[ERROR] Exception in login: " + e.getMessage());
             e.printStackTrace();
             request.setAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
             request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
         }
 
-        System.out.println("========== END LOGIN DEBUG ==========");
+        System.err.println("========== END LOGIN DEBUG ==========");
     }
 
     private void redirectByRole(HttpServletResponse response, int roleID) throws IOException {
+        System.err.println("[DEBUG] Redirecting by roleID = " + roleID);
         switch (roleID) {
             case 0:
+                System.err.println("[DEBUG] Redirect to TongQuan");
                 response.sendRedirect("TongQuan");
                 break;
             case 1:
+                System.err.println("[DEBUG] Redirect to Admin");
                 response.sendRedirect("");
                 break;
             case 2:
+                System.err.println("[DEBUG] Redirect to Sale");
                 response.sendRedirect("sale");
                 break;
             case 3:
+                System.err.println("[DEBUG] Redirect to WareHouseProduct");
                 response.sendRedirect("WareHouseProduct");
+                break;
+            default:
+                System.err.println("[ERROR] Unknown roleID: " + roleID);
+                response.sendRedirect("Login");
                 break;
         }
     }
