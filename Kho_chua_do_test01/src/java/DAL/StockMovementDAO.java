@@ -1,5 +1,6 @@
 package DAL;
 
+import Model.ImportCartItem;
 import Model.StockMovementDetail;
 import Model.StockMovementsRequest;
 import java.sql.*;
@@ -335,6 +336,786 @@ public class StockMovementDAO extends DataBaseContext {
             e.printStackTrace();
         }
         return list;
+    }
+    
+    /**
+     * Create import request from supplier to warehouse
+     * @param supplierID ID of supplier
+     * @param toWarehouseID ID of destination warehouse
+     * @param createdBy ID of user creating request
+     * @param cartItems List of items to import
+     * @param note Optional note
+     * @return true if successful
+     */
+    public boolean createImportRequest(int supplierID, int toWarehouseID, int createdBy, 
+                                      List<ImportCartItem> cartItems, String note) {
+        System.out.println("=== [StockMovementDAO] createImportRequest called ===");
+        System.out.println("SupplierID: " + supplierID);
+        System.out.println("ToWarehouseID: " + toWarehouseID);
+        System.out.println("CreatedBy: " + createdBy);
+        System.out.println("Cart items: " + (cartItems != null ? cartItems.size() : "NULL"));
+        System.out.println("Note: " + note);
+        
+        String headerSql = "INSERT INTO StockMovementsRequest (FromSupplierID, ToWarehouseID, MovementType, CreatedBy, CreatedAt, Note) " +
+                          "VALUES (?, ?, 'Import', ?, GETDATE(), ?)";
+        String detailSql = "INSERT INTO StockMovementDetail (MovementID, ProductDetailID, Quantity, QuantityScanned) " +
+                          "VALUES (?, ?, ?, 0)";
+        
+        boolean autoCommit = false;
+        try {
+            autoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            System.out.println("Transaction started, auto-commit disabled");
+            
+            int movementID = -1;
+            
+            // Insert header
+            System.out.println("Inserting header record...");
+            try (PreparedStatement ps = connection.prepareStatement(headerSql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, supplierID);
+                ps.setInt(2, toWarehouseID);
+                ps.setInt(3, createdBy);
+                ps.setString(4, note);
+                int affectedRows = ps.executeUpdate();
+                System.out.println("Header inserted, affected rows: " + affectedRows);
+                
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        movementID = rs.getInt(1);
+                        System.out.println("Generated MovementID: " + movementID);
+                    }
+                }
+            }
+            
+            if (movementID <= 0) {
+                System.err.println("❌ Failed to get MovementID, rolling back");
+                connection.rollback();
+                return false;
+            }
+            
+            // Insert details
+            System.out.println("Inserting detail records...");
+            try (PreparedStatement ps = connection.prepareStatement(detailSql)) {
+                for (ImportCartItem item : cartItems) {
+                    System.out.println("  - Adding batch: ProductDetailID=" + item.getProductDetailID() + ", Quantity=" + item.getQuantity());
+                    ps.setInt(1, movementID);
+                    ps.setInt(2, item.getProductDetailID());
+                    ps.setInt(3, item.getQuantity());
+                    ps.addBatch();
+                }
+                int[] results = ps.executeBatch();
+                System.out.println("Details inserted, batch results count: " + results.length);
+            }
+            
+            connection.commit();
+            System.out.println("✅ Transaction committed successfully");
+            return true;
+            
+        } catch (SQLException e) {
+            System.err.println("❌ SQL Error occurred: " + e.getMessage());
+            try {
+                connection.rollback();
+                System.err.println("Transaction rolled back");
+            } catch (SQLException ignored) {}
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                connection.setAutoCommit(autoCommit);
+            } catch (SQLException ignored) {}
+        }
+    }
+    
+    /**
+     * Create export request from warehouse to branch
+     * Used by branch managers to request products from warehouse
+     */
+//    public boolean createExportRequest(int fromWarehouseID, int toBranchID, int createdBy, 
+//                                      List<Model.ExportCartItem> cartItems, String note) {
+//        System.out.println("=== [StockMovementDAO] createExportRequest called ===");
+//        System.out.println("FromWarehouseID: " + fromWarehouseID);
+//        System.out.println("ToBranchID: " + toBranchID);
+//        System.out.println("CreatedBy: " + createdBy);
+//        System.out.println("Cart items: " + (cartItems != null ? cartItems.size() : "NULL"));
+//        System.out.println("Note: " + note);
+//        
+//        String headerSql = "INSERT INTO StockMovementsRequest (FromWarehouseID, ToBranchID, MovementType, Status, CreatedBy, CreatedAt, Note) " +
+//                          "VALUES (?, ?, 'Export', 'Pending', ?, GETDATE(), ?)";
+//        String detailSql = "INSERT INTO StockMovementDetail (MovementID, ProductDetailID, Quantity, QuantityScanned) " +
+//                          "VALUES (?, ?, ?, 0)";
+//        
+//        boolean autoCommit = false;
+//        try {
+//            autoCommit = connection.getAutoCommit();
+//            connection.setAutoCommit(false);
+//            System.out.println("Transaction started, auto-commit disabled");
+//            
+//            int movementID = -1;
+//            
+//            // Insert header
+//            System.out.println("Inserting header record...");
+//            try (PreparedStatement ps = connection.prepareStatement(headerSql, Statement.RETURN_GENERATED_KEYS)) {
+//                ps.setInt(1, fromWarehouseID);
+//                ps.setInt(2, toBranchID);
+//                ps.setInt(3, createdBy);
+//                ps.setString(4, note);
+//                int affectedRows = ps.executeUpdate();
+//                System.out.println("Header inserted, affected rows: " + affectedRows);
+//                
+//                try (ResultSet rs = ps.getGeneratedKeys()) {
+//                    if (rs.next()) {
+//                        movementID = rs.getInt(1);
+//                        System.out.println("Generated MovementID: " + movementID);
+//                    }
+//                }
+//            }
+//            
+//            if (movementID <= 0) {
+//                System.err.println("❌ Failed to get MovementID, rolling back");
+//                connection.rollback();
+//                return false;
+//            }
+//            
+//            // Insert details
+//            System.out.println("Inserting detail records...");
+//            try (PreparedStatement ps = connection.prepareStatement(detailSql)) {
+//                for (Model.ExportCartItem item : cartItems) {
+//                    System.out.println("  - Adding batch: ProductDetailID=" + item.getProductDetailID() + ", Quantity=" + item.getQuantity());
+//                    ps.setInt(1, movementID);
+//                    ps.setInt(2, item.getProductDetailID());
+//                    ps.setInt(3, item.getQuantity());
+//                    ps.addBatch();
+//                }
+//                int[] results = ps.executeBatch();
+//                System.out.println("Details inserted, batch results count: " + results.length);
+//            }
+//            
+//            connection.commit();
+//            System.out.println("✅ Transaction committed successfully");
+//            return true;
+//            
+//        } catch (SQLException e) {
+//            System.err.println("❌ SQL Error occurred: " + e.getMessage());
+//            try {
+//                connection.rollback();
+//                System.err.println("Transaction rolled back");
+//            } catch (SQLException ignored) {}
+//            e.printStackTrace();
+//            return false;
+//        } finally {
+//            try {
+//                connection.setAutoCommit(autoCommit);
+//            } catch (SQLException ignored) {}
+//        }
+//    }
+    
+    /**
+     * Get all import requests for admin
+     */
+//    public List<Model.StockMovementResponse> getAllImportRequests() {
+//        List<Model.StockMovementResponse> list = new ArrayList<>();
+//        String sql = "SELECT smr.MovementID, smr.FromSupplierID, s.SupplierName, " +
+//                     "smr.ToWarehouseID, w.WareHouseName, smr.MovementType, " +
+//                     "smr.Status, smr.CreatedBy, u.FullName as CreatorName, " +
+//                     "smr.CreatedAt, smr.ApprovedBy, u2.FullName as ApproverName, " +
+//                     "smr.ApprovedAt, smr.Note, " +
+//                     "(SELECT COUNT(*) FROM StockMovementDetail WHERE MovementID = smr.MovementID) as TotalItems, " +
+//                     "(SELECT SUM(Quantity) FROM StockMovementDetail WHERE MovementID = smr.MovementID) as TotalQuantity " +
+//                     "FROM StockMovementsRequest smr " +
+//                     "LEFT JOIN Suppliers s ON smr.FromSupplierID = s.SupplierID " +
+//                     "LEFT JOIN Warehouses w ON smr.ToWarehouseID = w.WareHouseId " +
+//                     "LEFT JOIN Users u ON smr.CreatedBy = u.UserID " +
+//                     "LEFT JOIN Users u2 ON smr.ApprovedBy = u2.UserID " +
+//                     "WHERE smr.MovementType = 'Import' " +
+//                     "ORDER BY smr.CreatedAt DESC";
+//        
+//        try (PreparedStatement ps = connection.prepareStatement(sql);
+//             ResultSet rs = ps.executeQuery()) {
+//            while (rs.next()) {
+//                Model.StockMovementResponse response = new Model.StockMovementResponse();
+//                response.setMovementID(rs.getInt("MovementID"));
+//                response.setFromSupplierID(rs.getInt("FromSupplierID"));
+//                response.setSupplierName(rs.getString("SupplierName"));
+//                response.setToWarehouseID(rs.getInt("ToWarehouseID"));
+//                response.setWarehouseName(rs.getString("WareHouseName"));
+//                response.setMovementType(rs.getString("MovementType"));
+//                response.setStatus(rs.getString("Status"));
+//                response.setCreatedBy(rs.getInt("CreatedBy"));
+//                response.setCreatorName(rs.getString("CreatorName"));
+//                response.setCreatedAt(rs.getTimestamp("CreatedAt"));
+//                response.setApprovedBy(rs.getInt("ApprovedBy"));
+//                response.setApproverName(rs.getString("ApproverName"));
+//                response.setApprovedAt(rs.getTimestamp("ApprovedAt"));
+//                response.setNote(rs.getString("Note"));
+//                response.setTotalItems(rs.getInt("TotalItems"));
+//                response.setTotalQuantity(rs.getInt("TotalQuantity"));
+//                list.add(response);
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return list;
+//    }
+//    
+//    /**
+//     * Get all export requests for admin
+//     */
+//    public List<Model.StockMovementResponse> getAllExportRequests() {
+//        List<Model.StockMovementResponse> list = new ArrayList<>();
+//        String sql = "SELECT smr.MovementID, smr.FromWarehouseID, w.WareHouseName as FromWarehouseName, " +
+//                     "smr.ToBranchID, b.BranchName, smr.MovementType, " +
+//                     "smr.Status, smr.CreatedBy, u.FullName as CreatorName, " +
+//                     "smr.CreatedAt, smr.ApprovedBy, u2.FullName as ApproverName, " +
+//                     "smr.ApprovedAt, smr.Note, " +
+//                     "(SELECT COUNT(*) FROM StockMovementDetail WHERE MovementID = smr.MovementID) as TotalItems, " +
+//                     "(SELECT SUM(Quantity) FROM StockMovementDetail WHERE MovementID = smr.MovementID) as TotalQuantity " +
+//                     "FROM StockMovementsRequest smr " +
+//                     "LEFT JOIN Warehouses w ON smr.FromWarehouseID = w.WareHouseId " +
+//                     "LEFT JOIN Branches b ON smr.ToBranchID = b.BranchID " +
+//                     "LEFT JOIN Users u ON smr.CreatedBy = u.UserID " +
+//                     "LEFT JOIN Users u2 ON smr.ApprovedBy = u2.UserID " +
+//                     "WHERE smr.MovementType = 'Export' " +
+//                     "ORDER BY smr.CreatedAt DESC";
+//        
+//        try (PreparedStatement ps = connection.prepareStatement(sql);
+//             ResultSet rs = ps.executeQuery()) {
+//            while (rs.next()) {
+//                Model.StockMovementResponse response = new Model.StockMovementResponse();
+//                response.setMovementID(rs.getInt("MovementID"));
+//                response.setFromWarehouseID(rs.getInt("FromWarehouseID"));
+//                response.setWarehouseName(rs.getString("FromWarehouseName"));
+//                response.setToBranchID(rs.getInt("ToBranchID"));
+//                response.setBranchName(rs.getString("BranchName"));
+//                response.setMovementType(rs.getString("MovementType"));
+//                response.setStatus(rs.getString("Status"));
+//                response.setCreatedBy(rs.getInt("CreatedBy"));
+//                response.setCreatorName(rs.getString("CreatorName"));
+//                response.setCreatedAt(rs.getTimestamp("CreatedAt"));
+//                response.setApprovedBy(rs.getInt("ApprovedBy"));
+//                response.setApproverName(rs.getString("ApproverName"));
+//                response.setApprovedAt(rs.getTimestamp("ApprovedAt"));
+//                response.setNote(rs.getString("Note"));
+//                response.setTotalItems(rs.getInt("TotalItems"));
+//                response.setTotalQuantity(rs.getInt("TotalQuantity"));
+//                list.add(response);
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return list;
+//    }
+//    
+//    /**
+//     * Get export requests by branch ID
+//     */
+//    public List<Model.StockMovementResponse> getExportRequestsByBranch(int branchId) {
+//        List<Model.StockMovementResponse> list = new ArrayList<>();
+//        String sql = "SELECT smr.MovementID, smr.FromWarehouseID, w.WareHouseName as FromWarehouseName, " +
+//                     "smr.ToBranchID, b.BranchName, smr.MovementType, " +
+//                     "smr.Status, smr.CreatedBy, u.FullName as CreatorName, " +
+//                     "smr.CreatedAt, smr.ApprovedBy, u2.FullName as ApproverName, " +
+//                     "smr.ApprovedAt, smr.Note, " +
+//                     "(SELECT COUNT(*) FROM StockMovementDetail WHERE MovementID = smr.MovementID) as TotalItems, " +
+//                     "(SELECT SUM(Quantity) FROM StockMovementDetail WHERE MovementID = smr.MovementID) as TotalQuantity " +
+//                     "FROM StockMovementsRequest smr " +
+//                     "LEFT JOIN Warehouses w ON smr.FromWarehouseID = w.WareHouseId " +
+//                     "LEFT JOIN Branches b ON smr.ToBranchID = b.BranchID " +
+//                     "LEFT JOIN Users u ON smr.CreatedBy = u.UserID " +
+//                     "LEFT JOIN Users u2 ON smr.ApprovedBy = u2.UserID " +
+//                     "WHERE smr.MovementType = 'Export' AND smr.ToBranchID = ? " +
+//                     "ORDER BY smr.CreatedAt DESC";
+//        
+//        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+//            ps.setInt(1, branchId);
+//            try (ResultSet rs = ps.executeQuery()) {
+//                while (rs.next()) {
+//                    Model.StockMovementResponse response = new Model.StockMovementResponse();
+//                    response.setMovementID(rs.getInt("MovementID"));
+//                    response.setFromWarehouseID(rs.getInt("FromWarehouseID"));
+//                    response.setWarehouseName(rs.getString("FromWarehouseName"));
+//                    response.setToBranchID(rs.getInt("ToBranchID"));
+//                    response.setBranchName(rs.getString("BranchName"));
+//                    response.setMovementType(rs.getString("MovementType"));
+//                    response.setStatus(rs.getString("Status"));
+//                    response.setCreatedBy(rs.getInt("CreatedBy"));
+//                    response.setCreatorName(rs.getString("CreatorName"));
+//                    response.setCreatedAt(rs.getTimestamp("CreatedAt"));
+//                    response.setApprovedBy(rs.getInt("ApprovedBy"));
+//                    response.setApproverName(rs.getString("ApproverName"));
+//                    response.setApprovedAt(rs.getTimestamp("ApprovedAt"));
+//                    response.setNote(rs.getString("Note"));
+//                    response.setTotalItems(rs.getInt("TotalItems"));
+//                    response.setTotalQuantity(rs.getInt("TotalQuantity"));
+//                    list.add(response);
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return list;
+//    }
+//    
+//    /**
+//     * Get request details with product list
+//     */
+//    public Model.StockMovementResponse getRequestDetails(int movementId) {
+//        Model.StockMovementResponse response = null;
+//        String headerSql = "SELECT smr.MovementID, smr.FromSupplierID, s.SupplierName, " +
+//                          "smr.FromWarehouseID, w1.WareHouseName as FromWarehouseName, " +
+//                          "smr.ToWarehouseID, w2.WareHouseName as ToWarehouseName, " +
+//                          "smr.ToBranchID, b.BranchName, smr.MovementType, " +
+//                          "smr.Status, smr.CreatedBy, u.FullName as CreatorName, " +
+//                          "smr.CreatedAt, smr.ApprovedBy, u2.FullName as ApproverName, " +
+//                          "smr.ApprovedAt, smr.Note " +
+//                          "FROM StockMovementsRequest smr " +
+//                          "LEFT JOIN Suppliers s ON smr.FromSupplierID = s.SupplierID " +
+//                          "LEFT JOIN Warehouses w1 ON smr.FromWarehouseID = w1.WareHouseId " +
+//                          "LEFT JOIN Warehouses w2 ON smr.ToWarehouseID = w2.WareHouseId " +
+//                          "LEFT JOIN Branches b ON smr.ToBranchID = b.BranchID " +
+//                          "LEFT JOIN Users u ON smr.CreatedBy = u.UserID " +
+//                          "LEFT JOIN Users u2 ON smr.ApprovedBy = u2.UserID " +
+//                          "WHERE smr.MovementID = ?";
+//        
+//        String detailSql = "SELECT smd.DetailID, smd.ProductDetailID, pd.ProductCode, " +
+//                          "pd.ProductNameUnsigned, smd.Quantity, smd.QuantityScanned, " +
+//                          "p.CostPrice, p.RetailPrice " +
+//                          "FROM StockMovementDetail smd " +
+//                          "JOIN ProductDetails pd ON smd.ProductDetailID = pd.ProductDetailID " +
+//                          "JOIN Products p ON pd.ProductID = p.ProductID " +
+//                          "WHERE smd.MovementID = ?";
+//        
+//        try (PreparedStatement ps = connection.prepareStatement(headerSql)) {
+//            ps.setInt(1, movementId);
+//            try (ResultSet rs = ps.executeQuery()) {
+//                if (rs.next()) {
+//                    response = new Model.StockMovementResponse();
+//                    response.setMovementID(rs.getInt("MovementID"));
+//                    response.setFromSupplierID(rs.getInt("FromSupplierID"));
+//                    response.setSupplierName(rs.getString("SupplierName"));
+//                    response.setFromWarehouseID(rs.getInt("FromWarehouseID"));
+//                    response.setWarehouseName(rs.getString("FromWarehouseName"));
+//                    response.setToWarehouseID(rs.getInt("ToWarehouseID"));
+//                    response.setToWarehouseName(rs.getString("ToWarehouseName"));
+//                    response.setToBranchID(rs.getInt("ToBranchID"));
+//                    response.setBranchName(rs.getString("BranchName"));
+//                    response.setMovementType(rs.getString("MovementType"));
+//                    response.setStatus(rs.getString("Status"));
+//                    response.setCreatedBy(rs.getInt("CreatedBy"));
+//                    response.setCreatorName(rs.getString("CreatorName"));
+//                    response.setCreatedAt(rs.getTimestamp("CreatedAt"));
+//                    response.setApprovedBy(rs.getInt("ApprovedBy"));
+//                    response.setApproverName(rs.getString("ApproverName"));
+//                    response.setApprovedAt(rs.getTimestamp("ApprovedAt"));
+//                    response.setNote(rs.getString("Note"));
+//                    
+//                    // Get details
+//                    List<Model.StockMovementDetail> details = new ArrayList<>();
+//                    try (PreparedStatement ps2 = connection.prepareStatement(detailSql)) {
+//                        ps2.setInt(1, movementId);
+//                        try (ResultSet rs2 = ps2.executeQuery()) {
+//                            while (rs2.next()) {
+//                                Model.StockMovementDetail detail = new Model.StockMovementDetail();
+//                                detail.setDetailID(rs2.getInt("DetailID"));
+//                                detail.setProductDetailID(rs2.getInt("ProductDetailID"));
+//                                detail.setProductCode(rs2.getString("ProductCode"));
+//                                detail.setProductNameUnsigned(rs2.getString("ProductNameUnsigned"));
+//                                detail.setQuantity(rs2.getInt("Quantity"));
+//                                detail.setQuantityScanned(rs2.getInt("QuantityScanned"));
+//                                detail.setCostPrice(rs2.getDouble("CostPrice"));
+//                                detail.setRetailPrice(rs2.getDouble("RetailPrice"));
+//                                details.add(detail);
+//                            }
+//                        }
+//                    }
+//                    response.setDetails(details);
+//                    
+//                    // Calculate totals
+//                    int totalItems = details.size();
+//                    int totalQuantity = details.stream().mapToInt(Model.StockMovementDetail::getQuantity).sum();
+//                    double totalAmount = details.stream().mapToDouble(d -> d.getCostPrice() * d.getQuantity()).sum();
+//                    response.setTotalItems(totalItems);
+//                    response.setTotalQuantity(totalQuantity);
+//                    response.setTotalAmount(totalAmount);
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return response;
+//    }
+//    
+    /**
+     * Approve export request
+     */
+    public boolean approveRequest(int movementId, int approvedBy) {
+        String sql = "UPDATE StockMovementsRequest " +
+                    "SET Status = 'Approved', ApprovedBy = ?, ApprovedAt = GETDATE() " +
+                    "WHERE MovementID = ? AND MovementType = 'Export' AND Status = 'Pending'";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, approvedBy);
+            ps.setInt(2, movementId);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Reject export request
+     */
+    public boolean rejectRequest(int movementId, int rejectedBy) {
+        String sql = "UPDATE StockMovementsRequest " +
+                    "SET Status = 'Rejected', ApprovedBy = ?, ApprovedAt = GETDATE() " +
+                    "WHERE MovementID = ? AND MovementType = 'Export' AND Status = 'Pending'";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, rejectedBy);
+            ps.setInt(2, movementId);
+            int affected = ps.executeUpdate();
+            return affected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Get all stock movements (both Import and Export) for admin view
+     * @param movementType "Import", "Export", or null for all
+     * @param page Page number (1-based)
+     * @param pageSize Items per page
+     * @return List of movements with pagination
+     */
+    public PagedMoves getAllMovements(String movementType, int page, int pageSize) {
+        List<StockMovementsRequest> list = new ArrayList<>();
+        int total = 0;
+        int offset = (page - 1) * pageSize;
+        
+        StringBuilder sql = new StringBuilder(
+            "SELECT SMR.*, " +
+            "S.SupplierName as FromSupplierName, " +
+            "FB.BranchName as FromBranchName, " +
+            "FW.WarehouseName as FromWarehouseName, " +
+            "TB.BranchName as ToBranchName, " +
+            "TW.WarehouseName as ToWarehouseName, " +
+            "U.FullName as CreatorName " +
+            "FROM StockMovementsRequest SMR " +
+            "LEFT JOIN Suppliers S ON SMR.FromSupplierID = S.SupplierID " +
+            "LEFT JOIN Branches FB ON SMR.FromBranchID = FB.BranchID " +
+            "LEFT JOIN Warehouses FW ON SMR.FromWarehouseID = FW.WarehouseID " +
+            "LEFT JOIN Branches TB ON SMR.ToBranchID = TB.BranchID " +
+            "LEFT JOIN Warehouses TW ON SMR.ToWarehouseID = TW.WarehouseID " +
+            "LEFT JOIN Users U ON SMR.CreatedBy = U.UserID "
+        );
+        
+        if (movementType != null && !movementType.isEmpty()) {
+            sql.append("WHERE SMR.MovementType = ? ");
+        }
+        
+        sql.append("ORDER BY SMR.CreatedAt DESC ");
+        sql.append("OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        
+        // Count query
+        StringBuilder countSql = new StringBuilder("SELECT COUNT(*) FROM StockMovementsRequest");
+        if (movementType != null && !movementType.isEmpty()) {
+            countSql.append(" WHERE MovementType = ?");
+        }
+        
+        try {
+            // Get total count
+            try (PreparedStatement ps = connection.prepareStatement(countSql.toString())) {
+                if (movementType != null && !movementType.isEmpty()) {
+                    ps.setString(1, movementType);
+                }
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    total = rs.getInt(1);
+                }
+            }
+            
+            // Get items
+            try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+                int paramIndex = 1;
+                if (movementType != null && !movementType.isEmpty()) {
+                    ps.setString(paramIndex++, movementType);
+                }
+                ps.setInt(paramIndex++, offset);
+                ps.setInt(paramIndex, pageSize);
+                
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    StockMovementsRequest req = mapHeader(rs);
+                    // Set joined fields for display
+                    try {
+                        String fromSupplierName = rs.getString("FromSupplierName");
+                        if (fromSupplierName != null) req.setFromSupplierName(fromSupplierName);
+                    } catch (Exception e) {}
+                    
+                    try {
+                        String fromBranchName = rs.getString("FromBranchName");
+                        if (fromBranchName != null) req.setFromBranchName(fromBranchName);
+                    } catch (Exception e) {}
+                    
+                    try {
+                        String fromWarehouseName = rs.getString("FromWarehouseName");
+                        if (fromWarehouseName != null) req.setFromWarehouseName(fromWarehouseName);
+                    } catch (Exception e) {}
+                    
+                    try {
+                        String toBranchName = rs.getString("ToBranchName");
+                        if (toBranchName != null) req.setToBranchName(toBranchName);
+                    } catch (Exception e) {}
+                    
+                    try {
+                        String toWarehouseName = rs.getString("ToWarehouseName");
+                        if (toWarehouseName != null) req.setToWarehouseName(toWarehouseName);
+                    } catch (Exception e) {}
+                    
+                    try {
+                        String creatorName = rs.getString("CreatorName");
+                        if (creatorName != null) req.setCreatorName(creatorName);
+                    } catch (Exception e) {}
+                    
+                    list.add(req);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return new PagedMoves(list, total, page, pageSize);
+    }
+    
+    /**
+     * Get stock movements filtered by branch (for branch manager)
+     * @param branchId Branch ID to filter
+     * @param page Page number
+     * @param pageSize Items per page
+     * @return List of movements for this branch
+     */
+    public PagedMoves getMovementsByBranch(int branchId, int page, int pageSize) {
+        List<StockMovementsRequest> list = new ArrayList<>();
+        int total = 0;
+        int offset = (page - 1) * pageSize;
+        
+        String sql = "SELECT SMR.*, " +
+                    "FW.WarehouseName as FromWarehouseName, " +
+                    "TB.BranchName as ToBranchName, " +
+                    "U.FullName as CreatorName " +
+                    "FROM StockMovementsRequest SMR " +
+                    "LEFT JOIN Warehouses FW ON SMR.FromWarehouseID = FW.WarehouseID " +
+                    "LEFT JOIN Branches TB ON SMR.ToBranchID = TB.BranchID " +
+                    "LEFT JOIN Users U ON SMR.CreatedBy = U.UserID " +
+                    "WHERE SMR.ToBranchID = ? " +
+                    "ORDER BY SMR.CreatedAt DESC " +
+                    "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        
+        String countSql = "SELECT COUNT(*) FROM StockMovementsRequest WHERE ToBranchID = ?";
+        
+        try {
+            // Get total
+            try (PreparedStatement ps = connection.prepareStatement(countSql)) {
+                ps.setInt(1, branchId);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    total = rs.getInt(1);
+                }
+            }
+            
+            // Get items
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setInt(1, branchId);
+                ps.setInt(2, offset);
+                ps.setInt(3, pageSize);
+                
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    list.add(mapHeader(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return new PagedMoves(list, total, page, pageSize);
+    }
+    
+    /**
+     * Get movement by ID with all joined names
+     * @param movementId Movement ID
+     * @return StockMovementsRequest object or null
+     */
+    public StockMovementsRequest getMovementById(int movementId) {
+        String sql = "SELECT SMR.*, " +
+                    "S.SupplierName as FromSupplierName, " +
+                    "FB.BranchName as FromBranchName, " +
+                    "FW.WarehouseName as FromWarehouseName, " +
+                    "TB.BranchName as ToBranchName, " +
+                    "TW.WarehouseName as ToWarehouseName, " +
+                    "U.FullName as CreatorName " +
+                    "FROM StockMovementsRequest SMR " +
+                    "LEFT JOIN Suppliers S ON SMR.FromSupplierID = S.SupplierID " +
+                    "LEFT JOIN Branches FB ON SMR.FromBranchID = FB.BranchID " +
+                    "LEFT JOIN Warehouses FW ON SMR.FromWarehouseID = FW.WarehouseID " +
+                    "LEFT JOIN Branches TB ON SMR.ToBranchID = TB.BranchID " +
+                    "LEFT JOIN Warehouses TW ON SMR.ToWarehouseID = TW.WarehouseID " +
+                    "LEFT JOIN Users U ON SMR.CreatedBy = U.UserID " +
+                    "WHERE SMR.MovementID = ?";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, movementId);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                StockMovementsRequest req = mapHeader(rs);
+                // Set display names
+                try {
+                    req.setFromSupplierName(rs.getString("FromSupplierName"));
+                    req.setFromBranchName(rs.getString("FromBranchName"));
+                    req.setFromWarehouseName(rs.getString("FromWarehouseName"));
+                    req.setToBranchName(rs.getString("ToBranchName"));
+                    req.setToWarehouseName(rs.getString("ToWarehouseName"));
+                    req.setCreatorName(rs.getString("CreatorName"));
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                return req;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+    
+    /**
+     * Get movement details by movement ID
+     * @param movementId Movement ID
+     * @return List of detail items
+     */
+    public List<StockMovementDetail> getMovementDetails(int movementId) {
+        List<StockMovementDetail> list = new ArrayList<>();
+        
+        String sql = "SELECT SMD.*, " +
+                    "P.ProductName, " +
+                    "PD.ProductCode, " +
+                    "P.CostPrice " +
+                    "FROM StockMovementDetail SMD " +
+                    "JOIN ProductDetails PD ON SMD.ProductDetailID = PD.ProductDetailID " +
+                    "JOIN Products P ON PD.ProductID = P.ProductID " +
+                    "WHERE SMD.MovementID = ?";
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, movementId);
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                StockMovementDetail detail = new StockMovementDetail();
+                detail.setMovementDetailId(rs.getInt("MovementDetailID"));
+                detail.setMovementId(rs.getInt("MovementID"));
+                detail.setProductDetailId(rs.getInt("ProductDetailID"));
+                detail.setQuantity(rs.getInt("Quantity"));
+                Object qs = rs.getObject("QuantityScanned");
+                if (qs != null) {
+                    detail.setQuantityScanned((Integer) qs);
+                }
+                // Set display fields
+                detail.setProductName(rs.getString("ProductName"));
+                detail.setProductCode(rs.getString("ProductCode"));
+                detail.setCostPrice(rs.getDouble("CostPrice"));
+                list.add(detail);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        
+        return list;
+    }
+    
+    /**
+     * Create export request from warehouse to branch
+     * Used by branch managers to request products from warehouse
+     */
+    public boolean createExportRequest(int fromWarehouseID, int toBranchID, int createdBy, 
+                                      List<Model.ExportCartItem> cartItems, String note) {
+        System.out.println("=== [StockMovementDAO] createExportRequest called ===");
+        System.out.println("FromWarehouseID: " + fromWarehouseID);
+        System.out.println("ToBranchID: " + toBranchID);
+        System.out.println("CreatedBy: " + createdBy);
+        System.out.println("Cart items: " + (cartItems != null ? cartItems.size() : "NULL"));
+        System.out.println("Note: " + note);
+        
+        String headerSql = "INSERT INTO StockMovementsRequest (FromWarehouseID, ToBranchID, MovementType, CreatedBy, CreatedAt, Note) " +
+                          "VALUES (?, ?, 'Export', ?, GETDATE(), ?)";
+        String detailSql = "INSERT INTO StockMovementDetail (MovementID, ProductDetailID, Quantity, QuantityScanned) " +
+                          "VALUES (?, ?, ?, 0)";
+        
+        boolean autoCommit = false;
+        try {
+            autoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            System.out.println("Transaction started, auto-commit disabled");
+            
+            int movementID = -1;
+            
+            // Insert header
+            System.out.println("Inserting header record...");
+            try (PreparedStatement ps = connection.prepareStatement(headerSql, Statement.RETURN_GENERATED_KEYS)) {
+                ps.setInt(1, fromWarehouseID);
+                ps.setInt(2, toBranchID);
+                ps.setInt(3, createdBy);
+                ps.setString(4, note);
+                int affectedRows = ps.executeUpdate();
+                System.out.println("Header inserted, affected rows: " + affectedRows);
+                
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        movementID = rs.getInt(1);
+                        System.out.println("Generated MovementID: " + movementID);
+                    }
+                }
+            }
+            
+            if (movementID <= 0) {
+                System.err.println("❌ Failed to get MovementID, rolling back");
+                connection.rollback();
+                return false;
+            }
+            
+            // Insert details
+            System.out.println("Inserting detail records...");
+            try (PreparedStatement ps = connection.prepareStatement(detailSql)) {
+                for (Model.ExportCartItem item : cartItems) {
+                    System.out.println("  - Adding batch: ProductDetailID=" + item.getProductDetailID() + ", Quantity=" + item.getQuantity());
+                    ps.setInt(1, movementID);
+                    ps.setInt(2, item.getProductDetailID());
+                    ps.setInt(3, item.getQuantity());
+                    ps.addBatch();
+                }
+                int[] results = ps.executeBatch();
+                System.out.println("Details inserted, batch results count: " + results.length);
+            }
+            
+            connection.commit();
+            System.out.println("✅ Transaction committed successfully");
+            return true;
+            
+        } catch (SQLException e) {
+            System.err.println("❌ SQL Error occurred: " + e.getMessage());
+            try {
+                connection.rollback();
+                System.err.println("Transaction rolled back");
+            } catch (SQLException ignored) {}
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                connection.setAutoCommit(autoCommit);
+            } catch (SQLException ignored) {}
+        }
     }
 
 }

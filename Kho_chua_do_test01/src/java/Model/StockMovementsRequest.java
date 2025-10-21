@@ -16,6 +16,14 @@ public class StockMovementsRequest {
     private Date createdAt;
     private String note;
     private List<StockMovementDetail> details;
+    
+    // Display names (joined from other tables)
+    private String fromSupplierName;
+    private String fromBranchName;
+    private String fromWarehouseName;
+    private String toBranchName;
+    private String toWarehouseName;
+    private String creatorName;
 
     public int getMovementId() {
         return movementId;
@@ -103,5 +111,53 @@ public class StockMovementsRequest {
 
     public void setDetails(List<StockMovementDetail> details) {
         this.details = details;
+    }
+
+    public String getFromSupplierName() {
+        return fromSupplierName;
+    }
+
+    public void setFromSupplierName(String fromSupplierName) {
+        this.fromSupplierName = fromSupplierName;
+    }
+
+    public String getFromBranchName() {
+        return fromBranchName;
+    }
+
+    public void setFromBranchName(String fromBranchName) {
+        this.fromBranchName = fromBranchName;
+    }
+
+    public String getFromWarehouseName() {
+        return fromWarehouseName;
+    }
+
+    public void setFromWarehouseName(String fromWarehouseName) {
+        this.fromWarehouseName = fromWarehouseName;
+    }
+
+    public String getToBranchName() {
+        return toBranchName;
+    }
+
+    public void setToBranchName(String toBranchName) {
+        this.toBranchName = toBranchName;
+    }
+
+    public String getToWarehouseName() {
+        return toWarehouseName;
+    }
+
+    public void setToWarehouseName(String toWarehouseName) {
+        this.toWarehouseName = toWarehouseName;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
     }
 }
