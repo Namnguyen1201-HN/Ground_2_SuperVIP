@@ -409,5 +409,22 @@ public class UserDAO extends DataBaseContext {
         }
         return false;
     }
+    public static String hashSHA256(String password) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(password.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public static void main(String[] args) {
+        UserDAO ud = new UserDAO();
+        System.out.println(hashSHA256("12345678A"));
+    }
 }
