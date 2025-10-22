@@ -137,7 +137,7 @@ public class LoginController extends HttpServlet {
                 break;
             case 1:
                 System.err.println("[DEBUG] Redirect to Admin");
-                response.sendRedirect("");
+                response.sendRedirect("TongQuan");
                 break;
             case 2:
                 System.err.println("[DEBUG] Redirect to Sale");
