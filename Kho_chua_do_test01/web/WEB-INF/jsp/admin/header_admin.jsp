@@ -319,42 +319,45 @@
 </header>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const dropdown = document.querySelector('.user-dropdown');
-        const toggle = document.getElementById('dropdownToggle');
-        const menu = document.getElementById('dropdownMenu');
+    console.log("Dropdown script loaded ✅");
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Dropdown người dùng ---
+    const userDropdown = document.querySelector('.user-dropdown');
+    const userToggle = document.getElementById('dropdownToggle');
 
-        toggle.addEventListener('click', function (e) {
-            e.preventDefault();
-            dropdown.classList.toggle('active');
-        });
+    userToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        userDropdown.classList.toggle('active');
+    });
 
-        document.addEventListener('click', function (e) {
-            if (!dropdown.contains(e.target)) {
-                dropdown.classList.remove('active');
-            }
-        });
-    }); // ✅ đóng hàm
+    document.addEventListener('click', function (e) {
+        if (!userDropdown.contains(e.target)) {
+            userDropdown.classList.remove('active');
+        }
+    });
 
+    // --- Dropdown trong nav ---
     const dropdowns = document.querySelectorAll('.nav-item.dropdown');
     dropdowns.forEach(drop => {
         const toggle = drop.querySelector('.dropdown-toggle');
         toggle.addEventListener('click', function (e) {
+            console.log("Clicked:", drop);
             e.preventDefault();
             e.stopPropagation();
             drop.classList.toggle('active');
 
-            // Đóng các dropdown khác nếu mở
+            // Đóng các dropdown khác
             dropdowns.forEach(d => {
                 if (d !== drop) d.classList.remove('active');
             });
         });
     });
 
-    // Click ra ngoài để đóng dropdown
+    // Click ra ngoài để đóng dropdown nav
     document.addEventListener('click', function (e) {
         dropdowns.forEach(d => d.classList.remove('active'));
     });
+});
 </script>
 
 

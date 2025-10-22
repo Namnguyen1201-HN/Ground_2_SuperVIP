@@ -732,6 +732,19 @@ private Product mapRowToProductWithQty(ResultSet rs) throws SQLException {
     return p;
 }
 
-
+    public Product getProductByProductDetailId(int pdi){
+        String sql = "select * from Products as p join ProductDetails as pd on p.ProductID = pd.ProductID where pd.ProductDetailID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, pdi);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToProduct(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }
