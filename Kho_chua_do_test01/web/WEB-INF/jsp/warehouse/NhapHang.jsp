@@ -45,9 +45,9 @@
                                 String status = (String) row.get("Status");
                                 String statusLabel = "Chờ xử lý";
                                 String badgeClass = "secondary";
-                                if ("processing".equalsIgnoreCase(status)) { statusLabel = "Đang xử lý"; badgeClass="warning"; }
-                                else if ("completed".equalsIgnoreCase(status)) { statusLabel = "Hoàn thành"; badgeClass="success"; }
-                                else if ("cancelled".equalsIgnoreCase(status)) { statusLabel = "Đã hủy"; badgeClass="danger"; }
+                                if ("Đang xử lý".equalsIgnoreCase(status)) { statusLabel = "Đang xử lý"; badgeClass="warning"; }
+                                else if ("Hoàn thành".equalsIgnoreCase(status)) { statusLabel = "Hoàn thành"; badgeClass="success"; }
+                                else if ("Đã hủy".equalsIgnoreCase(status)) { statusLabel = "Đã hủy"; badgeClass="danger"; }
                     %>
                     <tr>
                         <td><%=stt++%></td>

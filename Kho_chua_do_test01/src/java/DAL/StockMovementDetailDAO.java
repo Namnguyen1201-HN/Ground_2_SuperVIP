@@ -93,7 +93,7 @@ public class StockMovementDetailDAO extends DataBaseContext {
                     serial.setProductDetailID(rs.getInt("ProductDetailID"));
                     serial.setMovementDetailID(rs.getInt("MovementDetailID"));
                     serial.setSerialNumber(rs.getString("SerialNumber"));
-                    serial.setStatus(rs.getString("Status"));
+                    serial.setStatus(rs.getBoolean("Status"));
                     serial.setOrderID((Integer) rs.getObject("OrderID"));
                     serial.setBranchID((Integer) rs.getObject("BranchID"));
                     serial.setWarehouseID((Integer) rs.getObject("WarehouseID"));
@@ -445,7 +445,7 @@ public class StockMovementDetailDAO extends DataBaseContext {
                     serial.setProductDetailID(rs.getInt("ProductDetailID"));
                     serial.setMovementDetailID(rs.getInt("MovementDetailID"));
                     serial.setSerialNumber(rs.getString("SerialNumber"));
-                    serial.setStatus(rs.getString("Status"));
+                    serial.setStatus(rs.getBoolean("Status"));
                     serial.setOrderID((Integer) rs.getObject("OrderID"));
                     serial.setBranchID((Integer) rs.getObject("BranchID"));
                     serial.setWarehouseID((Integer) rs.getObject("WarehouseID"));

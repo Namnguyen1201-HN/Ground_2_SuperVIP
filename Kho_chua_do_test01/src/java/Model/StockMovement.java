@@ -6,7 +6,6 @@ package Model;
 
 import java.sql.Timestamp;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +21,18 @@ public class StockMovement {
     private int createdBy;
     private Timestamp createdAt;
     private String note;
+    private String responseStatus;
 
     // Gộp danh sách chi tiết yêu cầu nhập
     private List<StockMovementDetail> details;
+
+    public String getResponseStatus() {
+        return responseStatus;
+    }
+
+    public void setResponseStatus(String responseStatus) {
+        this.responseStatus = responseStatus;
+    }
 
     public StockMovement() {
         this.details = new ArrayList<>();
@@ -126,5 +134,4 @@ public class StockMovement {
         details.add(detail);
     }
 
-  
 }

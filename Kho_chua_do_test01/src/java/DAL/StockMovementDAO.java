@@ -5,6 +5,7 @@ import Model.StockMovement;
 import Model.StockMovementDetail;
 import Model.StockMovementsRequest;
 import Model.Warehouse;
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -420,11 +421,7 @@ public class StockMovementDAO extends DataBaseContext {
         sql.append("""
             GROUP BY smr.MovementID, s.SupplierName, u.FullName, smr.CreatedAt, resp.ResponseStatus
             ORDER BY smr.CreatedAt DESC
-            OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
-        """);
-
-        params.add(offset);
-        params.add(pageSize);
+            """);
 
         try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
@@ -517,7 +514,6 @@ public class StockMovementDAO extends DataBaseContext {
         return list;
     }
 
-    
     public List<ProductDetails> getAvailableProductsByBranch(int branchId) throws SQLException {
         List<ProductDetails> result = new ArrayList<>();
 
@@ -589,8 +585,6 @@ public class StockMovementDAO extends DataBaseContext {
         return result;
     }
 
- 
-
     public List<StockMovement> getRequestsByBranch(int branchId) throws SQLException {
         List<StockMovement> result = new ArrayList<>();
 
@@ -642,6 +636,196 @@ public class StockMovementDAO extends DataBaseContext {
             }
         }
         return list;
+    }
+
+    /**
+     * Lấy thông tin chi tiết một đơn nhập hàng theo MovementID
+     */
+    public StockMovementsRequest getMovementById(int movementId) {
+        String sql = """
+            SELECT sr.MovementID,
+                   sr.FromSupplierID,
+                   sr.FromBranchID,
+                   sr.FromWarehouseID,
+                   sr.ToBranchID,
+                   sr.ToWarehouseID,
+                   sr.MovementType,
+                   sr.CreatedBy,
+                   sr.CreatedAt,
+                   sr.Note,
+                   s.SupplierName,
+                   u.FullName AS CreatedByName,
+                   w.WarehouseName AS ToWarehouseName,
+                   r.ResponseStatus,
+                   CAST(SUM(p.CostPrice * d.Quantity) AS DECIMAL(18,2)) AS TotalAmount
+            FROM StockMovementsRequest sr
+            LEFT JOIN Suppliers s ON sr.FromSupplierID = s.SupplierID
+            LEFT JOIN Users u ON sr.CreatedBy = u.UserID
+            LEFT JOIN Warehouses w ON sr.ToWarehouseID = w.WarehouseID
+            LEFT JOIN StockMovementDetail d ON sr.MovementID = d.MovementID
+            LEFT JOIN ProductDetails pd ON d.ProductDetailID = pd.ProductDetailID
+            LEFT JOIN Products p ON pd.ProductID = p.ProductID
+            LEFT JOIN StockMovementResponses r ON sr.MovementID = r.MovementID
+            WHERE sr.MovementID = ?
+            GROUP BY sr.MovementID, sr.FromSupplierID, sr.FromBranchID, sr.FromWarehouseID,
+                     sr.ToBranchID, sr.ToWarehouseID, sr.MovementType, sr.CreatedBy,
+                     sr.CreatedAt, sr.Note, s.SupplierName, u.FullName, w.WarehouseName, r.ResponseStatus
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, movementId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    StockMovementsRequest m = new StockMovementsRequest();
+                    m.setMovementId(rs.getInt("MovementID"));
+                    m.setFromSupplierId((Integer) rs.getObject("FromSupplierID"));
+                    m.setFromBranchId((Integer) rs.getObject("FromBranchID"));
+                    m.setFromWarehouseId((Integer) rs.getObject("FromWarehouseID"));
+                    m.setToBranchId((Integer) rs.getObject("ToBranchID"));
+                    m.setToWarehouseId((Integer) rs.getObject("ToWarehouseID"));
+                    m.setMovementType(rs.getString("MovementType"));
+                    m.setCreatedBy(rs.getInt("CreatedBy"));
+                    m.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    m.setNote(rs.getString("Note"));
+                    m.setFromSupplierName(rs.getString("SupplierName"));
+                    m.setCreatedByName(rs.getString("CreatedByName"));
+                    m.setToWarehouseName(rs.getString("ToWarehouseName"));
+                    m.setResponseStatus(rs.getString("ResponseStatus"));
+                    m.setTotalAmount(rs.getBigDecimal("TotalAmount") != null ? rs.getBigDecimal("TotalAmount") : BigDecimal.ZERO);
+                    return m;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Lấy danh sách chi tiết sản phẩm trong đơn nhập hàng
+     */
+    public List<StockMovementDetail> getMovementDetailsByMovementId(int movementId) {
+        List<StockMovementDetail> list = new ArrayList<>();
+
+        String sql = """
+            SELECT d.MovementDetailID,
+                   d.MovementID,
+                   d.ProductDetailID,
+                   d.Quantity,
+                   d.QuantityScanned,
+                   p.ProductID,
+                   p.ProductName,
+                   pd.ProductCode
+            FROM StockMovementDetail d
+            INNER JOIN ProductDetails pd ON d.ProductDetailID = pd.ProductDetailID
+            INNER JOIN Products p ON pd.ProductID = p.ProductID
+            WHERE d.MovementID = ?
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, movementId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    StockMovementDetail detail = new StockMovementDetail();
+                    detail.setMovementDetailId(rs.getInt("MovementDetailID"));
+                    detail.setMovementId(rs.getInt("MovementID"));
+                    detail.setProductDetailId(rs.getInt("ProductDetailID"));
+                    detail.setQuantity(rs.getInt("Quantity"));
+                    detail.setQuantityScanned((Integer) rs.getObject("QuantityScanned"));
+                    detail.setProductId(rs.getInt("ProductID"));
+                    detail.setProductCode(rs.getString("ProductCode"));
+                    detail.setProductName(rs.getString("ProductName"));
+                    list.add(detail);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean updateQuantityScanned(int movementDetailId) {
+        String sql = """
+        UPDATE StockMovementDetail
+        SET QuantityScanned = (
+            SELECT COUNT(*) FROM ProductDetailSerialNumber WHERE MovementDetailID = ?
+        )
+        WHERE MovementDetailID = ?
+    """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, movementDetailId);
+            ps.setInt(2, movementDetailId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateResponseStatus(int movementId, String newStatus) {
+        String sql = "UPDATE StockMovementsRequest SET ResponseStatus = ? WHERE MovementID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, newStatus);
+            ps.setInt(2, movementId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public int getQuantityScanned(int movementDetailId) {
+        String sql = "SELECT QuantityScanned FROM StockMovementDetail WHERE MovementDetailID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, movementDetailId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("QuantityScanned");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int getQuantityRequired(int movementDetailId) {
+        String sql = "SELECT Quantity FROM StockMovementDetail WHERE MovementDetailID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, movementDetailId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Quantity");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public boolean addOrUpdateResponse(int movementId, String status, int userId) {
+        String sql = """
+        MERGE StockMovementResponses AS target
+        USING (SELECT ? AS MovementID) AS source
+        ON (target.MovementID = source.MovementID)
+        WHEN MATCHED THEN
+            UPDATE SET ResponseStatus = ?, ResponseBy = ?, ResponseAt = GETDATE()
+        WHEN NOT MATCHED THEN
+            INSERT (MovementID, ResponseStatus, ResponseBy, ResponseAt)
+            VALUES (?, ?, ?, GETDATE());
+    """;
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, movementId);
+            ps.setString(2, status);
+            ps.setInt(3, userId);
+            ps.setInt(4, movementId);
+            ps.setString(5, status);
+            ps.setInt(6, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 }

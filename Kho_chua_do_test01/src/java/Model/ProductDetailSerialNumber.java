@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package Model;
 
 import java.lang.*;
@@ -16,7 +12,7 @@ public class ProductDetailSerialNumber {
 
     private int productDetailID;
     private String serialNumber;
-    private String status;
+    private Boolean status;
     private Integer orderID;       // có thể null
     private Integer branchID;      // có thể null
     private Integer warehouseID;   // có thể null
@@ -36,7 +32,7 @@ public class ProductDetailSerialNumber {
     public ProductDetailSerialNumber() {
     }
 
-    public ProductDetailSerialNumber(int productDetailID, String serialNumber, String status, Integer orderID, Integer branchID, Integer warehouseID) {
+    public ProductDetailSerialNumber(int productDetailID, String serialNumber, Boolean status, Integer orderID, Integer branchID, Integer warehouseID) {
         this.productDetailID = productDetailID;
         this.serialNumber = serialNumber;
         this.status = status;
@@ -61,11 +57,11 @@ public class ProductDetailSerialNumber {
         this.serialNumber = serialNumber;
     }
 
-    public String getStatus() {
+    public Boolean getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Boolean status) {
         this.status = status;
     }
 
