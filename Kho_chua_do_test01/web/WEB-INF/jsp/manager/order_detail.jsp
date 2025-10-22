@@ -498,7 +498,6 @@
     <body class="bg-light">
         <div class="container py-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <a class="btn btn-outline-secondary" href="Orders">← Quay lại danh sách</a>
                 <h4 class="m-0">Chi tiết đơn hàng</h4>
                 <div></div>
             </div>
@@ -538,7 +537,7 @@
                                 Ngày tạo: ${order.createdAt}
                             </p>
                         </div>
-                        <a href="bm-orders" class="back-btn">
+                        <a href="Orders" class="back-btn">
                             <i class="fas fa-arrow-left"></i>Quay lại danh sách
                         </a>
                     </div>

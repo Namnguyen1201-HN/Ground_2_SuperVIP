@@ -259,7 +259,7 @@ public class OrdersController extends HttpServlet {
         String msg = request.getParameter("msg");
         if (msg != null) request.setAttribute("msg", msg);
 
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/orders.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/manager/orders.jsp").forward(request, response);
     }
 
     @Override
