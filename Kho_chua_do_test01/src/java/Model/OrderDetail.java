@@ -6,6 +6,16 @@ public class OrderDetail {
     private int productDetailId;
     private int quantity;
 
+    public OrderDetail() {
+    }
+
+    public OrderDetail(int orderDetailId, int orderId, int productDetailId, int quantity) {
+        this.orderDetailId = orderDetailId;
+        this.orderId = orderId;
+        this.productDetailId = productDetailId;
+        this.quantity = quantity;
+    }
+
     public int getOrderDetailId() { return orderDetailId; }
     public void setOrderDetailId(int orderDetailId) { this.orderDetailId = orderDetailId; }
 
