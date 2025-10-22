@@ -3,7 +3,44 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
+    .nav-item.dropdown {
+        position: relative;
+        cursor: pointer;
+    }
 
+    .nav-item .dropdown-toggle {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .nav-item .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        min-width: 160px;
+        display: none;
+        z-index: 1000;
+    }
+
+    .nav-item.dropdown.active .dropdown-menu {
+        display: block;
+    }
+
+    .nav-item .dropdown-item {
+        display: block;
+        padding: 10px 14px;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .nav-item .dropdown-item:hover {
+        background: #f2f5ff;
+        color: #0056d6;
+    }
     /* Header Navigation */
     .header {
         background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -282,22 +319,45 @@
 </header>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const dropdown = document.querySelector('.user-dropdown');
-        const toggle = document.getElementById('dropdownToggle');
-        const menu = document.getElementById('dropdownMenu');
+    console.log("Dropdown script loaded ✅");
+document.addEventListener('DOMContentLoaded', function () {
+    // --- Dropdown người dùng ---
+    const userDropdown = document.querySelector('.user-dropdown');
+    const userToggle = document.getElementById('dropdownToggle');
 
+    userToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        userDropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!userDropdown.contains(e.target)) {
+            userDropdown.classList.remove('active');
+        }
+    });
+
+    // --- Dropdown trong nav ---
+    const dropdowns = document.querySelectorAll('.nav-item.dropdown');
+    dropdowns.forEach(drop => {
+        const toggle = drop.querySelector('.dropdown-toggle');
         toggle.addEventListener('click', function (e) {
+            console.log("Clicked:", drop);
             e.preventDefault();
-            dropdown.classList.toggle('active');
-        });
+            e.stopPropagation();
+            drop.classList.toggle('active');
 
-        document.addEventListener('click', function (e) {
-            if (!dropdown.contains(e.target)) {
-                dropdown.classList.remove('active');
-            }
+            // Đóng các dropdown khác
+            dropdowns.forEach(d => {
+                if (d !== drop) d.classList.remove('active');
+            });
         });
-    }); // ✅ đóng hàm
+    });
+
+    // Click ra ngoài để đóng dropdown nav
+    document.addEventListener('click', function (e) {
+        dropdowns.forEach(d => d.classList.remove('active'));
+    });
+});
 </script>
 
 
