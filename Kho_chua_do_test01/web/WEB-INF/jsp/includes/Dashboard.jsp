@@ -186,7 +186,7 @@
                     <li><a href="#"><i class="fas fa-bullhorn"></i> Promotion management</a></li>
                     <li><a href="InventoryMoves"><i class="fas fa-exchange-alt"></i> Import/Export info</a></li>
                     <li><a href="#"><i class="fas fa-chart-line"></i> Activity log & revenue report</a></li>
-                    <li><a href="InventoryMoves"><i class="fas fa-truck-loading"></i> Warehouse import request</a></li>
+                    <li><a href="import-request"><i class="fas fa-truck-loading"></i> Warehouse import request</a></li>
                 </ul>
                 <div class="role">Super admin</div>
                 <ul>
@@ -228,7 +228,7 @@
                         <div class="card-icon"><i class="fas fa-users"></i></div>
                         <div class="card-title">Staff Management</div>
                         <div class="card-desc">Quản lý nhân viên, phân quyền, theo dõi hoạt động.</div>
-                        <a href="InventoryMoves" class="card-link">Xem chi tiết</a>
+                        <a href="stock-movements" class="card-link">Xem chi tiết</a>
                     </div>
                     <div class="card">
                         <div class="card-icon"><i class="fas fa-box"></i></div>

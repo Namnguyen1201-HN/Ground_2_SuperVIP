@@ -1,37 +1,73 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package DAL;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
-/**
- *
- * @author TieuPham
- */
 public class DataBaseContext {
     protected Connection connection;
-    public DataBaseContext()
-    {
-        //@Students: You are allowed to edit user, pass, url variables to fit 
-        //your system configuration
-        //You can also add more methods for Database Interaction tasks. CRUD (Insert,Read,Updata,Delete)
-        //But we recommend you to do it in another class
-        // For example : StudentDBContext extends DBContext , 
-        //where StudentDBContext is located in dal package, 
+    private static final Logger LOGGER = Logger.getLogger(DataBaseContext.class.getName());
+
+    public DataBaseContext() {
         try {
+            // Database connection information
             String user = "sa";
-            String pass = "Passw0rd@123";
-            String url = "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=lan2";
+            String pass = "123"; // CHANGE THIS TO YOUR SQL SERVER PASSWORD
+            String url = "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;" +
+                        "databaseName=swp391;" +
+                        "encrypt=false;" +
+                        "trustServerCertificate=true;" +
+                        "connectionTimeout=30000";
+            
+            // Load SQL Server JDBC Driver
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            
+            // Create connection
             connection = DriverManager.getConnection(url, user, pass);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(DataBaseContext.class.getName()).log(Level.SEVERE, null, ex);
+            
+            LOGGER.log(Level.INFO, "✅ Connected to SQL Server successfully!");
+            System.out.println("✅ Database connection established!");
+            
+        } catch (ClassNotFoundException e) {
+            LOGGER.log(Level.SEVERE, "❌ SQL Server JDBC Driver not found!");
+            System.out.println("❌ Error: SQL Server driver not found");
+            e.printStackTrace();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "❌ Database connection failed!");
+            System.out.println("❌ Error: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "❌ Unexpected error during database initialization!");
+            System.out.println("❌ Unexpected error: " + e.getMessage());
+            e.printStackTrace();
         }
+    }
+    
+    public boolean isConnected() {
+        try {
+            return connection != null && !connection.isClosed();
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Error checking connection status: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    public void closeConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                LOGGER.log(Level.INFO, "✅ Connection closed successfully!");
+                System.out.println("✅ Database connection closed!");
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error closing connection: " + e.getMessage());
+            System.out.println("❌ Error closing connection: " + e.getMessage());
+        }
+    }
+    
+    public Connection getConnection() {
+        return connection;
     }
 }

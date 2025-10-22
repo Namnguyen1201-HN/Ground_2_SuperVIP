@@ -20,36 +20,50 @@
                 <!-- Stats Section -->
                 <section class="stats-section">
                     <h2 class="stats-title">KẾT QUẢ BÁN HÀNG HÔM NAY</h2>
+                    <%
+    Model.DashboardStatsDTO stats = (Model.DashboardStatsDTO) request.getAttribute("stats");
+    if (stats == null) stats = new Model.DashboardStatsDTO();
+                    %>
+
                     <div class="stats-grid">
                         <div class="stat-card">
                             <div class="stat-icon revenue">💰</div>
                             <div class="stat-content">
-                                <h3>4,886,000</h3>
-                                <p>1 Hóa đơn - Doanh thu</p>
+                                <h3><%= String.format("%,.0f", stats.getTodayRevenue()) %> ₫</h3>
+                                <p>Doanh thu hôm nay</p>
                             </div>
                         </div>
+
                         <div class="stat-card">
                             <div class="stat-icon orders">📋</div>
                             <div class="stat-content">
-                                <h3>0</h3>
-                                <p>0 phiếu - Trả hàng</p>
+                                <h3><%= stats.getReturnCount() %></h3>
+                                <p>Phiếu trả hàng</p>
                             </div>
                         </div>
+
+                        <%
+    String colorClass1 = stats.getCompareYesterday() >= 0 ? "positive" : "negative";
+    String colorClass2 = stats.getCompareLastMonth() >= 0 ? "positive" : "negative";
+                        %>
+
                         <div class="stat-card">
                             <div class="stat-icon growth">📈</div>
                             <div class="stat-content">
-                                <h3>250.00%</h3>
+                                <h3 class="<%= colorClass1 %>"><%= String.format("%.2f", stats.getCompareYesterday()) %>%</h3>
                                 <p>So với hôm qua</p>
                             </div>
                         </div>
+
                         <div class="stat-card">
                             <div class="stat-icon comparison">📊</div>
                             <div class="stat-content">
-                                <h3>133.33%</h3>
+                                <h3 class="<%= colorClass2 %>"><%= String.format("%.2f", stats.getCompareLastMonth()) %>%</h3>
                                 <p>So với cùng kỳ tháng trước</p>
                             </div>
                         </div>
                     </div>
+                                
                 </section>
 
                 <!-- Chart Section -->
@@ -57,46 +71,128 @@
                     <div class="chart-header">
                         <h2 class="chart-title">DOANH THU THUẦN THÁNG NÀY ℹ️</h2>
                         <div style="display: flex; gap: 1rem; align-items: center;">
+
                             <div class="chart-tabs">
-                                <button class="chart-tab active">Theo ngày</button>
-                                <button class="chart-tab">Theo giờ</button>
-                                <button class="chart-tab">Theo thứ</button>
+                                <a href="TongQuan?viewType=day&period=<%= request.getAttribute("period") %>" 
+                                   class="chart-tab <%= "day".equals(request.getAttribute("viewType")) ? "active" : "" %>">Theo ngày</a>
+                                <a href="TongQuan?viewType=hour&period=<%= request.getAttribute("period") %>" 
+                                   class="chart-tab <%= "hour".equals(request.getAttribute("viewType")) ? "active" : "" %>">Theo giờ</a>
+                                <a href="TongQuan?viewType=weekday&period=<%= request.getAttribute("period") %>" 
+                                   class="chart-tab <%= "weekday".equals(request.getAttribute("viewType")) ? "active" : "" %>">Theo thứ</a>
                             </div>
-                            <select class="chart-dropdown">
-                                <option>Tháng này</option>
-                                <option>Tháng trước</option>
-                                <option>3 tháng gần đây</option>
+
+                            <select class="chart-dropdown" onchange="location.href = 'TongQuan?period=' + this.value + '&viewType=<%= request.getAttribute("viewType") %>'">
+                                <option value="this_month" <%= "this_month".equals(request.getAttribute("period")) ? "selected" : "" %>>Tháng này</option>
+                                <option value="last_month" <%= "last_month".equals(request.getAttribute("period")) ? "selected" : "" %>>Tháng trước</option>
+                                <option value="3months" <%= "3months".equals(request.getAttribute("period")) ? "selected" : "" %>>3 tháng gần đây</option>
                             </select>
+
                         </div>
                     </div>
-                    <div class="chart-container">
-                        <div style="text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
-                            <p>Không có dữ liệu</p>
+                    <div class="chart-container beautiful-table">
+                        <%
+                            List<Model.RevenueStatisticDTO> revenueStats = (List<Model.RevenueStatisticDTO>) request.getAttribute("revenueStats");
+                            if (revenueStats != null && !revenueStats.isEmpty()) {
+                                double total = 0;
+                        %>
+                        <table class="revenue-table">
+                            <thead>
+                                <tr>
+                                    <th>⏱ Thời gian</th>
+                                    <th class="text-right">💰 Doanh thu (VND)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%
+                                    for (Model.RevenueStatisticDTO r : revenueStats) {
+                                        total += r.getTotalRevenue();
+                                %>
+                                <tr>
+                                    <td><%= r.getLabel() %></td>
+                                    <td class="text-right"><%= String.format("%,.0f", r.getTotalRevenue()) %></td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td>Tổng cộng</td>
+                                    <td class="text-right"><%= String.format("%,.0f", total) %></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <% } else { %>
+                        <div class="no-data">
+                            <i class="fas fa-chart-line"></i>
+                            <p>Không có dữ liệu doanh thu</p>
                         </div>
+                        <% } %>
                     </div>
                 </section>
 
                 <!-- Top Products Section -->
+
                 <section class="products-section">
                     <div class="products-header">
-                        <h2 class="products-title">TOP 10 HÀNG HÓA BÁN CHẠY THÁNG NÀY</h2>
-                        <div style="display: flex; gap: 1rem;">
-                            <select class="chart-dropdown">
-                                <option>THEO DOANH THU THUẦN</option>
-                                <option>THEO SỐ LƯỢNG</option>
+                        <h2 class="products-title">
+                            TOP 10 HÀNG HÓA BÁN CHẠY 
+                            <%= "this_month".equals(request.getAttribute("period")) ? "THÁNG NÀY" : "THÁNG TRƯỚC" %>
+                        </h2>
+
+                        <form action="TongQuan" method="GET" style="display: flex; gap: 1rem;">
+                            <select name="sortBy" onchange="this.form.submit()">
+                                <option value="revenue" <%= "revenue".equals(request.getAttribute("sortBy")) ? "selected" : "" %>>THEO DOANH THU THUẦN</option>
+                                <option value="quantity" <%= "quantity".equals(request.getAttribute("sortBy")) ? "selected" : "" %>>THEO SỐ LƯỢNG</option>
                             </select>
-                            <select class="chart-dropdown">
-                                <option>Tháng này</option>
-                                <option>Tháng trước</option>
+
+                            <select name="period" onchange="this.form.submit()">
+                                <option value="this_month" <%= "this_month".equals(request.getAttribute("period")) ? "selected" : "" %>>Tháng này</option>
+                                <option value="last_month" <%= "last_month".equals(request.getAttribute("period")) ? "selected" : "" %>>Tháng trước</option>
                             </select>
-                        </div>
+                        </form>
                     </div>
-                    <div class="chart-container">
-                        <div style="text-align: center;">
-                            <div style="font-size: 3rem; margin-bottom: 1rem;">📦</div>
+
+                    <div class="products-table" style="padding: 16px; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <%
+                            List<Model.ProductStatisticDTO> topProducts = (List<Model.ProductStatisticDTO>) request.getAttribute("topProducts");
+                            String sortBy = (String) request.getAttribute("sortBy");
+
+                            if (topProducts != null && !topProducts.isEmpty()) {
+                        %>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: #f0f0f0;">
+                                <tr>
+                                    <th style="padding: 8px; text-align: left;">#</th>
+                                    <th style="padding: 8px; text-align: left;">Tên sản phẩm</th>
+                                    <th style="padding: 8px; text-align: right;"><%= "revenue".equals(sortBy) ? "Doanh thu (VND)" : "Số lượng" %></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%
+                                    int i = 1;
+                                    for (Model.ProductStatisticDTO p : topProducts) {
+                                %>
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 8px;"><%= i++ %></td>
+                                    <td style="padding: 8px;"><%= p.getProductName() %></td>
+                                    <td style="padding: 8px; text-align: right;">
+                                        <%= "revenue".equals(sortBy) 
+                                            ? String.format("%,.0f", p.getRevenue()) 
+                                            : p.getTotalQuantity() %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                        <%
+                            } else {
+                        %>
+                        <div style="text-align: center; color: #9e9e9e; padding: 20px;">
+                            <i class="fas fa-box" style="font-size: 32px; margin-bottom: 12px; opacity: 0.5;"></i>
                             <p>Chưa có dữ liệu sản phẩm</p>
                         </div>
+                        <%
+                            }
+                        %>
                     </div>
                 </section>
             </div>
@@ -211,7 +307,7 @@
                     </div>
                     <% } %>
                 </div>
-                
+
             </aside>
         </main>
 

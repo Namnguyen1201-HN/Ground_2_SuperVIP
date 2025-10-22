@@ -423,3 +423,122 @@ body {
     }
 }
 
+/* --- Dropdown chọn sortBy & period ở mục TOP 10 --- */
+.products-header select {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: white;
+    color: #374151;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.products-header select:hover {
+    border-color: #2563eb;
+}
+
+.products-header select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+}
+
+/* Tùy chỉnh option */
+.products-header select option {
+    padding: 0.5rem;
+}
+
+/* Đặt khoảng cách giữa 2 select cho cân */
+.products-header form {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Nếu muốn giống y hệt nhóm “Theo ngày / Tháng này” */
+.products-header select {
+    height: 38px;
+    font-weight: 500;
+    border-color: #e5e7eb;
+    background-color: #fff;
+}
+
+/* === Biểu đồ doanh thu dạng bảng đẹp === */
+
+.beautiful-table {
+    background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.revenue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    color: #374151;
+}
+
+.revenue-table thead {
+    background: #f3f4f6;
+}
+
+.revenue-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.revenue-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.revenue-table tbody tr:hover {
+    background: #f9fafc;
+    transition: background 0.2s ease;
+}
+
+.revenue-table .text-right {
+    text-align: right;
+    font-weight: 600;
+    color: #111827;
+}
+
+.revenue-table .total-row td {
+    font-weight: bold;
+    color: #2563eb;
+    border-top: 2px solid #2563eb;
+    background: #f0f6ff;
+}
+
+.revenue-table .total-row td.text-right {
+    font-size: 1.05rem;
+}
+
+.no-data {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px 0;
+}
+
+.no-data i {
+    font-size: 2.5rem;
+    opacity: 0.5;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* Màu thể hiện tăng / giảm doanh thu */
+.stat-content h3.positive {
+    color: #16a34a;
+}
+
+.stat-content h3.negative {
+    color: #dc2626;
+}
+

@@ -4,7 +4,7 @@
 <%@ page import="Model.Role" %>
 <%@ page import="Model.Warehouse" %>
 <html>
-
+    
 
     <head>
         <meta charset="UTF-8">
