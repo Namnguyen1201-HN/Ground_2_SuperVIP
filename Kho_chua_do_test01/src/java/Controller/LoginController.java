@@ -25,7 +25,7 @@ public class LoginController extends HttpServlet {
         // Check if user already logged in
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
-            response.sendRedirect("Dashboard");
+            response.sendRedirect("Tongquan");
             return;
         }
         
@@ -111,10 +111,10 @@ public class LoginController extends HttpServlet {
     private void redirectByRole(HttpServletResponse response, int roleID) throws IOException {
         switch (roleID) {
             case 0:
-                response.sendRedirect("DashBoard");
+                response.sendRedirect("TongQuan");
                 break;
             case 1:
-                response.sendRedirect("DashBoard");
+                response.sendRedirect("TongQuan");
                 break;
             case 2:
                 response.sendRedirect("DashBoard");

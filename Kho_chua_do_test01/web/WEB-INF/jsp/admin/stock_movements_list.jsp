@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -8,77 +8,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TSMS - Danh sách phiếu nhập/xuất kho</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin/stock-movements.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/includes/header.css"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Ensures content is not hidden behind header */
-        body {
-            padding-top: 70px;
-        }
-    </style>
 </head>
 <body>
-
-    <header class="header">
-        <div class="header-container">
-            <a href="${pageContext.request.contextPath}/DashBoard" class="logo">
-                <div class="logo-icon">T</div>
-                <span class="logo-text">TSMS</span>
-            </a>
-            <nav class="main-nav">
-                <a href="${pageContext.request.contextPath}/DashBoard" class="nav-item">
-                    <i class="fas fa-chart-line"></i> Tổng quan
-                </a>
-                <a href="${pageContext.request.contextPath}/product" class="nav-item">
-                    <i class="fas fa-box"></i> Hàng hóa
-                </a>
-                <c:choose>
-                    <c:when test="${isBranchManager}">
-                        <a href="${pageContext.request.contextPath}/import-request" class="nav-item">
-                            <i class="fa-solid fa-upload"></i> Xuất hàng
-                        </a>
-                        <a href="${pageContext.request.contextPath}/stock-movements" class="nav-item active">
-                            <i class="fas fa-list"></i> Danh sách xuất hàng
-                        </a>
-                    </c:when>
-                    <c:otherwise>
-                        <a href="${pageContext.request.contextPath}/import-request" class="nav-item">
-                            <i class="fa-solid fa-download"></i> Nhập hàng
-                        </a>
-                        <a href="${pageContext.request.contextPath}/stock-movements" class="nav-item active">
-                            <i class="fas fa-list"></i> Danh sách movements
-                        </a>
-                    </c:otherwise>
-                </c:choose>
-            </nav>
-            <div class="user-section">
-                <div class="user-dropdown">
-                    <div class="user-info" id="dropdownToggle">
-                        <div class="user-avatar">
-                            ${sessionScope.currentUser.fullName.substring(0,1).toUpperCase()}
-                        </div>
-                        <div class="user-details">
-                            <span class="user-name">${sessionScope.currentUser.fullName}</span>
-                            <span class="user-role">${sessionScope.currentUser.roleName}</span>
-                        </div>
-                        <i class="fas fa-chevron-down dropdown-icon"></i>
-                    </div>
-                    <div class="dropdown-menu" id="dropdownMenu">
-                        <a href="${pageContext.request.contextPath}/sale" class="dropdown-item">
-                            <i class="fas fa-user"></i> Thông tin tài khoản
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="${pageContext.request.contextPath}/logout" class="dropdown-item logout">
-                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <!-- Include Header -->
+    <%@ include file="header_admin.jsp" %>
 
     <div class="container">
         <div class="page-header">
@@ -276,27 +213,5 @@
             </div>
         </c:if>
     </div>
-
-    <script>
-        // Dropdown toggle for user menu
-        document.addEventListener('DOMContentLoaded', function() {
-            const dropdownToggle = document.getElementById('dropdownToggle');
-            const dropdownMenu = document.getElementById('dropdownMenu');
-            
-            if(dropdownToggle && dropdownMenu) {
-                dropdownToggle.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle('show');
-                });
-                
-                // Close when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                        dropdownMenu.classList.remove('show');
-                    }
-                });
-            }
-        });
-    </script>
 </body>
 </html>

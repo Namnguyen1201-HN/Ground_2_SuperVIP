@@ -1,4 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
@@ -7,10 +7,11 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Quản lý Nhà Cung Cấp - SWP391</title>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="css/admin/Supplier.css">
         <style>
+            body {
+                padding-top: 70px;
+            }
             .table-container {
                 background: white;
                 border-radius: 8px;
@@ -67,114 +68,11 @@
                 pointer-events: none;
                 opacity: 0.5;
             }
-            .nav-item.dropdown {
-                position: relative;
-            }
 
-            .nav-item.dropdown .dropdown-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                text-decoration: none;
-                color: #333;
-                padding: 10px 15px;
-                cursor: pointer;
-            }
-
-            .nav-item.dropdown .dropdown-menu {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                background: white;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                min-width: 180px;
-                z-index: 1000;
-            }
-
-            .nav-item.dropdown:hover .dropdown-menu {
-                display: block;
-            }
-
-            .dropdown-item {
-                display: block;
-                padding: 10px 15px;
-                color: #333;
-                text-decoration: none;
-                transition: background 0.2s;
-            }
-
-            .dropdown-item:hover {
-                background-color: #f2f2f2;
-            }
-
-            .dropdown-item.active {
-                background-color: #007bff;
-                color: white;
-            }
         </style>
     </head>
     <body>
-        <!-- Header -->
-        <header class="header">
-            <div class="header-main">
-                <div class="logo">
-                    <div class="logo-icon">
-                        <span class="icon-building"></span>
-                    </div>
-                    <span>WM</span>
-                </div>
-                <nav class="nav-menu">
-                    <a href="TongQuan" class="nav-item">Tổng quan</a>
-                    <a href="product" class="nav-item">Hàng hóa</a>
-                    <div class="nav-item dropdown
-                        ${fn:contains(pageContext.request.requestURI, 'Transactions') 
-                        or fn:contains(pageContext.request.requestURI, 'Orders') 
-                        ? 'active' : ''}">
-                        <a href="#" class="dropdown-toggle">
-                            <span class="icon-transactions"></span>
-                            Giao dịch
-                            <i class="fas fa-caret-down" style="margin-left:5px;"></i>
-                        </a>
-                        <div class="dropdown-menu">
-                            <a href="Orders" class="dropdown-item
-                            ${fn:contains(pageContext.request.requestURI, 'Orders') ? 'active' : ''}">
-                                Đơn hàng
-                            </a>
-                        </div>
-                    </div>
-                    <div class="nav-item dropdown
-                         ${fn:contains(pageContext.request.requestURI, 'Supplier') 
-                           or fn:contains(pageContext.request.requestURI, 'Customer') 
-                           ? 'active' : ''}">
-
-                        <a href="#" class="dropdown-toggle">
-                            <span class="icon-partners"></span>
-                            Đối tác
-                            <i class="fas fa-caret-down" style="margin-left:5px;"></i>
-                        </a>
-
-                        <div class="dropdown-menu">
-                            <a href="Customer" class="dropdown-item
-                               ${fn:contains(pageContext.request.requestURI, 'Customer') ? 'active' : ''}">
-                                Khách hàng
-                            </a>
-                            <a href="Supplier" class="dropdown-item
-                               ${fn:contains(pageContext.request.requestURI, 'Supplier') ? 'active' : ''}">
-                                Nhà cung cấp
-                            </a>
-                        </div>
-                    </div>
-                    <a href="NhanVien" class="nav-item">Nhân viên</a>
-                    <a href="#" class="nav-item">Sổ quỹ</a>
-                    <a href="#" class="nav-item">Báo cáo</a>
-                    <a href="#" class="nav-item">Bán Online</a>
-                    <a href="#" class="nav-item">Bán hàng</a>
-                </nav>
-            </div>
-        </header>
+        <%@ include file="header_admin.jsp" %>
 
         <div class="main-container">
             <!-- Main Content -->

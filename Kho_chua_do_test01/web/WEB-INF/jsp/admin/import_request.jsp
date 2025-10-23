@@ -7,7 +7,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,72 +16,14 @@
     <title>TSMS - Tạo phiếu nhập kho</title>
     <%-- Link to the new redesigned CSS file --%>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin/import-request.css">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/includes/header.css"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Ensures content is not hidden behind a potentially fixed header */
-        main {
-            padding-top: 70px; /* Value from --header-height to push content below a fixed header */
-        }
-    </style>
 </head>
 <body>
-
-    <header class="header">
-        <div class="header-container">
-            <div class="logo">
-                <a href="${pageContext.request.contextPath}/DashBoard" class="logo">
-                    <div class="logo-icon">T</div>
-                    <span class="logo-text">TSMS</span>
-                </a>
-            </div>
-            <nav class="main-nav">
-                <a href="${pageContext.request.contextPath}/DashBoard" class="nav-item">
-                    <i class="fas fa-chart-line"></i> Tổng quan
-                </a>
-                <a href="${pageContext.request.contextPath}/product" class="nav-item">
-                    <i class="fas fa-box"></i> Hàng hóa
-                </a>
-                
-                <c:choose>
-                    <c:when test="${sessionScope.currentUser.roleId == 0}">
-                        <%-- Admin: Nhập hàng từ nhà cung cấp vào kho --%>
-                        <a href="${pageContext.request.contextPath}/import-request" class="nav-item active">
-                            <i class="fa-solid fa-download"></i> Nhập hàng
-                        </a>
-                        <%-- Admin: Xem tất cả import/export movements --%>
-                        <a href="${pageContext.request.contextPath}/stock-movements" class="nav-item">
-                            <i class="fas fa-exchange-alt"></i> Danh sách movements
-                        </a>
-                    </c:when>
-                    <c:when test="${sessionScope.currentUser.roleId == 1}">
-                        <%-- Branch Manager: Xuất hàng từ kho về chi nhánh --%>
-                        <a href="${pageContext.request.contextPath}/import-request" class="nav-item active">
-                            <i class="fa-solid fa-upload"></i> Xuất hàng
-                        </a>
-                        <%-- Branch Manager: Danh sách xuất hàng của chi nhánh --%>
-                        <a href="${pageContext.request.contextPath}/stock-movements" class="nav-item">
-                            <i class="fas fa-list"></i> Danh sách xuất hàng
-                        </a>
-                    </c:when>
-                </c:choose>
-            </nav>
-            <div class="header-right">
-                <div class="user-dropdown">
-                    <a href="#" class="user-icon gradient" id="dropdownToggle">
-                        <i class="fas fa-user-circle fa-2x"></i>
-                    </a>
-                    <div class="dropdown-menu" id="dropdownMenu">
-                        <a href="${pageContext.request.contextPath}/sale" class="dropdown-item">Thông tin chi tiết</a>
-                        <a href="${pageContext.request.contextPath}/logout" class="dropdown-item">Đăng xuất</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <!-- Include Header -->
+    <%@ include file="header_admin.jsp" %>
 
     <main>
         <!-- Success/Error Messages -->
@@ -346,23 +288,6 @@
     </form>
 
     <script>
-        // Dropdown menu for user icon
-        const toggle = document.getElementById("dropdownToggle");
-        const menu = document.getElementById("dropdownMenu");
-
-        if (toggle && menu) {
-            toggle.addEventListener("click", function (e) {
-                e.preventDefault();
-                menu.classList.toggle('show');
-            });
-
-            document.addEventListener("click", function (e) {
-                if (!toggle.contains(e.target) && !menu.contains(e.target)) {
-                    menu.classList.remove('show');
-                }
-            });
-        }
-
         // Function to submit the hidden reset form
         function resetCart() {
             // Using a custom modal instead of confirm() would be better, but for now this works.

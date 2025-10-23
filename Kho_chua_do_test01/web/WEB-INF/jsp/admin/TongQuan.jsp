@@ -35,7 +35,15 @@
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-icon orders">📋</div>
+                            <div class="stat-icon orders">�</div>
+                            <div class="stat-content">
+                                <h3><%= stats.getTodayOrders() %></h3>
+                                <p>Đơn hàng hôm nay</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon orders">�📋</div>
                             <div class="stat-content">
                                 <h3><%= stats.getReturnCount() %></h3>
                                 <p>Phiếu trả hàng</p>
@@ -60,6 +68,39 @@
                             <div class="stat-content">
                                 <h3 class="<%= colorClass2 %>"><%= String.format("%.2f", stats.getCompareLastMonth()) %>%</h3>
                                 <p>So với cùng kỳ tháng trước</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Thêm các thống kê tuần/tháng -->
+                        <div class="stat-card">
+                            <div class="stat-icon revenue">💵</div>
+                            <div class="stat-content">
+                                <h3><%= String.format("%,.0f", stats.getWeekRevenue()) %> ₫</h3>
+                                <p>Doanh thu tuần này</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon orders">📋</div>
+                            <div class="stat-content">
+                                <h3><%= stats.getWeekOrders() %></h3>
+                                <p>Đơn hàng tuần này</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon revenue">💰</div>
+                            <div class="stat-content">
+                                <h3><%= String.format("%,.0f", stats.getMonthRevenue()) %> ₫</h3>
+                                <p>Doanh thu tháng này</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon orders">📦</div>
+                            <div class="stat-content">
+                                <h3><%= stats.getMonthOrders() %></h3>
+                                <p>Đơn hàng tháng này</p>
                             </div>
                         </div>
                     </div>

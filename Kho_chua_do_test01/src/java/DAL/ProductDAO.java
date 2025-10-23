@@ -447,7 +447,7 @@ public class ProductDAO extends DataBaseContext {
         }
     }
 
-    public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit) {
+    public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, Integer branchId) {
         List<ProductStatisticDTO> list = new ArrayList<>();
 
         String dateCondition = "";
@@ -456,6 +456,11 @@ public class ProductDAO extends DataBaseContext {
         } else if ("last_month".equals(period)) {
             dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(DATEADD(MONTH, -1, GETDATE())) "
                     + "AND YEAR(o.CreatedAt) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
+        }
+
+        // Thêm filter chi nhánh
+        if (branchId != null) {
+            dateCondition += (dateCondition.isEmpty() ? "WHERE " : " AND ") + "o.BranchID = ?";
         }
 
         String orderBy = "revenue".equals(sortBy)
@@ -479,7 +484,11 @@ public class ProductDAO extends DataBaseContext {
         System.out.println("=== DEBUG SQL ===\n" + sql + "\n=================");
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, limit);
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, limit);
+            if (branchId != null) {
+                ps.setInt(paramIndex++, branchId);
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 ProductStatisticDTO dto = new ProductStatisticDTO();
