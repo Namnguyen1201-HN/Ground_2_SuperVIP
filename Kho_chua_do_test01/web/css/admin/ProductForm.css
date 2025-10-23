@@ -1,78 +1,116 @@
 /*
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
-*/
-/* 
-    Created on : Oct 10, 2025, 9:27:58 AM
-    Author     : Kawaii
+ * Created on : Oct 10, 2025, 9:27:58 AM
+ * Author     : Kawaii
+ * Style: Modern soft-form design
 */
 
-     body {
-            font-family: Arial, sans-serif;
-            background: #f8f9fa;
-            margin: 0;
-            padding: 40px;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 25px;
-        }
-        form {
-            max-width: 500px;
-            margin: auto;
-            background: #fff;
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-top: 15px;
-            color: #555;
-        }
-        input[type="text"],
-        input[type="number"],
-        input[type="date"] {
-            width: 100%;
-            padding: 10px 12px;
-            margin-top: 6px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        input:focus {
-            border-color: #4a90e2;
-            outline: none;
-            box-shadow: 0 0 5px rgba(74,144,226,0.4);
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            width: 100%;
-            background: #4a90e2;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover {
-            background: #357ABD;
-        }
-        a {
-            display: inline-block;
-            margin-top: 15px;
-            text-decoration: none;
-            color: #4a90e2;
-            font-weight: bold;
-            text-align: center;
-            width: 100%;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
+body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #e0f0ff 0%, #f8f9fa 100%);
+    margin: 0;
+    padding: 60px 20px;
+}
+
+h2 {
+    text-align: center;
+    color: #1e293b;
+    margin-bottom: 25px;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+form {
+    max-width: 500px;
+    margin: auto;
+    background: #fff;
+    padding: 35px 40px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+form:hover {
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-top: 18px;
+    color: #334155;
+    font-size: 15px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 12px 14px;
+    margin-top: 6px;
+    border: 1px solid #d0d7de;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 15px;
+    background-color: #fdfdfd;
+    transition: all 0.25s ease;
+}
+
+input:focus,
+select:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.15);
+    outline: none;
+    background: #fff;
+}
+
+button {
+    margin-top: 25px;
+    padding: 12px 20px;
+    width: 100%;
+    background: linear-gradient(135deg, #4a90e2, #2563eb);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.3px;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #357ABD, #1d4ed8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(74,144,226,0.3);
+}
+
+a {
+    display: block;
+    margin-top: 18px;
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: 600;
+    text-align: center;
+    font-size: 15px;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Hiệu ứng nhỏ khi focus vào form */
+form:focus-within {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 5px rgba(74,144,226,0.12);
+}
+.pretty-select {
+  border: 1.5px solid #d0d7de;
+  background-color: #fdfdfd;
+  transition: 0.3s ease;
+}
+.pretty-select:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 4px rgba(74,144,226,0.15);
+}
