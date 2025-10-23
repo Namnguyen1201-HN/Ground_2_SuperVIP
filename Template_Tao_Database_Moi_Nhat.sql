@@ -1,15 +1,17 @@
-﻿-- =============================================
--- CREATE DATABASE STRUCTURE (VERSION 2)
--- Thay đổi chính: Users.IsActive -> INT (0,1,2)
--- =============================================
-create database Lan1;
-use Lan1;
+﻿-- ============================
+-- DATABASE STRUCTURE - FINAL VERSION (2025-10-23)
+-- ============================
 
+CREATE DATABASE Lan1;
+USE Lan1;
+
+-- ========== ROLES ==========
 CREATE TABLE Roles (
     RoleID INT PRIMARY KEY,
     RoleName NVARCHAR(50)
 );
 
+-- ========== BRANCHES ==========
 CREATE TABLE Branches (
     BranchID INT PRIMARY KEY IDENTITY(1,1),
     BranchName NVARCHAR(100),
@@ -18,6 +20,7 @@ CREATE TABLE Branches (
     IsActive BIT
 );
 
+-- ========== WAREHOUSES ==========
 CREATE TABLE Warehouses (
     WarehouseID INT PRIMARY KEY IDENTITY(1,1),
     WarehouseName NVARCHAR(100),
@@ -26,6 +29,7 @@ CREATE TABLE Warehouses (
     IsActive BIT
 );
 
+-- ========== USERS ==========
 CREATE TABLE Users (
     UserID INT PRIMARY KEY IDENTITY(1,1),
     PasswordHash NVARCHAR(255),
@@ -48,11 +52,13 @@ CREATE TABLE Users (
     FOREIGN KEY (RoleID) REFERENCES Roles(RoleID)
 );
 
+-- ========== CATEGORIES ==========
 CREATE TABLE Categories (
     CategoryID INT PRIMARY KEY,
     CategoryName NVARCHAR(100)
 );
 
+-- ========== SUPPLIERS ==========
 CREATE TABLE Suppliers (
     SupplierID INT PRIMARY KEY IDENTITY(1,1),
     SupplierName NVARCHAR(100) NOT NULL,
@@ -63,11 +69,13 @@ CREATE TABLE Suppliers (
     UpdatedAt DATETIME
 );
 
+-- ========== BRANDS ==========
 CREATE TABLE Brands (
     BrandID INT PRIMARY KEY IDENTITY(1,1),
     BrandName NVARCHAR(100) NOT NULL
 );
 
+-- ========== PRODUCTS ==========
 CREATE TABLE Products (
     ProductID INT PRIMARY KEY IDENTITY(1,1),
     ProductName NVARCHAR(255),
@@ -85,6 +93,7 @@ CREATE TABLE Products (
     FOREIGN KEY (SupplierID) REFERENCES Suppliers(SupplierID)
 );
 
+-- ========== PRODUCT DETAILS ==========
 CREATE TABLE ProductDetails (
     ProductDetailID INT PRIMARY KEY IDENTITY(1,1),
     ProductID INT,
@@ -97,15 +106,7 @@ CREATE TABLE ProductDetails (
     FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
 
-CREATE TABLE WarehouseProducts (
-    WarehouseID INT,
-    ProductDetailID INT,
-    Quantity INT,
-    PRIMARY KEY (WarehouseID, ProductDetailID),
-    FOREIGN KEY (WarehouseID) REFERENCES Warehouses(WarehouseID),
-    FOREIGN KEY (ProductDetailID) REFERENCES ProductDetails(ProductDetailID)
-);
-
+-- ========== INVENTORY ==========
 CREATE TABLE Inventory (
     InventoryID INT PRIMARY KEY IDENTITY(1,1),
     BranchID INT UNIQUE,
@@ -121,6 +122,7 @@ CREATE TABLE InventoryProducts (
     FOREIGN KEY (ProductDetailID) REFERENCES ProductDetails(ProductDetailID)
 );
 
+-- ========== STOCK MOVEMENT REQUESTS ==========
 CREATE TABLE StockMovementsRequest (
     MovementID INT PRIMARY KEY IDENTITY(1,1),
     FromSupplierID INT NULL,
@@ -132,6 +134,7 @@ CREATE TABLE StockMovementsRequest (
     CreatedBy INT NOT NULL,
     CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
     Note NVARCHAR(1000) NULL,
+    ResponseStatus NVARCHAR(50) DEFAULT N'Chờ xử lý', -- chỉ dùng khởi tạo
     FOREIGN KEY (FromWarehouseID) REFERENCES Warehouses(WarehouseID),
     FOREIGN KEY (FromSupplierID) REFERENCES Suppliers(SupplierID),
     FOREIGN KEY (FromBranchID) REFERENCES Branches(BranchID),
@@ -139,17 +142,19 @@ CREATE TABLE StockMovementsRequest (
     FOREIGN KEY (CreatedBy) REFERENCES Users(UserID)
 );
 
+-- ========== STOCK MOVEMENT RESPONSES ==========
 CREATE TABLE StockMovementResponses (
     ResponseID INT PRIMARY KEY IDENTITY(1,1),
     MovementID INT NOT NULL,
-    ResponsedBy INT NOT NULL,
+    ResponseBy INT NULL,
     ResponseAt DATETIME NOT NULL DEFAULT GETDATE(),
     ResponseStatus NVARCHAR(50) NOT NULL,
     Note NVARCHAR(1000),
     FOREIGN KEY (MovementID) REFERENCES StockMovementsRequest(MovementID),
-    FOREIGN KEY (ResponsedBy) REFERENCES Users(UserID)
+    FOREIGN KEY (ResponseBy) REFERENCES Users(UserID)
 );
 
+-- ========== STOCK MOVEMENT DETAILS ==========
 CREATE TABLE StockMovementDetail (
     MovementDetailID INT PRIMARY KEY IDENTITY(1,1),
     MovementID INT NOT NULL,
@@ -160,38 +165,10 @@ CREATE TABLE StockMovementDetail (
     FOREIGN KEY (ProductDetailID) REFERENCES ProductDetails(ProductDetailID)
 );
 
-CREATE TABLE Customers (
-    CustomerID INT PRIMARY KEY IDENTITY(1,1),
-    FullName NVARCHAR(100) NOT NULL,
-    PhoneNumber NVARCHAR(20) NOT NULL UNIQUE,
-    Email NVARCHAR(100),
-    Address NVARCHAR(255),
-    Gender BIT,
-    DateOfBirth DATE,
-    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-    UpdatedAt DATETIME
-);
-
-CREATE TABLE Orders (
-    OrderID INT PRIMARY KEY IDENTITY(1,1),
-    BranchID INT,
-    CreatedBy INT,
-    OrderStatus NVARCHAR(50),
-    CreatedAt DATETIME,
-    CustomerID INT,
-    PaymentMethod NVARCHAR(50),
-    Notes NVARCHAR(255) NULL,
-    GrandTotal DECIMAL(18,2) NOT NULL,
-    CustomerPay DECIMAL(18,2),
-    Change DECIMAL(18,2),
-    FOREIGN KEY (BranchID) REFERENCES Branches(BranchID),
-    FOREIGN KEY (CreatedBy) REFERENCES Users(UserID),
-    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
-);
-
+-- ========== SERIALS ==========
 CREATE TABLE ProductDetailSerialNumber (
     ProductDetailID INT,
-    SerialNumber NVARCHAR(MAX),
+    SerialNumber NVARCHAR(255),
     Status BIT,
     OrderID INT NULL,
     BranchID INT NULL,
@@ -205,6 +182,37 @@ CREATE TABLE ProductDetailSerialNumber (
     FOREIGN KEY (MovementDetailID) REFERENCES StockMovementDetail(MovementDetailID)
 );
 
+-- ========== CUSTOMERS ==========
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY IDENTITY(1,1),
+    FullName NVARCHAR(100) NOT NULL,
+    PhoneNumber NVARCHAR(20) NOT NULL UNIQUE,
+    Email NVARCHAR(100),
+    Address NVARCHAR(255),
+    Gender BIT,
+    DateOfBirth DATE,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedAt DATETIME
+);
+
+-- ========== ORDERS ==========
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY IDENTITY(1,1),
+    BranchID INT,
+    CreatedBy INT,
+    OrderStatus NVARCHAR(50),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    CustomerID INT,
+    PaymentMethod NVARCHAR(50),
+    Notes NVARCHAR(255) NULL,
+    GrandTotal DECIMAL(18,2) NOT NULL,
+    CustomerPay DECIMAL(18,2),
+    Change DECIMAL(18,2),
+    FOREIGN KEY (BranchID) REFERENCES Branches(BranchID),
+    FOREIGN KEY (CreatedBy) REFERENCES Users(UserID),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+
 CREATE TABLE OrderDetails (
     OrderDetailID INT PRIMARY KEY IDENTITY(1,1),
     OrderID INT,
@@ -214,6 +222,7 @@ CREATE TABLE OrderDetails (
     FOREIGN KEY (ProductDetailID) REFERENCES ProductDetails(ProductDetailID)
 );
 
+-- ========== PROMOTIONS ==========
 CREATE TABLE Promotions (
     PromotionID INT PRIMARY KEY IDENTITY(1,1),
     PromoName NVARCHAR(255),
@@ -238,6 +247,7 @@ CREATE TABLE PromotionProducts (
     FOREIGN KEY (ProductDetailID) REFERENCES ProductDetails(ProductDetailID)
 );
 
+-- ========== ANNOUNCEMENTS ==========
 CREATE TABLE Announcements (
     AnnouncementID INT PRIMARY KEY IDENTITY(1,1),
     FromUserID INT,
@@ -247,7 +257,7 @@ CREATE TABLE Announcements (
     ToWarehouseID INT NULL,
     Title NVARCHAR(50),
     Description NVARCHAR(1000),
-    CreatedAt DATETIME,
+    CreatedAt DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (FromUserID) REFERENCES Users(UserID),
     FOREIGN KEY (FromBranchID) REFERENCES Branches(BranchID),
     FOREIGN KEY (ToBranchID) REFERENCES Branches(BranchID),
@@ -255,6 +265,7 @@ CREATE TABLE Announcements (
     FOREIGN KEY (ToWarehouseID) REFERENCES Warehouses(WarehouseID)
 );
 
+-- ========== CASH FLOWS ==========
 CREATE TABLE CashFlows (
     CashFlowID INT PRIMARY KEY IDENTITY(1,1),
     FlowType NVARCHAR(20) NOT NULL,
@@ -270,6 +281,7 @@ CREATE TABLE CashFlows (
     FOREIGN KEY (BranchID) REFERENCES Branches(BranchID)
 );
 
+-- ========== PASSWORD RESET ==========
 CREATE TABLE PasswordResetTokens (
     id INT PRIMARY KEY IDENTITY(1,1),
     userId INT NOT NULL,
@@ -279,6 +291,7 @@ CREATE TABLE PasswordResetTokens (
     UNIQUE(token)
 );
 
+-- ========== SHIFT SYSTEM ==========
 CREATE TABLE Shift (
     ShiftID INT PRIMARY KEY IDENTITY(1,1),
     ShiftName NVARCHAR(50) NOT NULL,
@@ -294,6 +307,7 @@ CREATE TABLE UserShift (
     FOREIGN KEY (ShiftID) REFERENCES Shift(ShiftID) ON DELETE CASCADE
 );
 
+-- ========== ROLES SEED ==========
 INSERT INTO Roles (RoleID, RoleName) VALUES
 (0, N'Chủ chuỗi cửa hàng'),
 (1, N'Quản lý chi nhánh'),
