@@ -10,55 +10,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WM - Quản lý Hàng hóa</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin/product.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* --- Dropdown người dùng --- */
-        .user-dropdown { position: relative; display: inline-block; }
-        .user-dropdown .dropdown-menu {
-            position: absolute; top: 40px; right: 0; background: white; border: 1px solid #ddd;
-            border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); min-width: 160px; display: none; z-index: 1000;
+        body {
+            padding-top: 70px;
         }
-        .user-dropdown.active .dropdown-menu { display: block; }
-        .dropdown-item { display: block; padding: 10px 14px; color: #333; text-decoration: none; font-size: 14px; }
-        .dropdown-item:hover { background: #f2f5ff; color: #0056d6; }
-        .user-icon { display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; }
-        .user-icon i { color: #fff !important; }
-        .gradient { background: linear-gradient(45deg, #007bff, #00aaff) !important; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
-        .header .user-icon i { color: #fff !important; }
-        .header .gradient { background: linear-gradient(45deg, #007bff, #00aaff) !important; border-radius: 50% !important; }
     </style>
 </head>
 
 <body>
-<header class="header">
-    <div class="header-main">
-        <div class="logo">
-            <div class="logo-icon"><span class="icon-building"></span></div>
-            <span>WM</span>
-        </div>
-        <nav class="nav-menu">
-            <a href="${pageContext.request.contextPath}/TongQuan" class="nav-item "><span class="icon-overview"></span> Tổng quan</a>
-            <a href="${pageContext.request.contextPath}/product" class="nav-item active"><span class="icon-products"></span> Hàng hóa</a>
-            <a href="${pageContext.request.contextPath}/Transactions" class="nav-item"><span class="icon-transactions"></span> Giao dịch</a>
-            <a href="Supplier" class="nav-item"><span class="icon-partners"></span> Đối tác</a>
-            <a href="${pageContext.request.contextPath}/NhanVien" class="nav-item"><span class="icon-staff"></span> Nhân viên</a>
-            <a href="#" class="nav-item"><span class="icon-cashbook"></span> Khuyến mãi</a>
-            <a href="#" class="nav-item"><span class="icon-reports"></span> Báo cáo</a>
-        </nav>
-
-        <div class="header-right">
-            <div class="user-dropdown">
-                <a href="#" class="user-icon gradient" id="dropdownToggle">
-                    <i class="fas fa-user-circle fa-2x"></i>
-                </a>
-                <div class="dropdown-menu" id="dropdownMenu">
-                    <a href="InformationAccount" class="dropdown-item">Thông tin chi tiết</a>
-                    <a href="Login" class="dropdown-item">Đăng xuất</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
+<%@ include file="header_admin.jsp" %>
 
 <div class="main-container">
     <aside class="sidebar">
@@ -291,23 +251,6 @@ if (selectAll) {
 
 
 
-/* Dropdown user */
-document.addEventListener('DOMContentLoaded', function () {
-    const dropdown = document.querySelector('.user-dropdown');
-    const toggle = document.getElementById('dropdownToggle');
-    const menu = document.getElementById('dropdownMenu');
 
-    toggle.addEventListener('click', function (e) {
-        e.preventDefault();
-        dropdown.classList.toggle('active');
-    });
-
-    document.addEventListener('click', function (e) {
-        if (!dropdown.contains(e.target)) {
-            dropdown.classList.remove('active');
-        }
-    });
-});
-</script>
 </body>
 </html>
