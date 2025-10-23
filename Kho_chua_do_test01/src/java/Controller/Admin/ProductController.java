@@ -6,7 +6,6 @@ import DAL.BrandDAO;
 import DAL.SupplierDAO;
 import DAL.BranchDAO;
 
-import Model.Category;
 import Model.Product;
 
 import java.io.IOException;
@@ -91,7 +90,11 @@ public class ProductController extends HttpServlet {
     /* ========================= LISTING ========================= */
     private void listProducts(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        String keyword = trimToNull(request.getParameter("keyword"));
+        // Đọc ProductName từ form. Nếu chưa đổi form, fallback về "keyword"
+        String productName = trimToNull(request.getParameter("productName"));
+        if (productName == null) {
+            productName = trimToNull(request.getParameter("keyword"));
+        }
 
         // Lọc theo nhiều categoryName (theo tên) + tồn kho
         String[] rawCatNames = request.getParameterValues("categoryName");
@@ -108,14 +111,18 @@ public class ProductController extends HttpServlet {
 
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
-        // DAO có SELECT SUM tồn kho (TotalQty) bên trong
-        List<Product> products = productDAO.findProductsWithThresholdByCategoryNames(
-                categoryNames, keyword, stock, threshold
+        // Dùng DAO tối ưu: listProducts(..., StockFilter, threshold)
+        List<Product> products = productDAO.listProducts(
+                categoryNames,
+                productName,
+                ProductDAO.StockFilter.from(stock),
+                threshold
         );
 
-        // Đẩy dữ liệu ra view
+        // Đẩy dữ liệu ra view (giữ lại các giá trị người dùng nhập/chọn)
         request.setAttribute("products", products);
-        request.setAttribute("keyword", keyword);
+        request.setAttribute("productName", productName);                // nếu view dùng ${productName}
+        request.setAttribute("keyword", productName);                    // tương thích view cũ dùng ${keyword}
         request.setAttribute("selectedCategoryNames", categoryNames);
         request.setAttribute("stock", stock);
         request.setAttribute("stockThreshold", threshold);

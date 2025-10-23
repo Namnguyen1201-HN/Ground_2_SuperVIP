@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WM - Quản lý Hàng hóa</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin/product.css">
+    <link rel="stylesheet" href="css/admin/product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         /* --- Dropdown người dùng --- */
@@ -67,23 +67,29 @@
             <input type="hidden" name="action" value="list"/>
 
             <!-- Lọc theo danh mục: DÙNG TÊN -->
-   <div class="filter-content" id="category-filter-content" style="display:block">
-    <label for="categoryNameSelect"><strong>Loại sản phẩm:</strong></label><br/>
+            <div class="filter-content" id="category-filter-content" ">
+                <label for="categoryNameSelect"><strong>Loại sản phẩm:</strong></label><br/>
 
-    <select id="categoryNameSelect" name="categoryName" multiple
-            style="width:100%; padding:6px; height:120px;">
+                <select id="categoryNameSelect" name="categoryName" multiple
+                        style="width:100%; padding:6px; height:120px;">
 
-        <c:forEach var="c" items="${categories}">
-            <c:set var="selected"
-                   value="${selectedCategoryNames != null && selectedCategoryNames.contains(c.categoryName)}"/>
-            <option value="${c.categoryName}"
-                    <c:if test="${selected}">selected</c:if>>
-                ${c.categoryName}
-            </option>
-        </c:forEach>
-    </select>
+                    <c:forEach var="c" items="${categories}">
+                        <!-- EL/JSTL an toàn cho mọi phiên bản -->
+                        <c:set var="sel" value="false"/>
+                        <c:if test="${not empty selectedCategoryNames}">
+                            <c:forEach var="cn" items="${selectedCategoryNames}">
+                                <c:if test="${cn eq c.categoryName}">
+                                    <c:set var="sel" value="true"/>
+                                </c:if>
+                            </c:forEach>
+                        </c:if>
+                        <option value="${c.categoryName}" <c:if test="${sel}">selected</c:if>>
+                            ${c.categoryName}
+                        </option>
+                    </c:forEach>
 
-</div>
+                </select>
+            </div>
 
             <!-- Tồn kho -->
             <div class="filter-section">
@@ -242,7 +248,6 @@
                         </td>
 
                         <td>
-                            <!-- p.createdAt là LocalDateTime -> in trực tiếp -->
                             <c:out value="${p.createdAt}"/>
                         </td>
 
@@ -288,8 +293,6 @@ if (selectAll) {
         document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb => cb.checked = this.checked);
     });
 }
-
-
 
 /* Dropdown user */
 document.addEventListener('DOMContentLoaded', function () {
