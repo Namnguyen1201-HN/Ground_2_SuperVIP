@@ -9,6 +9,7 @@
     <title>Quản lý Hàng hóa - Sale</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/sale/sale.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/header.css"/>
     <style>
         /* bạn có thể giữ lại style cũ của bạn ở đây, tớ rút gọn để tập trung vào JSTL */
         .header { background: linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%); color:#fff; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
@@ -42,30 +43,48 @@
         .pill-in { background:#ecfdf5; border-color:#10b981; color:#065f46; }
         .pill-out { background:#fef2f2; border-color:#ef4444; color:#991b1b; }
         .filter-item { margin-bottom:8px; }
+       
+
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-dropdown .dropdown-menu {
+            position: absolute; top: 40px; right: 0; background: white; border: 1px solid #ddd;
+            border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); min-width: 160px; display: none; z-index: 1000;
+        }
+        .user-dropdown.active .dropdown-menu { display: block; }
+        .dropdown-item { display: block; padding: 10px 14px; color: #333; text-decoration: none; font-size: 14px; }
+        .dropdown-item:hover { background: #f2f5ff; color: #0056d6; }
+        .user-icon { display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; }
+        .user-icon i { color: #fff !important; }
+        .gradient { background: linear-gradient(45deg, #007bff, #00aaff) !important; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
+        .header .user-icon i { color: #fff !important; }
+        .header .gradient { background: linear-gradient(45deg, #007bff, #00aaff) !important; border-radius: 50% !important; }
+    
     </style>
 </head>
 <body>
-
+    
 <header class="header">
     <div class="header-main">
         <div class="logo">
-            <div class="logo-icon">🏢</div>
+            <div class="logo-icon"><span class="icon-building"></span></div>
             <span>WM</span>
         </div>
         <nav class="nav-menu">
-            <a href="${pageContext.request.contextPath}/TongQuan" class="nav-item"><span>📊</span> Tổng quan</a>
-            <a href="${pageContext.request.contextPath}/sale" class="nav-item active"><span>🛒</span> Bán hàng</a>
-            <a href="${pageContext.request.contextPath}/product" class="nav-item"><span>📦</span> Hàng hóa (Quản trị)</a>
-            <a href="${pageContext.request.contextPath}/Transactions" class="nav-item"><span>💳</span> Giao dịch</a>
-            <a href="${pageContext.request.contextPath}/Supplier" class="nav-item"><span>🤝</span> Đối tác</a>
-            <a href="${pageContext.request.contextPath}/NhanVien" class="nav-item"><span>👥</span> Nhân viên</a>
+           
+            <a href="${pageContext.request.contextPath}/product" class="nav-item active"><span class="icon-products"></span> Hàng hóa</a>
+            <a href="${pageContext.request.contextPath}/SAThongBao" class="nav-item"><span class="icon-transactions"></span> Gửi yêu cầu</a>
+            <a href="Supplier" class="nav-item"><span class="icon-partners"></span> Đối tác</a>
+
         </nav>
+
         <div class="header-right">
             <div class="user-dropdown">
-                <a href="#" class="user-icon gradient" id="dropdownToggle"><i class="fas fa-user-circle fa-2x"></i></a>
+                <a href="#" class="user-icon gradient" id="dropdownToggle">
+                    <i class="fas fa-user-circle fa-2x"></i>
+                </a>
                 <div class="dropdown-menu" id="dropdownMenu">
-                    <a href="${pageContext.request.contextPath}/InformationAccount" class="dropdown-item">Thông tin chi tiết</a>
-                    <a href="${pageContext.request.contextPath}/Login" class="dropdown-item">Đăng xuất</a>
+                    <a href="InformationAccount" class="dropdown-item">Thông tin chi tiết</a>
+                    <a href="Login" class="dropdown-item">Đăng xuất</a>
                 </div>
             </div>
         </div>
@@ -148,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <h1 class="page-title">Hàng hóa</h1>
 
             <!-- Tìm kiếm giữ lại filter hiện tại -->
-                <form action="${pageContext.request.contextPath}/product" method="get" class="search-container" style="display:flex;gap:8px;align-items:center">
+                <form action="${pageContext.request.contextPath}/sale" method="get" class="search-container" style="display:flex;gap:8px;align-items:center">
                     <input type="hidden" name="action" value="list"/>
 
                     <!-- Render lại categoryName đang chọn để không mất filter khi tìm -->
