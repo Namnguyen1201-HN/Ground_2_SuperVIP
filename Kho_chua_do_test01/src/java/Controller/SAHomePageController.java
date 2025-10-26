@@ -140,7 +140,7 @@ public class SAHomePageController extends HttpServlet {
             throws Exception {
         request.setAttribute("action", "insert");
         pushLookups(request); // nạp brands/categories/suppliers/(branches)
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/sale/sale.jsp").forward(request, response);
     }
 
     /** Sửa → ProductForm.jsp (từ test.jsp bấm Chỉnh sửa sẽ tới form này) */
@@ -169,7 +169,7 @@ public class SAHomePageController extends HttpServlet {
         request.setAttribute("product", product);
         request.setAttribute("action", "update");
         pushLookups(request); // nạp các dropdown
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/sale/sale.jsp").forward(request, response);
     }
 
     /** Xem chi tiết → test.jsp */
@@ -209,7 +209,7 @@ public class SAHomePageController extends HttpServlet {
         // int branchId = parseIntOrDefault(request.getParameter("branchId"), DEFAULT_BRANCH_ID_FOR_QTY);
         // productDAO.setQuantityForProductAtBranch(newId, branchId, qty);
 
-        response.sendRedirect("product?action=list");
+        response.sendRedirect("sale?action=list");
     }
 
     private void updateProduct(HttpServletRequest request, HttpServletResponse response)
@@ -234,7 +234,7 @@ public class SAHomePageController extends HttpServlet {
             } catch (NumberFormatException ignore) { /* bỏ qua nếu giá trị không hợp lệ */ }
         }
 
-        response.sendRedirect("product?action=list");
+        response.sendRedirect("sale?action=list");
     }
 
     private void deleteProduct(HttpServletRequest request, HttpServletResponse response)
@@ -245,7 +245,7 @@ public class SAHomePageController extends HttpServlet {
             return;
         }
         productDAO.deleteProduct(id);
-        response.sendRedirect("product?action=list");
+        response.sendRedirect("sale?action=list");
     }
 
     /* ========================= HELPERS ========================= */

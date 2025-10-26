@@ -190,11 +190,11 @@
                     <th><input type="checkbox" id="select-all"></th>
                     <th>ID</th>
                     <th>Tên sản phẩm</th>
-                    <th>Danh mục</th>
+<!--                    <th>Danh mục</th>
                     <th>Thương hiệu</th>
-                    <th>Nhà cung cấp</th>
+                    <th>Nhà cung cấp</th>-->
                     <th>Tồn kho</th>
-                    <th>Giá vốn</th>
+<!--                    <th>Giá vốn</th>-->
                     <th>Giá bán</th>
                     <th>VAT</th>
                     <th>Trạng thái</th>
@@ -208,19 +208,19 @@
                         <td><input type="checkbox"></td>
                         <td>${p.productId}</td>
                         <td>${p.productName}</td>
-                        <td>${p.categoryName}</td>
+<!--                        <td>${p.categoryName}</td>
                         <td>${p.brandName}</td>
-                        <td>${p.supplierName}</td>
+                        <td>${p.supplierName}</td>-->
                         <td>${p.totalQty}</td>
 
-                        <td>
+<!--                        <td>
                             <c:choose>
                                 <c:when test="${not empty p.costPrice}">
                                     <fmt:formatNumber value="${p.costPrice}" type="number" minFractionDigits="0"/> ₫
                                 </c:when>
                                 <c:otherwise>-</c:otherwise>
                             </c:choose>
-                        </td>
+                        </td>-->
 
                         <td>
                             <c:choose>
