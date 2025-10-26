@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 public class DataBaseContext {
-    protected Connection connection;
+    public Connection connection;
     private static final Logger LOGGER = Logger.getLogger(DataBaseContext.class.getName());
 
     public DataBaseContext() {

@@ -219,7 +219,7 @@
                 <span class="icon-products"></span>
                 Hàng hóa
             </a>
-            <a href="NhapHang" class="nav-item">
+            <a href="wh-import" class="nav-item">
                 <span class="icon-import"></span>
                 Nhập hàng
             </a>
