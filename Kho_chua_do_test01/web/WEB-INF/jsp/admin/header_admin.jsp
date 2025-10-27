@@ -343,7 +343,7 @@
 
 <header class="header">
     <div class="header-main">
-        <a href="${pageContext.request.contextPath}/DashBoard" class="logo">
+        <a href="${pageContext.request.contextPath}/TongQuan" class="logo">
             <div class="logo-icon">
                 🏢
             </div>
