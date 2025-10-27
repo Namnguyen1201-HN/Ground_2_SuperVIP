@@ -24,7 +24,7 @@ public class CustomerController extends HttpServlet {
 
         // --- Lấy user đăng nhập ---
         HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+        User user = (User) session.getAttribute("currentUser");
 
         // --- Lấy các param lọc/tìm kiếm ---
         String keyword = request.getParameter("keyword");

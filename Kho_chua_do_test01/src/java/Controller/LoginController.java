@@ -42,8 +42,7 @@ public class LoginController extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
-            System.err.println("[DEBUG] User already logged in, redirecting to DashBoard");
-            response.sendRedirect("DashBoard");
+            response.sendRedirect("Tongquan");
             return;
         }
 
@@ -132,11 +131,9 @@ public class LoginController extends HttpServlet {
         System.err.println("[DEBUG] Redirecting by roleID = " + roleID);
         switch (roleID) {
             case 0:
-                System.err.println("[DEBUG] Redirect to TongQuan");
                 response.sendRedirect("TongQuan");
                 break;
             case 1:
-                System.err.println("[DEBUG] Redirect to Admin");
                 response.sendRedirect("TongQuan");
                 break;
             case 2:

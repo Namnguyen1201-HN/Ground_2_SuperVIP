@@ -18,21 +18,22 @@ public class StockMovementsRequest {
     private Date createdAt;
     private String note;
     private List<StockMovementDetail> details;
+    
+    // Display names (joined from other tables)
     private String fromSupplierName;
-    private String createdByName;
-    private BigDecimal totalAmount;
-    private String responseStatus;
     private String fromBranchName;
-    private String formattedDate;
-    private String formattedTotalAmount;
     private String fromWarehouseName;
     private String toBranchName;
     private String toWarehouseName;
+    private String creatorName;
+    
+    private String createdByName;
+    private BigDecimal totalAmount;
+    private String responseStatus;
+    private String formattedDate;
+    private String formattedTotalAmount;
 
-    public StockMovementsRequest() {
-    }
-
-    public StockMovementsRequest(int movementId, Integer fromSupplierId, Integer fromBranchId, Integer fromWarehouseId, Integer toBranchId, Integer toWarehouseId, String movementType, int createdBy, Date createdAt, String note, List<StockMovementDetail> details, String fromSupplierName, String createdByName, BigDecimal totalAmount, String responseStatus, String fromBranchName, String formattedDate, String formattedTotalAmount, String fromWarehouseName, String toBranchName, String toWarehouseName) {
+    public StockMovementsRequest(int movementId, Integer fromSupplierId, Integer fromBranchId, Integer fromWarehouseId, Integer toBranchId, Integer toWarehouseId, String movementType, int createdBy, Date createdAt, String note, List<StockMovementDetail> details, String fromSupplierName, String fromBranchName, String fromWarehouseName, String toBranchName, String toWarehouseName, String creatorName, String createdByName, BigDecimal totalAmount, String responseStatus, String formattedDate, String formattedTotalAmount) {
         this.movementId = movementId;
         this.fromSupplierId = fromSupplierId;
         this.fromBranchId = fromBranchId;
@@ -45,25 +46,16 @@ public class StockMovementsRequest {
         this.note = note;
         this.details = details;
         this.fromSupplierName = fromSupplierName;
-        this.createdByName = createdByName;
-        this.totalAmount = totalAmount;
-        this.responseStatus = responseStatus;
         this.fromBranchName = fromBranchName;
-        this.formattedDate = formattedDate;
-        this.formattedTotalAmount = formattedTotalAmount;
         this.fromWarehouseName = fromWarehouseName;
         this.toBranchName = toBranchName;
         this.toWarehouseName = toWarehouseName;
-    }
-
-    
-    
-    public String getFromSupplierName() {
-        return fromSupplierName;
-    }
-
-    public void setFromSupplierName(String fromSupplierName) {
-        this.fromSupplierName = fromSupplierName;
+        this.creatorName = creatorName;
+        this.createdByName = createdByName;
+        this.totalAmount = totalAmount;
+        this.responseStatus = responseStatus;
+        this.formattedDate = formattedDate;
+        this.formattedTotalAmount = formattedTotalAmount;
     }
 
     public String getCreatedByName() {
@@ -90,14 +82,6 @@ public class StockMovementsRequest {
         this.responseStatus = responseStatus;
     }
 
-    public String getFromBranchName() {
-        return fromBranchName;
-    }
-
-    public void setFromBranchName(String fromBranchName) {
-        this.fromBranchName = fromBranchName;
-    }
-
     public String getFormattedDate() {
         return formattedDate;
     }
@@ -113,31 +97,30 @@ public class StockMovementsRequest {
     public void setFormattedTotalAmount(String formattedTotalAmount) {
         this.formattedTotalAmount = formattedTotalAmount;
     }
-
-    public String getFromWarehouseName() {
-        return fromWarehouseName;
-    }
-
-    public void setFromWarehouseName(String fromWarehouseName) {
-        this.fromWarehouseName = fromWarehouseName;
-    }
-
-    public String getToBranchName() {
-        return toBranchName;
-    }
-
-    public void setToBranchName(String toBranchName) {
-        this.toBranchName = toBranchName;
-    }
-
-    public String getToWarehouseName() {
-        return toWarehouseName;
-    }
-
-    public void setToWarehouseName(String toWarehouseName) {
-        this.toWarehouseName = toWarehouseName;
-    }
     
+    
+    public StockMovementsRequest() {
+    }
+
+    public StockMovementsRequest(int movementId, Integer fromSupplierId, Integer fromBranchId, Integer fromWarehouseId, Integer toBranchId, Integer toWarehouseId, String movementType, int createdBy, Date createdAt, String note, List<StockMovementDetail> details, String fromSupplierName, String fromBranchName, String fromWarehouseName, String toBranchName, String toWarehouseName, String creatorName) {
+        this.movementId = movementId;
+        this.fromSupplierId = fromSupplierId;
+        this.fromBranchId = fromBranchId;
+        this.fromWarehouseId = fromWarehouseId;
+        this.toBranchId = toBranchId;
+        this.toWarehouseId = toWarehouseId;
+        this.movementType = movementType;
+        this.createdBy = createdBy;
+        this.createdAt = createdAt;
+        this.note = note;
+        this.details = details;
+        this.fromSupplierName = fromSupplierName;
+        this.fromBranchName = fromBranchName;
+        this.fromWarehouseName = fromWarehouseName;
+        this.toBranchName = toBranchName;
+        this.toWarehouseName = toWarehouseName;
+        this.creatorName = creatorName;
+    }
     
 
     public int getMovementId() {
@@ -226,5 +209,53 @@ public class StockMovementsRequest {
 
     public void setDetails(List<StockMovementDetail> details) {
         this.details = details;
+    }
+
+    public String getFromSupplierName() {
+        return fromSupplierName;
+    }
+
+    public void setFromSupplierName(String fromSupplierName) {
+        this.fromSupplierName = fromSupplierName;
+    }
+
+    public String getFromBranchName() {
+        return fromBranchName;
+    }
+
+    public void setFromBranchName(String fromBranchName) {
+        this.fromBranchName = fromBranchName;
+    }
+
+    public String getFromWarehouseName() {
+        return fromWarehouseName;
+    }
+
+    public void setFromWarehouseName(String fromWarehouseName) {
+        this.fromWarehouseName = fromWarehouseName;
+    }
+
+    public String getToBranchName() {
+        return toBranchName;
+    }
+
+    public void setToBranchName(String toBranchName) {
+        this.toBranchName = toBranchName;
+    }
+
+    public String getToWarehouseName() {
+        return toWarehouseName;
+    }
+
+    public void setToWarehouseName(String toWarehouseName) {
+        this.toWarehouseName = toWarehouseName;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String creatorName) {
+        this.creatorName = creatorName;
     }
 }

@@ -24,7 +24,7 @@ public class SupplierDAO extends DataBaseContext {
         try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Supplier supplier = new Supplier();
-                supplier.setSupplierId(rs.getInt("SupplierId"));
+                supplier.setSupplierId(rs.getInt("SupplierID"));
                 supplier.setSupplierName(rs.getString("SupplierName"));
                 supplier.setContactName(rs.getString("ContactName"));
                 supplier.setEmail(rs.getString("Email"));
@@ -32,8 +32,10 @@ public class SupplierDAO extends DataBaseContext {
                 supplier.setCreatedAt(rs.getTimestamp("CreatedAt"));
                 data.add(supplier);
             }
+            System.out.println("✅ [SupplierDAO] Loaded " + data.size() + " suppliers from database");
             return data;
         } catch (Exception e) {
+            System.err.println("❌ [SupplierDAO] Error loading suppliers: " + e.getMessage());
             e.printStackTrace();
         }
         return null;
@@ -53,7 +55,7 @@ public class SupplierDAO extends DataBaseContext {
 
     public List<Supplier> getSuppliersPaged(int pageIndex, int pageSize) {
         List<Supplier> data = new ArrayList<>();
-        String sql = "SELECT * FROM Suppliers ORDER BY SupplierId OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        String sql = "SELECT * FROM Suppliers ORDER BY SupplierID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             int offset = (pageIndex - 1) * pageSize;
             ps.setInt(1, offset);
@@ -61,7 +63,7 @@ public class SupplierDAO extends DataBaseContext {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Supplier supplier = new Supplier();
-                    supplier.setSupplierId(rs.getInt("SupplierId"));
+                    supplier.setSupplierId(rs.getInt("SupplierID"));
                     supplier.setSupplierName(rs.getString("SupplierName"));
                     supplier.setContactName(rs.getString("ContactName"));
                     supplier.setEmail(rs.getString("Email"));
@@ -79,7 +81,7 @@ public class SupplierDAO extends DataBaseContext {
     }
 
     public int getTotalSuppliersByKeyword(String keyword) {
-        String sql = "SELECT COUNT(*) FROM Suppliers WHERE SupplierId LIKE ? OR SupplierName LIKE ? OR ContactName LIKE ? OR Phone LIKE ? OR Email LIKE ?";
+        String sql = "SELECT COUNT(*) FROM Suppliers WHERE SupplierID LIKE ? OR SupplierName LIKE ? OR ContactName LIKE ? OR Phone LIKE ? OR Email LIKE ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             String kw = "%" + keyword + "%";
             for (int i = 1; i <= 5; i++) {
@@ -99,8 +101,8 @@ public class SupplierDAO extends DataBaseContext {
         List<Supplier> data = new ArrayList<>();
         String sql = """
         SELECT * FROM Suppliers
-        WHERE SupplierId LIKE ? OR SupplierName LIKE ? OR ContactName LIKE ?
-        ORDER BY SupplierId
+        WHERE SupplierID LIKE ? OR SupplierName LIKE ? OR ContactName LIKE ?
+        ORDER BY SupplierID
         OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
     """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -114,7 +116,7 @@ public class SupplierDAO extends DataBaseContext {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Supplier s = new Supplier();
-                s.setSupplierId(rs.getInt("SupplierId"));
+                s.setSupplierId(rs.getInt("SupplierID"));
                 s.setSupplierName(rs.getString("SupplierName"));
                 s.setContactName(rs.getString("ContactName"));
                 s.setEmail(rs.getString("Email"));

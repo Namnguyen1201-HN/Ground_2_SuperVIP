@@ -302,26 +302,124 @@ public class ProductDAO extends DataBaseContext {
         return null;
     }
 
-    /* ===================== INVENTORY HELPERS ===================== */
-    private Integer getOrCreateInventoryIdForBranch(int branchId) throws SQLException {
-        try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT InventoryID FROM Inventory WHERE BranchID = ?")) {
-            ps.setInt(1, branchId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
-            }
+    /* ===================== (TÙY CHỌN) DTO STOCK ===================== */
+    public static class ProductWithStock {
+
+        private final Product product;
+        private final Integer totalQty;
+
+        public ProductWithStock(Product product, Integer totalQty) {
+            this.product = product;
+            this.totalQty = totalQty;
         }
-        try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT INTO Inventory(BranchID) VALUES (?)",
-                Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, branchId);
-            ps.executeUpdate();
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) return rs.getInt(1);
-            }
+
+        public Product getProduct() {
+            return product;
         }
-        return null;
+
+        public Integer getTotalQty() {
+            return totalQty;
+        }
     }
+
+    public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, Integer branchId) {
+        List<ProductStatisticDTO> list = new ArrayList<>();
+
+        String dateCondition = "";
+        if ("this_month".equals(period)) {
+            dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(GETDATE()) AND YEAR(o.CreatedAt) = YEAR(GETDATE())";
+        } else if ("last_month".equals(period)) {
+            dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(DATEADD(MONTH, -1, GETDATE())) "
+                    + "AND YEAR(o.CreatedAt) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
+        }
+
+        // Thêm filter chi nhánh
+        if (branchId != null) {
+            dateCondition += (dateCondition.isEmpty() ? "WHERE " : " AND ") + "o.BranchID = ?";
+        }
+
+        String orderBy = "revenue".equals(sortBy)
+                ? "SUM(od.Quantity * p.RetailPrice) DESC"
+                : "SUM(od.Quantity) DESC";
+
+        String sql = ""
+                + "SELECT TOP (?) \n"
+                + "    p.ProductName, \n"
+                + "    SUM(od.Quantity) AS TotalQuantity, \n"
+                + "    SUM(od.Quantity * p.RetailPrice) AS Revenue \n"
+                + "FROM Orders o \n"
+                + "JOIN OrderDetails od ON o.OrderID = od.OrderID \n"
+                + "JOIN ProductDetails pd ON od.ProductDetailID = pd.ProductDetailID \n"
+                + "JOIN Products p ON pd.ProductID = p.ProductID \n"
+                + (dateCondition.isEmpty() ? "" : dateCondition + "\n") // đảm bảo có dòng riêng
+                + "GROUP BY p.ProductName \n"
+                + "ORDER BY " + orderBy + ";";
+
+        // In SQL ra để debug
+        System.out.println("=== DEBUG SQL ===\n" + sql + "\n=================");
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, limit);
+            if (branchId != null) {
+                ps.setInt(paramIndex++, branchId);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ProductStatisticDTO dto = new ProductStatisticDTO();
+                dto.setProductName(rs.getString("ProductName"));
+                dto.setTotalQuantity(rs.getInt("TotalQuantity"));
+                dto.setRevenue(rs.getBigDecimal("Revenue"));
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+    // TOTAL = Inventory + Warehouse (không lọc phạm vi)
+// Tổng tồn theo branch (dùng InventoryProducts)
+String SQL_BASE_BRANCH = """
+    SELECT
+        p.ProductID, p.ProductName,
+        p.BrandID,   b.BrandName,
+        p.CategoryID, c.CategoryName,
+        p.SupplierID, s.SupplierName,
+        p.CostPrice, p.RetailPrice, p.ImageURL, p.VAT, p.CreatedAt, p.IsActive,
+        COALESCE(SUM(ip.Quantity),0) AS TotalQty
+    FROM Products p
+    LEFT JOIN ProductDetails pd    ON pd.ProductID = p.ProductID
+    LEFT JOIN Inventory i          ON i.BranchID = ?
+    LEFT JOIN InventoryProducts ip ON ip.InventoryID = i.InventoryID AND ip.ProductDetailID = pd.ProductDetailID
+    LEFT JOIN Brands b             ON b.BrandID = p.BrandID
+    LEFT JOIN Categories c         ON c.CategoryID = p.CategoryID
+    LEFT JOIN Suppliers s          ON s.SupplierID = p.SupplierID
+""";
+// nhớ bind branchId ở vị trí 1
+
+/** Lấy (hoặc tạo) InventoryID cho Branch */
+private Integer getOrCreateInventoryIdForBranch(int branchId) throws SQLException {
+    // 1) tìm inventory
+    try (PreparedStatement ps = connection.prepareStatement(
+            "SELECT InventoryID FROM Inventory WHERE BranchID = ?")) {
+        ps.setInt(1, branchId);
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        }
+    }
+    // 2) tạo inventory
+    try (PreparedStatement ps = connection.prepareStatement(
+            "INSERT INTO Inventory(BranchID) VALUES (?)",
+            Statement.RETURN_GENERATED_KEYS)) {
+        ps.setInt(1, branchId);
+        ps.executeUpdate();
+        try (ResultSet rs = ps.getGeneratedKeys()) {
+            if (rs.next()) return rs.getInt(1);
+        }
+    }
+    return null;
+}
 
     private Integer getOrCreateOneDetailForProduct(int productId) throws SQLException {
         try (PreparedStatement ps = connection.prepareStatement(

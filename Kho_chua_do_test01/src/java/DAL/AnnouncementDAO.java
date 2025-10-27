@@ -65,8 +65,12 @@ public class AnnouncementDAO extends DataBaseContext {
     }
 
     // === 2️⃣ Hoạt động gần đây ===
-    public List<AnnouncementDTO> getRecentActivities(int limit) {
+    public List<AnnouncementDTO> getRecentActivities(int limit, Integer branchId) {
         List<AnnouncementDTO> list = new ArrayList<>();
+
+        String branchFilterOrder = (branchId != null) ? " WHERE o.BranchID = ?" : "";
+        String branchFilterStock = (branchId != null) ? " WHERE (smr.FromBranchID = ? OR smr.ToBranchID = ?)" : "";
+        String branchFilterCash = (branchId != null) ? " WHERE cf.BranchID = ?" : "";
 
         String sql = """
         SELECT TOP (?) * FROM (
@@ -85,6 +89,7 @@ public class AnnouncementDAO extends DataBaseContext {
             FROM Orders o
             JOIN Users u ON u.UserID = o.CreatedBy
             LEFT JOIN Branches b ON b.BranchID = o.BranchID
+        """ + branchFilterOrder + """
 
             UNION ALL
 
@@ -108,6 +113,7 @@ public class AnnouncementDAO extends DataBaseContext {
             JOIN Users u ON u.UserID = smr.CreatedBy
             LEFT JOIN Branches fb ON fb.BranchID = smr.FromBranchID
             LEFT JOIN Branches tb ON tb.BranchID = smr.ToBranchID
+        """ + branchFilterStock + """
 
             UNION ALL
 
@@ -125,12 +131,25 @@ public class AnnouncementDAO extends DataBaseContext {
                 cf.CreatedAt AS createdAt
             FROM CashFlows cf
             LEFT JOIN Branches b ON b.BranchID = cf.BranchID
+        """ + branchFilterCash + """
         ) AS Combined
         ORDER BY createdAt DESC
     """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, limit);
+            int paramIndex = 1;
+            ps.setInt(paramIndex++, limit);
+            
+            if (branchId != null) {
+                // Order filter
+                ps.setInt(paramIndex++, branchId);
+                // Stock movement filter (2 lần vì có FromBranchID và ToBranchID)
+                ps.setInt(paramIndex++, branchId);
+                ps.setInt(paramIndex++, branchId);
+                // Cash flow filter
+                ps.setInt(paramIndex++, branchId);
+            }
+            
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {

@@ -62,6 +62,16 @@ public class OrdersController extends HttpServlet {
             return;
         }
 
+        // Check role permission
+        User currentUser = (User) session.getAttribute("currentUser");
+        int roleID = currentUser.getRoleId();
+        
+        // Chỉ cho phép Chủ chuỗi (0), Quản lý chi nhánh (1), và Nhân viên bán hàng (2) xem orders
+        if (roleID != 0 && roleID != 1 && roleID != 2) {
+            response.sendRedirect("DashBoard?error=no_permission");
+            return;
+        }
+
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -70,9 +80,6 @@ public class OrdersController extends HttpServlet {
         switch (action) {
             case "detail":
                 handleDetail(request, response);
-                return;
-            case "delete":
-                handleDelete(request, response);
                 return;
             default:
                 handleList(request, response);
@@ -85,6 +92,26 @@ public class OrdersController extends HttpServlet {
             PrintWriter out = response.getWriter();
             int id = Integer.parseInt(request.getParameter("id"));
             Order order = orderDAO.getById(id);
+            
+            if (order == null) {
+                response.sendRedirect("Orders?error=order_not_found");
+                return;
+            }
+            
+            // Check permission: only allow viewing orders from own branch (except role 0)
+            HttpSession session = request.getSession();
+            User currentUser = (User) session.getAttribute("currentUser");
+            int roleID = currentUser.getRoleId();
+            Integer userBranchID = currentUser.getBranchId();
+            
+            // Role 1 or 2 can only view orders from their branch
+            if ((roleID == 1 || roleID == 2) && order.getBranchId() != null) {
+                if (userBranchID == null || !userBranchID.equals(order.getBranchId())) {
+                    response.sendRedirect("Orders?error=no_permission");
+                    return;
+                }
+            }
+            
             request.setAttribute("order", order);
             request.setAttribute("items", detailDAO.getByOrder(id));
 
@@ -138,21 +165,12 @@ public class OrdersController extends HttpServlet {
         }
     }
 
-    private void handleDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        try {
-            int id = Integer.parseInt(request.getParameter("id"));
-            detailDAO.deleteByOrder(id);
-            orderDAO.delete(id);
-        } catch (NumberFormatException ignored) {}
-        response.sendRedirect("Orders?msg=deleted");
-    }
-
     private void handleList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
-        if (session == null || session.getAttribute("currentUser") == null) {
-            response.sendRedirect("Login");
-            return;
-        }
+        User currentUser = (User) session.getAttribute("currentUser");
+        int roleID = currentUser.getRoleId();
+        Integer userBranchID = currentUser.getBranchId();
+        
         // ---------- read filters ----------
         Integer fBranch = null;
         try {
@@ -163,6 +181,11 @@ public class OrdersController extends HttpServlet {
                 fBranch = Integer.parseInt(b);
             }
         } catch (Exception ignored) {}
+        
+        // Force filter by branch for role 1 and 2
+        if (roleID == 1 || roleID == 2) {
+            fBranch = userBranchID;
+        }
 
         String fStatus = request.getParameter("st");
         String fKw = request.getParameter("q");
@@ -254,10 +277,16 @@ public class OrdersController extends HttpServlet {
         request.setAttribute("creatorNames", creatorNames);
         request.setAttribute("branchNames", branchNames);
         request.setAttribute("allBranches", branches);
+        
+        // Pass user role info to JSP
+        request.setAttribute("currentUserRole", roleID);
+        request.setAttribute("currentUserBranch", userBranchID);
 
         // Pass message flag for SweetAlert2
         String msg = request.getParameter("msg");
+        String error = request.getParameter("error");
         if (msg != null) request.setAttribute("msg", msg);
+        if (error != null) request.setAttribute("error", error);
 
         request.getRequestDispatcher("/WEB-INF/jsp/manager/orders.jsp").forward(request, response);
     }
@@ -265,11 +294,36 @@ public class OrdersController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("currentUser") == null) {
+            response.sendRedirect("Login");
+            return;
+        }
+        
+        User currentUser = (User) session.getAttribute("currentUser");
+        int roleID = currentUser.getRoleId();
+        Integer userBranchID = currentUser.getBranchId();
+        
         String action = request.getParameter("action");
-        // Allow updating status without requiring login (no roles yet)
+        
         if ("updateStatus".equals(action)) {
             try {
                 int orderId = Integer.parseInt(request.getParameter("orderId"));
+                Order order = orderDAO.getById(orderId);
+                
+                if (order == null) {
+                    response.sendRedirect("Orders?error=order_not_found");
+                    return;
+                }
+                
+                // Check permission: only allow updating orders from own branch (except role 0)
+                if ((roleID == 1 || roleID == 2) && order.getBranchId() != null) {
+                    if (userBranchID == null || !userBranchID.equals(order.getBranchId())) {
+                        response.sendRedirect("Orders?error=no_permission");
+                        return;
+                    }
+                }
+                
                 String statusVal = request.getParameter("status");
                 if (statusVal != null && !statusVal.isBlank()) {
                     orderDAO.updateStatus(orderId, statusVal);
@@ -279,12 +333,7 @@ public class OrdersController extends HttpServlet {
             } catch (Exception ignored) {
             }
         }
-
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("currentUser") == null) {
-            response.sendRedirect("Login");
-            return;
-        }
+        
         if ("create".equals(action)) {
             User current = (User) session.getAttribute("currentUser");
             Order o = new Order();
