@@ -7,8 +7,8 @@
         <title>Thông tin cá nhân</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-         <link href="css/warehouse/Information.css" rel="stylesheet" type="text/css"/>
-        
+        <link href="css/warehouse/Information.css" rel="stylesheet" type="text/css"/>
+
     </head>
 
     <body>
@@ -27,91 +27,147 @@
                         </div>
 
                         <!-- Tên + vai trò -->
-                        <div class="mb-3">
-                            <h4 class="fw-bold mb-0">Nammm</h4>
-                            <button class="btn btn-outline-primary btn-sm mt-1">QUẢN LÝ KHO TỔNG</button>
+                        <div class="mb-3 text-center">
+                            <h4 class="fw-bold mb-0">
+                                <%= ((Model.User) request.getAttribute("user")).getFullName() %>
+                            </h4>
+                            <button class="btn btn-outline-primary btn-sm mt-1">
+                                QUẢN LÝ KHO
+                            </button>
                         </div>
 
-                        <!-- Thông tin cá nhân và liên hệ -->
-                        <div class="row">
-                            <!-- Cột trái -->
-                            <div class="col-md-6">
-                                <div class="info-section">
-                                    <h6><i class="fa-regular fa-id-card me-2"></i>Thông tin cá nhân</h6>
+                        <form action="Information" method="post" class="needs-validation" novalidate>
+                            <div class="row">
+                                <!-- Cột trái -->
+                                <div class="col-md-6">
+                                    <div class="info-section">
+                                        <h6><i class="fa-regular fa-id-card me-2"></i>Thông tin cá nhân</h6>
 
-                                    <div class="mb-2">
-                                        <label class="label-bold">Mã người dùng:</label>
-                                        <span class="ms-2 text-secondary">#6</span>
+                                        <!-- Mã người dùng -->
+                                        <div class="mb-2">
+                                            <label class="label-bold">Mã người dùng:</label>
+                                            <span class="ms-2 text-secondary">#<%= ((Model.User) request.getAttribute("user")).getUserId() %></span>
+                                        </div>
+
+                                        <!-- Họ và tên -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">Họ và tên:</label>
+                                            <input type="text" class="form-control" name="fullName" 
+                                                   value="<%= ((Model.User) request.getAttribute("user")).getFullName() %>" required>
+                                        </div>
+
+                                        <!-- Giới tính -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">Giới tính:</label>
+                                            <select class="form-select" name="gender">
+                                                <option value="1" <%= ((Model.User) request.getAttribute("user")).getGender() != null 
+                                        && ((Model.User) request.getAttribute("user")).getGender() ? "selected" : "" %>>Nam</option>
+                                                <option value="0" <%= ((Model.User) request.getAttribute("user")).getGender() != null 
+                                        && !((Model.User) request.getAttribute("user")).getGender() ? "selected" : "" %>>Nữ</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Ngày sinh -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">Ngày sinh:</label>
+                                            <input type="date" class="form-control" name="dob"
+                                                   value="<%= ((Model.User) request.getAttribute("user")).getDob() != null 
+                                                            ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(((Model.User) request.getAttribute("user")).getDob()) 
+                                                            : "" %>">
+                                        </div>
+
+                                        <!-- CCCD -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">CCCD/Hộ chiếu:</label>
+                                            <input type="text" class="form-control" name="identificationId"
+                                                   value="<%= ((Model.User) request.getAttribute("user")).getIdentificationId() != null 
+                                                            ? ((Model.User) request.getAttribute("user")).getIdentificationId() 
+                                                            : "" %>">
+                                        </div>
                                     </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label class="label-bold">Họ và tên:</label>
-                                        <input type="text" class="form-control" value="Nammm">
-                                    </div>
+                                <!-- Cột phải -->
+                                <div class="col-md-6">
+                                    <div class="info-section">
+                                        <h6><i class="fa-solid fa-address-book me-2"></i>Thông tin liên hệ</h6>
 
-                                    <div class="mb-3">
-                                        <label class="label-bold">Giới tính:</label>
-                                        <select class="form-select">
-                                            <option selected>Nam</option>
-                                            <option>Nữ</option>
-                                        </select>
-                                    </div>
+                                        <div class="mb-3">
+                                            <label class="label-bold">Kho tổng đang công tác:</label>
+                                            <span class="badge bg-success ms-2">
+                                                <%= ((Model.User) request.getAttribute("user")).getWarehouseName() != null 
+                                                        ? ((Model.User) request.getAttribute("user")).getWarehouseName() 
+                                                        : "Chưa có dữ liệu" %>
+                                            </span>
+                                        </div>
 
-                                    <div class="mb-3">
-                                        <label class="label-bold">Ngày sinh:</label>
-                                        <input type="date" class="form-control" value="2025-09-29">
-                                    </div>
+                                        <!-- Email -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">Email:</label>
+                                            <input type="email" class="form-control" name="email" 
+                                                   value="<%= ((Model.User) request.getAttribute("user")).getEmail() %>">
+                                        </div>
 
-                                    <div class="mb-3">
-                                        <label class="label-bold">CCCD/Hộ chiếu:</label>
-                                        <input type="text" class="form-control">
+                                        <!-- Số điện thoại -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">Số điện thoại:</label>
+                                            <input type="text" class="form-control" name="phone" 
+                                                   value="<%= ((Model.User) request.getAttribute("user")).getPhone() %>">
+                                        </div>
+
+                                        <!-- Địa chỉ -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">Địa chỉ:</label>
+                                            <input type="text" class="form-control" name="address" 
+                                                   value="<%= ((Model.User) request.getAttribute("user")).getAddress() %>">
+                                        </div>
+
+                                        <!-- 🟢 Trạng thái tài khoản -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">Trạng thái tài khoản:</label>
+                                            <%
+                                                Integer status = ((Model.User) request.getAttribute("user")).getIsActive();
+                                                String labelClass = "bg-secondary";
+                                                String labelText = "Không xác định";
+
+                                                if (status != null) {
+    switch (status) {
+        case 1:
+            labelClass = "bg-success";
+            labelText = "Đang hoạt động";
+            break;
+        case 0:
+            labelClass = "bg-danger";
+            labelText = "Đã nghỉ việc";
+            break;
+        case 2:
+            labelClass = "bg-warning text-dark";
+            labelText = "Chờ phê duyệt";
+            break;
+        default:
+            labelClass = "bg-secondary";
+            labelText = "Không xác định";
+            break;
+    }
+}
+                                            %>
+                                            <span class="badge <%= labelClass %> ms-2"><%= labelText %></span>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Cột phải -->
-                            <div class="col-md-6">
-                                <div class="info-section">
-                                    <h6><i class="fa-solid fa-address-book me-2"></i>Thông tin liên hệ</h6>
-
-                                    <div class="mb-3">
-                                        <label class="label-bold">Email:</label>
-                                        <input type="email" class="form-control" value="Nam3@gmail.com">
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="label-bold">Số điện thoại:</label>
-                                        <input type="text" class="form-control" value="0949614558">
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="label-bold">Địa chỉ:</label>
-                                        <input type="text" class="form-control" value="Hà Nội">
-                                    </div>
-                                </div>
+                            <!-- Nút thao tác -->
+                            <div class="text-end mt-3">
+                                <button type="reset" class="btn btn-secondary me-2">
+                                    <i class="fa-solid fa-rotate-left me-1"></i>Hủy bỏ
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa-solid fa-floppy-disk me-1"></i>Lưu thay đổi
+                                </button>
                             </div>
-                        </div>
-
-                        <!-- Thông tin chuỗi cửa hàng -->
-                        <div class="info-section">
-                            <h6><i class="fa-solid fa-store me-2"></i>Thông tin chuỗi cửa hàng</h6>
-
-                            <div class="mb-3">
-                                <label class="label-bold">Tên cửa hàng:</label>
-                                <input type="text" class="form-control" value="Namghjk123">
-                            </div>
-
-                            <div>
-                                <label class="label-bold">Kho tổng đang công tác:</label>
-                                <span class="badge-success ms-2">Hà Nội</span>
-                            </div>
-                        </div>
-
-                        <!-- Nút thao tác -->
-                        <div class="text-end mt-3">
-                            <button class="btn-cancel me-2"><i class="fa-solid fa-rotate-left me-1"></i>Hủy bỏ</button>
-                            <button class="btn-save"><i class="fa-solid fa-floppy-disk me-1"></i>Lưu thay đổi</button>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>

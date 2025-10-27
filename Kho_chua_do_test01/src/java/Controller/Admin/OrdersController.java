@@ -4,8 +4,11 @@ import DAL.OrderDAO;
 import DAL.OrderDetailDAO;
 import DAL.UserDAO;
 import DAL.BranchDAO;
+import DAL.CustomerDAO;
 import DAL.ProductDAO;
 import DAL.ProductDetailDAO;
+import DAL.RoleDAO;
+import Model.Customer;
 import Model.Order;
 import Model.OrderDetail;
 import Model.User;
@@ -16,8 +19,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +38,8 @@ public class OrdersController extends HttpServlet {
     private BranchDAO branchDAO;
     private ProductDAO productDAO;
     private ProductDetailDAO productDetailDAO;
+    private CustomerDAO customerDAO;
+    private RoleDAO roleDAO;
 
     @Override
     public void init() {
@@ -42,6 +49,8 @@ public class OrdersController extends HttpServlet {
         branchDAO = new BranchDAO();
         productDAO = new ProductDAO();
         productDetailDAO = new ProductDetailDAO();
+        customerDAO = new CustomerDAO();
+        roleDAO = new RoleDAO();
     }
 
     @Override
@@ -80,6 +89,7 @@ public class OrdersController extends HttpServlet {
 
     private void handleDetail(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
+            PrintWriter out = response.getWriter();
             int id = Integer.parseInt(request.getParameter("id"));
             Order order = orderDAO.getById(id);
             
@@ -120,6 +130,18 @@ public class OrdersController extends HttpServlet {
                         }
                     }
                 }
+                
+                if (order.getCustomerId() > 0) {
+                    Customer customer = customerDAO.getCustomerById(order.getCustomerId());
+                    request.setAttribute("customer", customer);
+                }
+                
+                if (order.getCreatedBy() > 0) {
+                    User user_create = userDAO.getUserById(order.getCreatedBy());
+                    request.setAttribute("user_create", user_create);
+                    String role = roleDAO.getRoleById(user_create.getRoleId()).getRoleName();
+                    request.setAttribute("role", role);
+                }
             }
 
             // for selects in detail page
@@ -137,7 +159,7 @@ public class OrdersController extends HttpServlet {
             Map<Integer, DAL.ProductDetailDAO.DetailInfo> pdInfos = pddao.getInfoByIds(pdIds);
             request.setAttribute("pdInfos", pdInfos);
 
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/order_detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/manager/order_detail.jsp").forward(request, response);
         } catch (NumberFormatException ignored) {
             response.sendRedirect("Orders");
         }
@@ -184,7 +206,9 @@ public class OrdersController extends HttpServlet {
                 fTo = Timestamp.valueOf(td + " 23:59:59");
             }
         } catch (Exception ignored) {}
-
+        User user = (User) session.getAttribute("currentUser");
+        int userId = user.getUserId();
+        int roleId = user.getRoleId();
         // min/max spent (we use Double here; change to BigDecimal if your DAO expects BigDecimal)
         Double minSpent = null, maxSpent = null;
         try {
@@ -206,7 +230,7 @@ public class OrdersController extends HttpServlet {
 
         // ---------- call DAO ----------
         OrderDAO.PagedOrders po = orderDAO.search(
-                fBranch, fStatus, fKw, fFrom, fTo, minSpent, maxSpent, page, pageSize
+                fBranch, fStatus, fKw, fFrom, fTo, minSpent, maxSpent, page, pageSize, userId, roleId
         );
 
         // ---------- set attributes for JSP ----------
@@ -264,7 +288,7 @@ public class OrdersController extends HttpServlet {
         if (msg != null) request.setAttribute("msg", msg);
         if (error != null) request.setAttribute("error", error);
 
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/orders.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/manager/orders.jsp").forward(request, response);
     }
 
     @Override

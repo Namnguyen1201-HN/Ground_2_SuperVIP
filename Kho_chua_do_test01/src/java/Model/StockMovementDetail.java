@@ -1,5 +1,7 @@
 package Model;
 
+import java.util.List;
+
 public class StockMovementDetail {
     private int movementDetailId;
     private int movementId;

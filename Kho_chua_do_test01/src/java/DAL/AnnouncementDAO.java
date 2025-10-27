@@ -174,31 +174,61 @@ public class AnnouncementDAO extends DataBaseContext {
         return list;
     }
 
-//    public static void main(String[] args) {
-//        AnnouncementDAO dao = new AnnouncementDAO();
-//
-//        System.out.println("=== TEST: getLatestAnnouncements ===");
-//        List<Announcement> anns = dao.getLatestAnnouncements(10);
-//        System.out.println("Số lượng thông báo: " + anns.size());
-//        for (Announcement a : anns) {
-//            System.out.println("- [" + a.getCreatedAt() + "] " + a.getTitle() + " | " + a.getDescription());
-//        }
-//
-//        System.out.println("\n=== TEST: getRecentActivities ===");
-//        List<AnnouncementDTO> logs = dao.getRecentActivities(10);
-//        System.out.println("Số lượng hoạt động gần đây: " + logs.size());
-//        for (AnnouncementDTO log : logs) {
-//            System.out.println(
-//                    String.format("[%s] %s | %s | %s | %s | %s",
-//                            new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(log.getCreatedAt()),
-//                            log.getCategory(),
-//                            log.getStatus(),
-//                            log.getSenderName(),
-//                            log.getLocationName(),
-//                            log.getDescription()
-//                    )
-//            );
-//        }
-//    }
+    // 🟩 Lấy danh sách thông báo đã gửi bởi 1 kho hoặc người dùng
+    public List<Announcement> getSentAnnouncements(Integer fromWarehouseId, Integer fromUserId) {
+        List<Announcement> list = new ArrayList<>();
+        String sql = """
+        SELECT a.AnnouncementID, a.Title, a.Description, a.CreatedAt, u.FullName AS FromUserName
+        FROM Announcements a
+        LEFT JOIN Users u ON a.FromUserID = u.UserID
+        WHERE (a.FromWarehouseID = ? OR a.FromUserID = ?)
+        ORDER BY a.CreatedAt DESC
+    """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setObject(1, fromWarehouseId);
+            ps.setObject(2, fromUserId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Announcement a = new Announcement();
+                a.setAnnouncementId(rs.getInt("AnnouncementID"));
+                a.setTitle(rs.getString("Title"));
+                a.setDescription(rs.getString("Description"));
+                a.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                a.setFromUserName(rs.getString("FromUserName"));
+                list.add(a);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+// 🟨 Lấy danh sách thông báo nhận được (gửi tới kho này hoặc toàn hệ thống)
+    public List<Announcement> getReceivedAnnouncements(Integer toWarehouseId) {
+        List<Announcement> list = new ArrayList<>();
+        String sql = """
+        SELECT a.AnnouncementID, a.Title, a.Description, a.CreatedAt, u.FullName AS FromUserName
+        FROM Announcements a
+        LEFT JOIN Users u ON a.FromUserID = u.UserID
+        WHERE (a.ToWarehouseID = ? OR a.ToWarehouseID IS NULL)
+        ORDER BY a.CreatedAt DESC
+    """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setObject(1, toWarehouseId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Announcement a = new Announcement();
+                a.setAnnouncementId(rs.getInt("AnnouncementID"));
+                a.setTitle(rs.getString("Title"));
+                a.setDescription(rs.getString("Description"));
+                a.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                a.setFromUserName(rs.getString("FromUserName"));
+                list.add(a);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
 }

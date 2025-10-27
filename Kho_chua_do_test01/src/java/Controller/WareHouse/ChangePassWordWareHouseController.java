@@ -1,72 +1,111 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package Controller.WareHouse;
 
+import DAL.UserDAO;
+import Model.User;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
-/**
- *
- * @author TieuPham
- */
-@WebServlet(name="ChangePassWordWareHouseController", urlPatterns={"/ChangePassWordWareHouse"})
+@WebServlet(name = "ChangePassWordWareHouseController", urlPatterns = {"/ChangePassWordWareHouse"})
 public class ChangePassWordWareHouseController extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        request.getRequestDispatcher("/WEB-INF/jsp/warehouse/ChangePassWord.jsp").forward(request, response);
-    } 
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
-
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+    private String hashSHA256(String password) {
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(password.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
     @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("/WEB-INF/jsp/warehouse/ChangePassWord.jsp").forward(request, response);
+    }
 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("currentUser") == null) {
+            request.setAttribute("message", "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+            request.setAttribute("msgType", "warning");
+            request.getRequestDispatcher("Logout").forward(request, response);
+            return;
+        }
+
+        User currentUser = (User) session.getAttribute("currentUser");
+
+        // 🔹 Lấy dữ liệu từ form
+        String currentPassword = request.getParameter("currentPassword");
+        String newPassword = request.getParameter("newPassword");
+        String confirmPassword = request.getParameter("confirmPassword");
+
+        // 1️⃣ Kiểm tra rỗng
+        if (currentPassword == null || newPassword == null || confirmPassword == null
+                || currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            request.setAttribute("message", "Vui lòng nhập đầy đủ thông tin.");
+            request.setAttribute("msgType", "warning");
+            request.getRequestDispatcher("/WEB-INF/jsp/warehouse/ChangePassWord.jsp").forward(request, response);
+            return;
+        }
+
+        UserDAO dao = new UserDAO();
+        User dbUser = dao.getUserById(currentUser.getUserId());
+
+        String hashedInput = hashSHA256(currentPassword);
+
+        // 2️⃣ Kiểm tra mật khẩu hiện tại
+        if (dbUser == null || dbUser.getPasswordHash() == null || !dbUser.getPasswordHash().equals(hashedInput)) {
+            request.setAttribute("message", "Mật khẩu hiện tại không chính xác!");
+            request.setAttribute("msgType", "danger");
+            request.getRequestDispatcher("/WEB-INF/jsp/warehouse/ChangePassWord.jsp").forward(request, response);
+            return;
+        }
+
+        // 3️⃣ Kiểm tra mật khẩu mới
+        if (!newPassword.equals(confirmPassword)) {
+            request.setAttribute("message", "Mật khẩu xác nhận không khớp!");
+            request.setAttribute("msgType", "danger");
+            request.getRequestDispatcher("/WEB-INF/jsp/warehouse/ChangePassWord.jsp").forward(request, response);
+            return;
+        }
+
+        if (newPassword.equals(currentPassword)) {
+            request.setAttribute("message", "Mật khẩu mới phải khác mật khẩu hiện tại!");
+            request.setAttribute("msgType", "warning");
+            request.getRequestDispatcher("/WEB-INF/jsp/warehouse/ChangePassWord.jsp").forward(request, response);
+            return;
+        }
+
+        // 4️⃣ Cập nhật DB
+        boolean updated = dao.updatePassword(currentUser.getUserId(), newPassword);
+
+        if (updated) {
+            // Cập nhật lại đối tượng trong session
+            currentUser.setPasswordHash(hashSHA256(newPassword)); // ✅ Lưu hash mới
+            session.setAttribute("currentUser", currentUser);
+
+            request.setAttribute("message", "✅ Đổi mật khẩu thành công!");
+            request.setAttribute("msgType", "success");
+        } else {
+            request.setAttribute("message", "❌ Đổi mật khẩu thất bại, vui lòng thử lại!");
+            request.setAttribute("msgType", "danger");
+        }
+
+        request.getRequestDispatcher("/WEB-INF/jsp/warehouse/ChangePassWord.jsp").forward(request, response);
+    }
 }

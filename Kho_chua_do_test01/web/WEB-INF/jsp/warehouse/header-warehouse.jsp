@@ -193,6 +193,16 @@
         border-radius: 50% !important;
     }
 
+    .icon-import::before {
+        content: "📥";
+    }
+    .icon-export::before {
+        content: "📤";
+    }
+    .icon-notice::before {
+        content: "📢";
+    }
+
 
 </style>
 
@@ -209,19 +219,19 @@
                 <span class="icon-products"></span>
                 Hàng hóa
             </a>
-            <a href="NhapHang" class="nav-item">
-                <span class=""></span>
+            <a href="wh-import" class="nav-item">
+                <span class="icon-import"></span>
                 Nhập hàng
             </a>
             <a href="XuatHang" class="nav-item">
-                <span class=""></span>
+                <span class="icon-export"></span>
                 Xuất hàng
             </a>
             <a href="ThongBao" class="nav-item">
-                <span class=""></span>
+                <span class="icon-notice"></span>
                 Tạo thông báo
-            </a>          
-            
+            </a>         
+
         </nav>
 
         <div class="header-right">
@@ -231,7 +241,7 @@
                 </a>
                 <div class="dropdown-menu" id="dropdownMenu">
                     <a href="Information" class="dropdown-item">Thông tin chi tiết</a>
-                    <a href="Login" class="dropdown-item">Đăng xuất</a>
+                    <a href="Logout" class="dropdown-item">Đăng xuất</a>
                 </div>
             </div>      
         </div>

@@ -6,7 +6,6 @@ import DAL.BrandDAO;
 import DAL.SupplierDAO;
 import DAL.BranchDAO;
 
-import Model.Category;
 import Model.Product;
 
 import java.io.IOException;
@@ -91,7 +90,11 @@ public class SAHomePageController extends HttpServlet {
     /* ========================= LISTING ========================= */
     private void listProducts(HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        String keyword = trimToNull(request.getParameter("keyword"));
+        // Đọc ProductName từ form. Nếu chưa đổi form, fallback về "keyword"
+        String productName = trimToNull(request.getParameter("productName"));
+        if (productName == null) {
+            productName = trimToNull(request.getParameter("keyword"));
+        }
 
         // Lọc theo nhiều categoryName (theo tên) + tồn kho
         String[] rawCatNames = request.getParameterValues("categoryName");
@@ -108,14 +111,18 @@ public class SAHomePageController extends HttpServlet {
 
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
-        // DAO có SELECT SUM tồn kho (TotalQty) bên trong
-        List<Product> products = productDAO.findProductsWithThresholdByCategoryNames(
-                categoryNames, keyword, stock, threshold
+        // Dùng DAO tối ưu: listProducts(..., StockFilter, threshold)
+        List<Product> products = productDAO.listProducts(
+                categoryNames,
+                productName,
+                ProductDAO.StockFilter.from(stock),
+                threshold
         );
 
-        // Đẩy dữ liệu ra view
+        // Đẩy dữ liệu ra view (giữ lại các giá trị người dùng nhập/chọn)
         request.setAttribute("products", products);
-        request.setAttribute("keyword", keyword);
+        request.setAttribute("productName", productName);                // nếu view dùng ${productName}
+        request.setAttribute("keyword", productName);                    // tương thích view cũ dùng ${keyword}
         request.setAttribute("selectedCategoryNames", categoryNames);
         request.setAttribute("stock", stock);
         request.setAttribute("stockThreshold", threshold);
@@ -133,7 +140,7 @@ public class SAHomePageController extends HttpServlet {
             throws Exception {
         request.setAttribute("action", "insert");
         pushLookups(request); // nạp brands/categories/suppliers/(branches)
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/sale/sale.jsp").forward(request, response);
     }
 
     /** Sửa → ProductForm.jsp (từ test.jsp bấm Chỉnh sửa sẽ tới form này) */
@@ -162,7 +169,7 @@ public class SAHomePageController extends HttpServlet {
         request.setAttribute("product", product);
         request.setAttribute("action", "update");
         pushLookups(request); // nạp các dropdown
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/ProductForm.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/sale/sale.jsp").forward(request, response);
     }
 
     /** Xem chi tiết → test.jsp */
@@ -202,7 +209,7 @@ public class SAHomePageController extends HttpServlet {
         // int branchId = parseIntOrDefault(request.getParameter("branchId"), DEFAULT_BRANCH_ID_FOR_QTY);
         // productDAO.setQuantityForProductAtBranch(newId, branchId, qty);
 
-        response.sendRedirect("product?action=list");
+        response.sendRedirect("sale?action=list");
     }
 
     private void updateProduct(HttpServletRequest request, HttpServletResponse response)
@@ -227,7 +234,7 @@ public class SAHomePageController extends HttpServlet {
             } catch (NumberFormatException ignore) { /* bỏ qua nếu giá trị không hợp lệ */ }
         }
 
-        response.sendRedirect("product?action=list");
+        response.sendRedirect("sale?action=list");
     }
 
     private void deleteProduct(HttpServletRequest request, HttpServletResponse response)
@@ -238,7 +245,7 @@ public class SAHomePageController extends HttpServlet {
             return;
         }
         productDAO.deleteProduct(id);
-        response.sendRedirect("product?action=list");
+        response.sendRedirect("sale?action=list");
     }
 
     /* ========================= HELPERS ========================= */

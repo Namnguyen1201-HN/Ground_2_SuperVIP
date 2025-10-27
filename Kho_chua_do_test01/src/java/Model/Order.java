@@ -15,11 +15,12 @@ public class Order {
     private BigDecimal grandTotal;
     private BigDecimal customerPay;
     private BigDecimal changeAmount;
+    private String branchName;
 
     public Order() {
     }
 
-    public Order(int orderId, Integer branchId, int createdBy, String orderStatus, Date createdAt, Integer customerId, String paymentMethod, String notes, BigDecimal grandTotal, BigDecimal customerPay, BigDecimal changeAmount) {
+    public Order(int orderId, Integer branchId, int createdBy, String orderStatus, Date createdAt, Integer customerId, String paymentMethod, String notes, BigDecimal grandTotal, BigDecimal customerPay, BigDecimal changeAmount, String branchName) {
         this.orderId = orderId;
         this.branchId = branchId;
         this.createdBy = createdBy;
@@ -31,6 +32,7 @@ public class Order {
         this.grandTotal = grandTotal;
         this.customerPay = customerPay;
         this.changeAmount = changeAmount;
+        this.branchName = branchName;
     }
     
     public int getOrderId() { return orderId; }
@@ -65,6 +67,14 @@ public class Order {
 
     public BigDecimal getChangeAmount() { return changeAmount; }
     public void setChangeAmount(BigDecimal changeAmount) { this.changeAmount = changeAmount; }
+
+    public String getBranchName() { return branchName; }
+    public void setBranchName(String branchName) { this.branchName = branchName; }
+
+    @Override
+    public String toString() {
+        return "Order{" + "orderId=" + orderId + ", branchId=" + branchId + ", createdBy=" + createdBy + ", orderStatus=" + orderStatus + ", createdAt=" + createdAt + ", customerId=" + customerId + ", paymentMethod=" + paymentMethod + ", notes=" + notes + ", grandTotal=" + grandTotal + ", customerPay=" + customerPay + ", changeAmount=" + changeAmount + ", branchName=" + branchName + '}';
+    }
 }
 
 
