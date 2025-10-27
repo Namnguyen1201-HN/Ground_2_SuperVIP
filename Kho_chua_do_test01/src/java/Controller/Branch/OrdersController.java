@@ -187,7 +187,7 @@ public class OrdersController extends HttpServlet {
 
         // ---------- call DAO ----------
         OrderDAO.PagedOrders po = orderDAO.search(
-                fBranch, fStatus, fKw, fFrom, fTo, minSpent, maxSpent, page, pageSize,userId, roleId
+                fBranch, fStatus, fKw, fFrom, fTo, minSpent, maxSpent, page, pageSize
         );
 
         // ---------- set attributes for JSP ----------

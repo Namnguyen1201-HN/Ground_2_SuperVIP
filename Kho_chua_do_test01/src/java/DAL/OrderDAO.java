@@ -69,9 +69,7 @@ public class OrderDAO extends DataBaseContext {
             Double minSpent,
             Double maxSpent,
             int page,
-            int pageSize,
-            int userId,
-            int roleId) {
+            int pageSize) {
 
         List<Order> list = new ArrayList<>();
         List<Object> params = new ArrayList<>();
@@ -108,17 +106,11 @@ public class OrderDAO extends DataBaseContext {
             where.append(" AND o.GrandTotal <= ?");
             params.add(BigDecimal.valueOf(maxSpent));
         }
-        if (roleId != 0){
-            where.append(" AND u.UserID = ?");
-            params.add(userId);
-        }
 
         int offset = Math.max(0, (page - 1) * pageSize);
 
         String sql = """
-        select * from Branches as br
-        join Users as u on br.BranchID = u.BranchID
-        join Orders as o on o.BranchID = br.BranchID
+        SELECT * FROM Orders o
     """ + where + " ORDER BY o.OrderID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
         String countSql = "SELECT COUNT(*) FROM Orders o" + where;
 
