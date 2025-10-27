@@ -13,6 +13,63 @@ public class StockMovementDetail {
     private String productName;
     private String productCode;
     private double costPrice;
+    
+    private int productId;
+    private int scanned;
+    private List<ProductDetailSerialNumber> serials;
+
+    public StockMovementDetail(int movementDetailId, int movementId, int productDetailId, int quantity, Integer quantityScanned, String productName, String productCode, double costPrice, int productId, int scanned, List<ProductDetailSerialNumber> serials) {
+        this.movementDetailId = movementDetailId;
+        this.movementId = movementId;
+        this.productDetailId = productDetailId;
+        this.quantity = quantity;
+        this.quantityScanned = quantityScanned;
+        this.productName = productName;
+        this.productCode = productCode;
+        this.costPrice = costPrice;
+        this.productId = productId;
+        this.scanned = scanned;
+        this.serials = serials;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
+
+    public int getScanned() {
+        return scanned;
+    }
+
+    public void setScanned(int scanned) {
+        this.scanned = scanned;
+    }
+
+    public List<ProductDetailSerialNumber> getSerials() {
+        return serials;
+    }
+
+    public void setSerials(List<ProductDetailSerialNumber> serials) {
+        this.serials = serials;
+    }
+    
+    public StockMovementDetail() {
+    }
+
+    public StockMovementDetail(int movementDetailId, int movementId, int productDetailId, int quantity, Integer quantityScanned, String productName, String productCode, double costPrice) {
+        this.movementDetailId = movementDetailId;
+        this.movementId = movementId;
+        this.productDetailId = productDetailId;
+        this.quantity = quantity;
+        this.quantityScanned = quantityScanned;
+        this.productName = productName;
+        this.productCode = productCode;
+        this.costPrice = costPrice;
+    }
+    
 
     public int getMovementDetailId() { return movementDetailId; }
     public void setMovementDetailId(int movementDetailId) { this.movementDetailId = movementDetailId; }

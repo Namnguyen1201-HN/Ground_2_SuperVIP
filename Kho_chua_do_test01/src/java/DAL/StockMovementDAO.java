@@ -1,6 +1,8 @@
 package DAL;
 
 import Model.ImportCartItem;
+import Model.ProductDetails;
+import Model.StockMovement;
 import Model.StockMovementDetail;
 import Model.StockMovementsRequest;
 import Model.Warehouse;
