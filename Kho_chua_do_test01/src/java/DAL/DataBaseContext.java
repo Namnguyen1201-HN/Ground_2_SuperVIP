@@ -16,7 +16,7 @@ public class DataBaseContext {
             String user = "sa";
             String pass = "123"; // CHANGE THIS TO YOUR SQL SERVER PASSWORD
             String url = "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;" +
-                        "databaseName=swp391;" +
+                        "databaseName=Lan1;" +
                         "encrypt=false;" +
                         "trustServerCertificate=true;" +
                         "connectionTimeout=30000";

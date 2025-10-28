@@ -18,7 +18,7 @@ public class UserDAO extends DataBaseContext {
                 + "LEFT JOIN Roles r ON u.RoleID = r.RoleID "
                 + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
                 + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
-                + "WHERE (u.Email = ? OR u.Phone = ?) AND u.IsActive = 1";
+                + "WHERE (u.Email = ? OR u.Phone = ?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, username.trim());

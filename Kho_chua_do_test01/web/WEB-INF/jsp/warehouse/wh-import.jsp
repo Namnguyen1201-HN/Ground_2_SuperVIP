@@ -115,6 +115,7 @@
                                     try {
                                         dateStr = (item.getCreatedAt() != null) ? df.format(item.getCreatedAt()) : "";
                                     } catch (Exception ignore) {}
+                                    
                                     String resp = (item.getResponseStatus() == null) ? "" : item.getResponseStatus().toLowerCase();
                                     String statusBadge = "Chờ xử lý";
                                     String statusClass = "badge-pending";

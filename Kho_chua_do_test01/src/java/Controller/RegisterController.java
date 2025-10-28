@@ -112,14 +112,14 @@ public class RegisterController extends HttpServlet {
             newUser.setEmail(email.trim());
             newUser.setPasswordHash(password);
             newUser.setRoleId(2); // Default role: Nhân viên bán hàng
-            newUser.setIsActive(1); // Active by default
+            newUser.setIsActive(2); // Active by default
 
             // Insert user
             boolean success = userDAO.insertUser(newUser);
             if (success) {
                 request.setAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
                 HttpSession session = request.getSession();
-                session.setAttribute("successMessage", "Đăng ký thành công! Vui lòng đăng nhập.");
+                
                 
                 // Redirect to login after 2 seconds (via JavaScript)
                 request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);

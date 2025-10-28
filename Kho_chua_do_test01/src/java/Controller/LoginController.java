@@ -84,7 +84,14 @@ public class LoginController extends HttpServlet {
                 System.err.println("[DEBUG] User found - ID: " + user.getUserId()
                         + ", Role: " + user.getRoleId() + ", Active: " + user.getIsActive());
 
-                if (user.getIsActive() != 1) {
+                int status = user.getIsActive();
+
+                if (status == 2) {
+                    // Tài khoản chưa xác minh
+                    request.setAttribute("error", "Tài khoản của bạn chưa được kích hoạt, vui lòng liên hệ hỗ trợ để biết thêm chi tiết.");
+                    request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
+                    return;
+                } else if (user.getIsActive() != 1) {
                     System.err.println("[ERROR] User not active. Status: " + user.getIsActive());
                     request.setAttribute("error", "Tài khoản của bạn không được kích hoạt!");
                     request.getRequestDispatcher("/WEB-INF/jsp/includes/Login.jsp").forward(request, response);
