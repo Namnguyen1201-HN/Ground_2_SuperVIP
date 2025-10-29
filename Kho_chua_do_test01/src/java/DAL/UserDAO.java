@@ -163,6 +163,58 @@ public class UserDAO extends DataBaseContext {
         return false;
     }
 
+    public boolean isEmailExists(String email) {
+        // Thay đổi [Users] và [Email] cho phù hợp với CSDL của bạn
+        String sql = "SELECT COUNT(*) FROM [Users] WHERE LOWER([Email]) = LOWER(?)";
+
+        try (
+                PreparedStatement ps = connection.prepareStatement(sql)) { // Tự động đóng statement
+
+            ps.setString(1, email);
+
+            try (ResultSet rs = ps.executeQuery()) { // Tự động đóng result set
+                if (rs.next()) {
+                    // rs.getInt(1) sẽ lấy giá trị của cột đầu tiên (COUNT(*))
+                    // Nếu count > 0, nghĩa là email đã được tìm thấy.
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            // In lỗi ra console để debug, trong ứng dụng thực tế nên dùng logger
+            e.printStackTrace();
+        }
+        // Trả về false nếu có lỗi xảy ra hoặc không tìm thấy
+        return false;
+    }
+
+    public boolean isIdentificationIdExists(String identificationId) {
+        // Câu lệnh SQL để đếm số bản ghi có IdentificationID trùng khớp
+        String sql = "SELECT COUNT(*) FROM [Users] WHERE [IdentificationID] = ?";
+
+        // Sử dụng try-with-resources để tự động đóng kết nối
+        try (
+            PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            // Gán giá trị cho tham số trong câu lệnh SQL
+            ps.setString(1, identificationId);
+
+            // Thực thi truy vấn và lấy kết quả
+            try (ResultSet rs = ps.executeQuery()) {
+                // Di chuyển con trỏ đến hàng đầu tiên
+                if (rs.next()) {
+                    // Lấy giá trị đếm từ cột đầu tiên. Nếu lớn hơn 0, tức là ID đã tồn tại.
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            // In lỗi ra console để debug
+            e.printStackTrace();
+        }
+
+        // Trả về false nếu có lỗi hoặc không tìm thấy
+        return false;
+    }
+
     /**
      * Insert new user
      */
@@ -409,6 +461,7 @@ public class UserDAO extends DataBaseContext {
         }
         return false;
     }
+
     public static String hashSHA256(String password) {
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
@@ -423,8 +476,4 @@ public class UserDAO extends DataBaseContext {
         }
     }
 
-    public static void main(String[] args) {
-        UserDAO ud = new UserDAO();
-        System.out.println(hashSHA256("12345678A"));
-    }
 }
