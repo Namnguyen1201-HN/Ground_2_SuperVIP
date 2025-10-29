@@ -28,31 +28,52 @@ public class BranchManagementController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         request.setCharacterEncoding("UTF-8");
         BranchDAO dao = new BranchDAO();
-
         String action = request.getParameter("action");
-        if ("delete".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("branchId"));
-            boolean success = dao.deleteBranch(id);
-            request.setAttribute("message", success ? "Xóa chi nhánh thành công!" : "Không thể xóa chi nhánh!");
-            request.setAttribute("msgType", success ? "success" : "danger");
-        } else if ("update".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("branchId"));
-            String name = request.getParameter("branchName");
-            String address = request.getParameter("address");
-            String phone = request.getParameter("phone");
-            boolean isActive = request.getParameter("isActive") != null;
 
-            Branch b = new Branch(id, name, address, phone, isActive);
-            boolean success = dao.updateBranch(b);
-            request.setAttribute("message", success ? "Cập nhật chi nhánh thành công!" : "Cập nhật thất bại!");
-            request.setAttribute("msgType", success ? "success" : "danger");
+        try {
+            if ("delete".equals(action)) {
+                int id = Integer.parseInt(request.getParameter("branchId"));
+                boolean ok = dao.deleteBranch(id);
+                response.sendRedirect("BranchManagement?" + (ok ? "success=delete" : "error=delete_failed"));
+            } else if ("update".equals(action)) {
+                int id = Integer.parseInt(request.getParameter("branchId"));
+                String name = request.getParameter("branchName");
+                String address = request.getParameter("address");
+                String phone = request.getParameter("phone");
+                boolean active = request.getParameter("isActive") != null;
+
+                if (name.isEmpty() || address.isEmpty() || phone.isEmpty()) {
+                    response.sendRedirect("BranchManagement?error=empty_fields");
+                    return;
+                }
+
+                if (!phone.matches("^0\\d{8,10}$")) {
+                    response.sendRedirect("BranchManagement?error=invalid_phone");
+                    return;
+                }
+
+                Branch current = dao.getBranchById(id);
+                if (current != null && !current.getPhone().equals(phone) && dao.isPhoneExists(phone)) {
+                    response.sendRedirect("BranchManagement?error=duplicate_phone");
+                    return;
+                }
+
+                Branch b = new Branch();
+                b.setBranchId(id);
+                b.setBranchName(name);
+                b.setAddress(address);
+                b.setPhone(phone);
+                b.setActive(active);
+
+                boolean ok = dao.updateBranch(b);
+                response.sendRedirect("BranchManagement?" + (ok ? "success=update" : "error=update_failed"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("BranchManagement?error=exception");
         }
-
-        // reload list
-        List<Branch> branches = dao.getAllBranches();
-        request.setAttribute("branches", branches);
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/branch_management.jsp").forward(request, response);
     }
 }

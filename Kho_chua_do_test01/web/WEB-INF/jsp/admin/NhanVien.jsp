@@ -4,6 +4,7 @@
 <%@ page import="Model.User" %>
 <%@ page import="Model.Branch" %>
 <%@ page import="Model.Role" %>
+
 <html lang="vi">
     <head>
         <meta charset="UTF-8">
@@ -120,7 +121,8 @@
                         <div class="btn-group">
                             <a href="AddUser" class="btn add">Thêm nhân viên</a>
                             <a href="ShiftUser" class="btn add">Ca làm</a>                          
-                        </div>
+                        </div>                       
+
                     </div>
 
                     <table class="emp-table">

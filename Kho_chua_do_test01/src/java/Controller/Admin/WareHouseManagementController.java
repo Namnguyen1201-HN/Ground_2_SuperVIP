@@ -6,56 +6,86 @@ import java.io.IOException;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 
 @WebServlet(name = "WareHouseManagementController", urlPatterns = {"/WareHouseManagement"})
 public class WareHouseManagementController extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        WarehouseDAO dao = new WarehouseDAO();
-        List<Warehouse> list = dao.getAllWarehouses();
-        request.setAttribute("warehouses", list);
+        resp.setContentType("text/html;charset=UTF-8");
 
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_management.jsp").forward(request, response);
+        WarehouseDAO dao = new WarehouseDAO();
+        List<Warehouse> warehouses = dao.getAllWarehouses();
+        req.setAttribute("warehouses", warehouses);
+
+        req.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_management.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
+
+        req.setCharacterEncoding("UTF-8");
         WarehouseDAO dao = new WarehouseDAO();
+        String action = req.getParameter("action");
 
-        String action = request.getParameter("action");
-        if ("delete".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("warehouseId"));
-            boolean ok = dao.deleteWarehouse(id);
-            request.setAttribute("message", ok ? "Xóa kho tổng thành công!" : "Không thể xóa kho tổng!");
-            request.setAttribute("msgType", ok ? "success" : "danger");
-
-        } else if ("update".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("warehouseId"));
-            String name = request.getParameter("warehouseName");
-            String address = request.getParameter("address");
-            String phone = request.getParameter("phone");
-            boolean isActive = request.getParameter("isActive") != null;
-
-            Warehouse w = new Warehouse(id, name, address, phone, isActive);
-            boolean ok = dao.updateWarehouse(w);
-            request.setAttribute("message", ok ? "Cập nhật thông tin kho thành công!" : "Cập nhật thất bại!");
-            request.setAttribute("msgType", ok ? "success" : "danger");
+        if (action == null || action.isEmpty()) {
+            resp.sendRedirect("WareHouseManagement");
+            return;
         }
 
-        List<Warehouse> list = dao.getAllWarehouses();
-        request.setAttribute("warehouses", list);
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_management.jsp").forward(request, response);
-    }
+        try {
+            switch (action) {
+                case "delete": {
+                    int id = Integer.parseInt(req.getParameter("warehouseId")); // name="warehouseId" trong JSP
+                    boolean ok = dao.deleteWarehouse(id);
+                    resp.sendRedirect("WareHouseManagement?" + (ok ? "success=delete" : "error=delete_failed"));
+                    break;
+                }
+                case "update": {
+                    int id = Integer.parseInt(req.getParameter("warehouseId"));
+                    String name = req.getParameter("warehouseName");
+                    String address = req.getParameter("address");
+                    String phone = req.getParameter("phone");
+                    boolean active = req.getParameter("isActive") != null;
 
-    @Override
-    public String getServletInfo() {
-        return "Quản lý kho tổng (hiển thị, sửa, xóa)";
+                    if (name == null || address == null || phone == null
+                            || name.trim().isEmpty() || address.trim().isEmpty() || phone.trim().isEmpty()) {
+                        resp.sendRedirect("WareHouseManagement?error=empty_fields");
+                        return;
+                    }
+
+                    // SĐT: bắt đầu bằng 0, tổng 9–11 số
+                    if (!phone.matches("^0\\d{8,10}$")) {
+                        resp.sendRedirect("WareHouseManagement?error=invalid_phone");
+                        return;
+                    }
+
+                    Warehouse old = dao.getWarehouseById(id);
+                    if (old != null && !old.getPhone().equals(phone) && dao.isPhoneExists(phone)) {
+                        resp.sendRedirect("WareHouseManagement?error=duplicate_phone");
+                        return;
+                    }
+
+                    Warehouse w = new Warehouse();
+                    w.setWarehouseId(id);
+                    w.setWarehouseName(name.trim());
+                    w.setAddress(address.trim());
+                    w.setPhone(phone.trim());
+                    w.setActive(active);
+
+                    boolean ok = dao.updateWarehouse(w);
+                    resp.sendRedirect("WareHouseManagement?" + (ok ? "success=update" : "error=update_failed"));
+                    break;
+                }
+                default:
+                    resp.sendRedirect("WareHouseManagement?error=invalid_action");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.sendRedirect("WareHouseManagement?error=exception");
+        }
     }
 }

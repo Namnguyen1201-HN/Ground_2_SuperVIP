@@ -66,5 +66,58 @@ public class BranchDAO extends DataBaseContext {
         return false;
     }
 
-    
+    // Kiểm tra tên chi nhánh có tồn tại chưa
+    public boolean isBranchNameExists(String branchName) {
+        String sql = "SELECT COUNT(*) FROM Branches WHERE LOWER(BranchName) = LOWER(?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, branchName.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Kiểm tra số điện thoại chi nhánh có tồn tại chưa
+    public boolean isPhoneExists(String phone) {
+        String sql = "SELECT COUNT(*) FROM Branches WHERE Phone = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, phone.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Lấy chi nhánh theo ID
+    public Branch getBranchById(int branchId) {
+        String sql = "SELECT * FROM Branches WHERE BranchID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, branchId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Branch b = new Branch();
+                    b.setBranchId(rs.getInt("BranchID"));
+                    b.setBranchName(rs.getString("BranchName"));
+                    b.setAddress(rs.getString("Address"));
+                    b.setPhone(rs.getString("Phone"));
+                    b.setActive(rs.getBoolean("IsActive"));
+                    return b;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

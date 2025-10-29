@@ -3,6 +3,7 @@ package Controller.Admin;
 import DAL.UserDAO;
 import Model.User;
 import java.io.IOException;
+import java.security.MessageDigest;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,9 +14,10 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(name = "ChangePassWordController", urlPatterns = {"/ChangePassWord"})
 public class ChangePassWordController extends HttpServlet {
 
+    // ✅ Hàm băm SHA-256
     private String hashSHA256(String password) {
         try {
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] bytes = md.digest(password.getBytes("UTF-8"));
             StringBuilder sb = new StringBuilder();
             for (byte b : bytes) {
@@ -23,7 +25,7 @@ public class ChangePassWordController extends HttpServlet {
             }
             return sb.toString();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Lỗi khi mã hóa mật khẩu", e);
         }
     }
 
@@ -38,75 +40,86 @@ public class ChangePassWordController extends HttpServlet {
             throws ServletException, IOException {
 
         request.setCharacterEncoding("UTF-8");
-        HttpSession session = request.getSession(false);
+        response.setContentType("text/html;charset=UTF-8");
 
+        HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("currentUser") == null) {
-            request.setAttribute("message", "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
-            request.setAttribute("msgType", "warning");
+            setMessage(request, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", "warning");
             request.getRequestDispatcher("Logout").forward(request, response);
             return;
         }
 
         User currentUser = (User) session.getAttribute("currentUser");
+        UserDAO dao = new UserDAO();
 
-        // 🔹 Lấy dữ liệu từ form
-        String currentPassword = request.getParameter("currentPassword");
-        String newPassword = request.getParameter("newPassword");
-        String confirmPassword = request.getParameter("confirmPassword");
+        // --- Lấy dữ liệu từ form ---
+        String currentPassword = trim(request.getParameter("currentPassword"));
+        String newPassword = trim(request.getParameter("newPassword"));
+        String confirmPassword = trim(request.getParameter("confirmPassword"));
 
-        // 1️⃣ Kiểm tra rỗng
-        if (currentPassword == null || newPassword == null || confirmPassword == null
-                || currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-            request.setAttribute("message", "Vui lòng nhập đầy đủ thông tin.");
-            request.setAttribute("msgType", "warning");
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(request, response);
+        // --- Validate cơ bản ---
+        if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            setMessage(request, "Vui lòng nhập đầy đủ thông tin!", "warning");
+            forward(request, response);
             return;
         }
 
-        UserDAO dao = new UserDAO();
         User dbUser = dao.getUserById(currentUser.getUserId());
-
         String hashedInput = hashSHA256(currentPassword);
 
-        // 2️⃣ Kiểm tra mật khẩu hiện tại (nếu có hash, bạn cần sửa đoạn này)
+        // --- Kiểm tra mật khẩu hiện tại ---
         if (dbUser == null || dbUser.getPasswordHash() == null || !dbUser.getPasswordHash().equals(hashedInput)) {
-            request.setAttribute("message", "Mật khẩu hiện tại không chính xác!");
-            request.setAttribute("msgType", "danger");
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(request, response);
+            setMessage(request, "Mật khẩu hiện tại không chính xác!", "danger");
+            forward(request, response);
             return;
         }
 
-        // 3️⃣ Kiểm tra mật khẩu mới
+        // --- Kiểm tra mật khẩu mới ---
         if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("message", "Mật khẩu xác nhận không khớp!");
-            request.setAttribute("msgType", "danger");
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(request, response);
+            setMessage(request, "Mật khẩu xác nhận không khớp!", "danger");
+            forward(request, response);
             return;
         }
 
         if (newPassword.equals(currentPassword)) {
-            request.setAttribute("message", "Mật khẩu mới phải khác mật khẩu hiện tại!");
-            request.setAttribute("msgType", "warning");
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(request, response);
+            setMessage(request, "Mật khẩu mới phải khác mật khẩu hiện tại!", "warning");
+            forward(request, response);
             return;
         }
 
-        // 4️⃣ Cập nhật DB
+        if (newPassword.length() < 6) {
+            setMessage(request, "Mật khẩu mới phải có ít nhất 6 ký tự!", "warning");
+            forward(request, response);
+            return;
+        }
+
+        // --- Cập nhật mật khẩu ---
         boolean updated = dao.updatePassword(currentUser.getUserId(), newPassword);
 
         if (updated) {
-            // Cập nhật lại đối tượng trong session
-            currentUser.setPasswordHash(hashSHA256(newPassword)); // ✅ Lưu đúng dạng hash
+            currentUser.setPasswordHash(hashSHA256(newPassword));
             session.setAttribute("currentUser", currentUser);
-
-            request.setAttribute("message", "Đổi mật khẩu thành công!");
-            request.setAttribute("msgType", "success");
+            setMessage(request, "Đổi mật khẩu thành công!", "success");
         } else {
-            request.setAttribute("message", "Đổi mật khẩu thất bại, vui lòng thử lại!");
-            request.setAttribute("msgType", "danger");
+            setMessage(request, "Đổi mật khẩu thất bại, vui lòng thử lại!", "danger");
         }
 
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(request, response);
+        forward(request, response);
+    }
+
+    // === Helper Methods ===
+    private void setMessage(HttpServletRequest req, String msg, String type) {
+        req.setAttribute("message", msg);
+        req.setAttribute("msgType", type);
+    }
+
+    private void forward(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        req.getRequestDispatcher("/WEB-INF/jsp/admin/change_password.jsp").forward(req, res);
+    }
+
+    private String trim(String s) {
+        return s == null ? "" : s.trim();
     }
 
     @Override

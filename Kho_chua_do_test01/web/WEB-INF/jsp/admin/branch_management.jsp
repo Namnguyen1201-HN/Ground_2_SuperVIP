@@ -23,8 +23,48 @@
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
                 <!-- Nội dung chính -->
-                <div class="col-md-9" style="margin-top: 60px;">
+                <div class="col-md-9" style="margin-top: 60px;">    
                     <div class="branch-container">
+
+                        <%-- HIỂN THỊ THÔNG BÁO TỪ SERVLET --%>
+                        <%
+    String success = request.getParameter("success");
+    String error = request.getParameter("error");
+                        %>
+
+                        <% if (success != null) { %>
+                        <div class="alert alert-success text-center fw-bold" role="alert">
+                            <% if ("create".equals(success)) { %>
+                            ✅ Thêm chi nhánh thành công!
+                            <% } else if ("update".equals(success)) { %>
+                            ✅ Cập nhật chi nhánh thành công!
+                            <% } else if ("delete".equals(success)) { %>
+                            ✅ Xóa chi nhánh thành công!
+                            <% } else { %>
+                            ✅ Thao tác thành công!
+                            <% } %>
+                        </div>
+
+                        <% } else if (error != null) { %>
+                        <div class="alert alert-danger text-center fw-bold" role="alert">
+                            <% if ("empty_fields".equals(error)) { %>
+                            ⚠️ Vui lòng nhập đầy đủ thông tin!
+                            <% } else if ("invalid_phone".equals(error)) { %>
+                            📵 Số điện thoại không hợp lệ (bắt đầu bằng 0 và 9–11 chữ số)!
+                            <% } else if ("duplicate_phone".equals(error)) { %>
+                            📞 Số điện thoại đã tồn tại, vui lòng nhập số khác!
+                            <% } else if ("update_failed".equals(error)) { %>
+                            ❌ Cập nhật chi nhánh thất bại!
+                            <% } else if ("delete_failed".equals(error)) { %>
+                            ❌ Xóa chi nhánh thất bại!
+                            <% } else if ("exception".equals(error)) { %>
+                            ⚠️ Đã xảy ra lỗi trong quá trình xử lý!
+                            <% } else { %>
+                            ❌ Thao tác thất bại!
+                            <% } %>
+                        </div>
+                        <% } %>
+
                         <div class="branch-header">
                             <h2><i class="fas fa-code-branch"></i> Quản lý chi nhánh</h2>
                             <form action="BranchCreate" method="get">
@@ -111,28 +151,29 @@
             </div>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script>
-            const rows = document.querySelectorAll(".branch-row");
-            const modal = document.getElementById("editModal");
-            const overlay = document.getElementById("overlay");
+                                                const rows = document.querySelectorAll(".branch-row");
+                                                const modal = document.getElementById("editModal");
+                                                const overlay = document.getElementById("overlay");
 
-            rows.forEach(row => {
-                row.addEventListener("click", () => {
-                    document.getElementById("branchId").value = row.dataset.id;
-                    document.getElementById("branchName").value = row.dataset.name;
-                    document.getElementById("address").value = row.dataset.address;
-                    document.getElementById("phone").value = row.dataset.phone;
-                    document.getElementById("isActive").checked = row.dataset.active === "true";
-                    modal.style.display = "block";
-                    overlay.style.display = "block";
-                });
-            });
+                                                rows.forEach(row => {
+                                                    row.addEventListener("click", () => {
+                                                        document.getElementById("branchId").value = row.dataset.id;
+                                                        document.getElementById("branchName").value = row.dataset.name;
+                                                        document.getElementById("address").value = row.dataset.address;
+                                                        document.getElementById("phone").value = row.dataset.phone;
+                                                        document.getElementById("isActive").checked = row.dataset.active === "true";
+                                                        modal.style.display = "block";
+                                                        overlay.style.display = "block";
+                                                    });
+                                                });
 
-            function hideModal() {
-                modal.style.display = "none";
-                overlay.style.display = "none";
-            }
+                                                function hideModal() {
+                                                    modal.style.display = "none";
+                                                    overlay.style.display = "none";
+                                                }
         </script>
 
     </body>

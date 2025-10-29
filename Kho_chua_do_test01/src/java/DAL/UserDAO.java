@@ -61,7 +61,7 @@ public class UserDAO extends DataBaseContext {
     public User getUserById(int userID) {
         User user = null;
         String query = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, "
-                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, "
+                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, u.DOB,"
                 + "r.RoleName, b.BranchName, w.WarehouseName "
                 + "FROM Users u "
                 + "INNER JOIN Roles r ON u.RoleID = r.RoleID "
@@ -89,6 +89,20 @@ public class UserDAO extends DataBaseContext {
                 user.setAddress(rs.getString("Address"));
                 user.setBranchName(rs.getString("BranchName"));
                 user.setWarehouseName(rs.getString("WarehouseName"));
+
+                // ✅ Sửa phần này — xử lý giới tính an toàn
+                Object genderObj = rs.getObject("Gender");
+                if (genderObj != null) {
+                    user.setGender(rs.getBoolean("Gender"));
+                } else {
+                    user.setGender(null);
+                }
+
+                // ✅ Đọc thêm ngày sinh nếu có
+                Timestamp dob = rs.getTimestamp("DOB");
+                if (dob != null) {
+                    user.setDob(new java.sql.Date(dob.getTime()));
+                }
             }
 
             rs.close();
@@ -193,7 +207,7 @@ public class UserDAO extends DataBaseContext {
 
         // Sử dụng try-with-resources để tự động đóng kết nối
         try (
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+                PreparedStatement ps = connection.prepareStatement(sql)) {
 
             // Gán giá trị cho tham số trong câu lệnh SQL
             ps.setString(1, identificationId);

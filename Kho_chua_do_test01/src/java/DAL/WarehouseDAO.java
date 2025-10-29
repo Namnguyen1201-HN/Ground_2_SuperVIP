@@ -11,8 +11,7 @@ public class WarehouseDAO extends DataBaseContext {
     public List<Warehouse> getAllWarehouses() {
         List<Warehouse> list = new ArrayList<>();
         String sql = "SELECT * FROM Warehouses";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 list.add(map(rs));
@@ -28,8 +27,7 @@ public class WarehouseDAO extends DataBaseContext {
     public List<Warehouse> getActiveWarehouses() {
         List<Warehouse> list = new ArrayList<>();
         String sql = "SELECT * FROM Warehouses WHERE IsActive = 1";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 list.add(map(rs));
@@ -109,4 +107,20 @@ public class WarehouseDAO extends DataBaseContext {
         }
         return false;
     }
+
+    public boolean isPhoneExists(String phone) {
+        String sql = "SELECT COUNT(*) FROM Warehouses WHERE Phone = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, phone.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }

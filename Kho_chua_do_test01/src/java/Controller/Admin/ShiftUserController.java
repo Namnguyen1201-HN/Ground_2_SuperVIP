@@ -83,6 +83,18 @@ public class ShiftUserController extends HttpServlet {
                     LocalTime start = LocalTime.parse(request.getParameter("startTime"));
                     LocalTime end = LocalTime.parse(request.getParameter("endTime"));
 
+                    // Kiểm tra logic giờ làm
+                    if (!end.isAfter(start)) {
+                        request.setAttribute("error", "Giờ kết thúc phải sau giờ bắt đầu!");
+                        doGet(request, response); // Load lại trang
+                        return;
+                    }
+                    if (end.isAfter(LocalTime.of(23, 59))) {
+                        request.setAttribute("error", "Giờ kết thúc không được vượt quá 23:59!");
+                        doGet(request, response);
+                        return;
+                    }
+
                     Shift s = new Shift();
                     s.setShiftName(name);
                     s.setStartTime(start);
@@ -95,6 +107,18 @@ public class ShiftUserController extends HttpServlet {
                     String name = request.getParameter("shiftName");
                     LocalTime start = LocalTime.parse(request.getParameter("startTime"));
                     LocalTime end = LocalTime.parse(request.getParameter("endTime"));
+
+                    // Kiểm tra logic giờ làm
+                    if (!end.isAfter(start)) {
+                        request.setAttribute("error", "Giờ kết thúc phải sau giờ bắt đầu!");
+                        doGet(request, response); // Load lại trang
+                        return;
+                    }
+                    if (end.isAfter(LocalTime.of(23, 59))) {
+                        request.setAttribute("error", "Giờ kết thúc không được vượt quá 23:59!");
+                        doGet(request, response);
+                        return;
+                    }
 
                     Shift s = new Shift();
                     s.setShiftID(id);

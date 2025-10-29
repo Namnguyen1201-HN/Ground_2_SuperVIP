@@ -19,12 +19,10 @@
                     <div class="branch-form-container">
                         <h5><i class="fas fa-code-branch"></i> Tạo chi nhánh mới</h5>
 
-                        <%
-                            String message = (String) request.getAttribute("message");
-                            String type = (String) request.getAttribute("msgType");
-                            if (message != null) {
-                        %>
-                        <div class="alert alert-<%= type != null ? type : "info" %> mt-3"><%= message %></div>
+                        <% if (request.getAttribute("message") != null) { %>
+                        <div class="alert alert-<%= request.getAttribute("msgType") %> text-center fw-bold">
+                            <%= request.getAttribute("message") %>
+                        </div>
                         <% } %>
 
                         <div class="form-section">

@@ -3,66 +3,81 @@ package Controller.Admin;
 import DAL.WarehouseDAO;
 import Model.Warehouse;
 import java.io.IOException;
+import java.util.regex.Pattern;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
 
 @WebServlet(name = "WareHouseCreateController", urlPatterns = {"/WareHouseCreate"})
 public class WareHouseCreateController extends HttpServlet {
 
+    private static final Pattern PHONE_REGEX = Pattern.compile("^0\\d{8,10}$");
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Hiển thị trang tạo mới
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(request, response);
+        req.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        request.setCharacterEncoding("UTF-8");
-        String name = request.getParameter("warehouseName");
-        String address = request.getParameter("address");
-        String phone = request.getParameter("phone");
+        req.setCharacterEncoding("UTF-8");
 
-        // ⚙️ Kiểm tra dữ liệu đầu vào
-        if (name == null || name.trim().isEmpty()
-                || address == null || address.trim().isEmpty()
-                || phone == null || phone.trim().isEmpty()) {
+        String name = safe(req.getParameter("warehouseName"));
+        String address = safe(req.getParameter("address"));
+        String phone = safe(req.getParameter("phone"));
+        boolean active = req.getParameter("isActive") != null;
 
-            request.setAttribute("message", "Vui lòng nhập đầy đủ thông tin kho tổng!");
-            request.setAttribute("msgType", "danger");
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(request, response);
+        WarehouseDAO dao = new WarehouseDAO();
+        
+        if (name.isEmpty() || address.isEmpty() || phone.isEmpty()) {
+            setMsg(req, "Vui lòng nhập đầy đủ thông tin!", "warning");
+            forward(req, resp);
+            return;
+        }
+
+        if (!PHONE_REGEX.matcher(phone).matches()) {
+            setMsg(req, "Số điện thoại không hợp lệ! (Bắt đầu bằng 0 và 9–11 số)", "danger");
+            forward(req, resp);
+            return;
+        }
+
+        // ✅ Kiểm tra trùng số điện thoại
+        if (dao.isPhoneExists(phone)) {
+            setMsg(req, "📞 Số điện thoại đã tồn tại, vui lòng nhập số khác!", "danger");
+            forward(req, resp);
             return;
         }
 
         Warehouse w = new Warehouse();
-        w.setWarehouseName(name.trim());
-        w.setAddress(address.trim());
-        w.setPhone(phone.trim());
-        w.setActive(true); // Mặc định kho mới là hoạt động
+        w.setWarehouseName(name);
+        w.setAddress(address);
+        w.setPhone(phone);
+        w.setActive(active);
 
-        WarehouseDAO dao = new WarehouseDAO();
+        
         boolean success = dao.insertWarehouse(w);
-
         if (success) {
-            // ✅ Lưu thành công, chuyển hướng về trang danh sách
-            request.getSession().setAttribute("flashMessage", "Tạo kho tổng mới thành công!");
-            request.getSession().setAttribute("flashType", "success");
-            response.sendRedirect("WareHouseManagement");
+            resp.sendRedirect("WareHouseManagement?success=create");
         } else {
-            // ❌ Lưu thất bại
-            request.setAttribute("message", "Không thể tạo kho tổng. Vui lòng thử lại!");
-            request.setAttribute("msgType", "danger");
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(request, response);
+            setMsg(req, "❌ Thêm kho thất bại. Vui lòng thử lại!", "danger");
+            forward(req, resp);
         }
     }
 
-    @Override
-    public String getServletInfo() {
-        return "Tạo kho tổng mới";
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
+    }
+
+    private void setMsg(HttpServletRequest req, String msg, String type) {
+        req.setAttribute("message", msg);
+        req.setAttribute("msgType", type);
+    }
+
+    private void forward(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        req.getRequestDispatcher("/WEB-INF/jsp/admin/warehouse_create.jsp").forward(req, resp);
     }
 }

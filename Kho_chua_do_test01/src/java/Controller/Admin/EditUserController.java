@@ -1,167 +1,197 @@
 package Controller.Admin;
 
-import DAL.UserDAO;
-import DAL.RoleDAO;
-import DAL.WarehouseDAO;
-import DAL.ShiftDAO;
-import DAL.BranchDAO;
-import Model.Branch;
-import Model.User;
-import Model.Role;
-import Model.Warehouse;
-import Model.Shift;
-
-import java.io.IOException;
-import java.util.List;
-import jakarta.servlet.ServletException;
+import DAL.*;
+import Model.*;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.sql.Date;
+import java.util.List;
+import java.util.regex.Pattern;
 
 @WebServlet(name = "EditUserController", urlPatterns = {"/EditUser"})
 public class EditUserController extends HttpServlet {
 
+    private final UserDAO userDAO = new UserDAO();
+    private final RoleDAO roleDAO = new RoleDAO();
+    private final BranchDAO branchDAO = new BranchDAO();
+    private final WarehouseDAO warehouseDAO = new WarehouseDAO();
+    private final ShiftDAO shiftDAO = new ShiftDAO();
+
+    private static final Pattern EMAIL_REGEX = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern PHONE_REGEX = Pattern.compile("^\\d{9,11}$");
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        String userIdParam = request.getParameter("userId");
-        if (userIdParam == null || userIdParam.trim().isEmpty()) {
-            response.sendRedirect("NhanVien");
+        int id = parseInt(req.getParameter("userId"));
+        if (id <= 0) {
+            res.sendRedirect("NhanVien?error=invalid_id");
             return;
         }
 
-        try {
-            int userId = Integer.parseInt(userIdParam);
-
-            UserDAO userDAO = new UserDAO();
-            RoleDAO roleDAO = new RoleDAO();
-            BranchDAO branchDAO = new BranchDAO();
-            WarehouseDAO warehouseDAO = new WarehouseDAO();
-            ShiftDAO shiftDAO = new ShiftDAO();
-
-            User user = userDAO.getUserById(userId);
-            if (user == null) {
-                response.sendRedirect("NhanVien");
-                return;
-            }
-
-            // 🔹 Lấy danh sách ca làm + ca hiện tại
-            List<Shift> shifts = shiftDAO.getAll();
-            Integer currentShiftId = userDAO.getShiftIdByUserId(userId);
-            user.setShiftID(currentShiftId);
-
-            // 🔹 Lấy danh sách role, branch, warehouse
-            List<Role> roles = roleDAO.getAllRoles();
-            List<Branch> branches = branchDAO.getAllBranches();
-            List<Warehouse> warehouses = warehouseDAO.getAllWarehouses();
-
-            // 🔹 Đẩy dữ liệu sang JSP
-            request.setAttribute("user", user);
-            request.setAttribute("roles", roles);
-            request.setAttribute("branches", branches);
-            request.setAttribute("warehouses", warehouses);
-            request.setAttribute("shifts", shifts);
-
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/EditUser.jsp").forward(request, response);
-
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            response.sendRedirect("NhanVien");
+        User user = userDAO.getUserById(id);
+        if (user == null) {
+            res.sendRedirect("NhanVien?error=user_not_found");
+            return;
         }
+
+        user.setShiftID(userDAO.getShiftIdByUserId(id));
+        req.setAttribute("user", user);
+        req.setAttribute("roles", roleDAO.getAllRoles());
+        req.setAttribute("branches", branchDAO.getAllBranches());
+        req.setAttribute("warehouses", warehouseDAO.getAllWarehouses());
+        req.setAttribute("shifts", shiftDAO.getAll());
+
+        req.getRequestDispatcher("/WEB-INF/jsp/admin/EditUser.jsp").forward(req, res);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        request.setCharacterEncoding("UTF-8");
-        String action = request.getParameter("action");
-        UserDAO userDAO = new UserDAO();
+        req.setCharacterEncoding("UTF-8");
+        String action = safe(req.getParameter("action"));
 
-        try {
-            if ("delete".equals(action)) {
-                int userId = Integer.parseInt(request.getParameter("userId"));
-                boolean deleted = userDAO.deleteUser(userId);
-                response.sendRedirect(deleted ? "NhanVien?success=delete" : "NhanVien?error=delete_failed");
-                return;
-            }
-
-            if ("update".equals(action)) {
-                int userId = Integer.parseInt(request.getParameter("userID"));
-                String fullName = request.getParameter("fullName");
-                String email = request.getParameter("email");
-                String phone = request.getParameter("phone");
-                String address = request.getParameter("address");
-                String genderParam = request.getParameter("gender");
-                String dobParam = request.getParameter("dob");
-                String roleParam = request.getParameter("roleID");
-                String branchParam = request.getParameter("branchID");
-                String warehouseParam = request.getParameter("warehouseID");
-                String shiftParam = request.getParameter("shiftID");
-                String isActiveParam = request.getParameter("isActive");
-
-                User user = userDAO.getUserById(userId);
-                if (user == null) {
-                    response.sendRedirect("NhanVien");
-                    return;
-                }
-
-                // --- Cập nhật thông tin cơ bản ---
-                user.setFullName(fullName);
-                user.setEmail(email);
-                user.setPhone(phone);
-                user.setAddress(address);
-
-                if (genderParam != null) {
-                    user.setGender("Nam".equalsIgnoreCase(genderParam));
-                }
-
-                user.setDob((dobParam != null && !dobParam.isEmpty()) ? java.sql.Date.valueOf(dobParam) : null);
-
-                if (roleParam != null && !roleParam.isEmpty()) {
-                    user.setRoleId(Integer.parseInt(roleParam));
-                }
-
-                // ⚙️ Sửa lại: set theo kiểu int (0,1,2)
-                if (isActiveParam != null && !isActiveParam.isEmpty()) {
-                    user.setIsActive(Integer.parseInt(isActiveParam));
-                }
-
-                // --- Cập nhật chi nhánh / kho theo vai trò ---
-                if (user.getRoleId() == 3) { // Quản lý kho
-                    user.setWarehouseId(warehouseParam != null && !warehouseParam.isEmpty()
-                            ? Integer.parseInt(warehouseParam) : null);
-                    user.setBranchId(null);
-                } else { // ✅ Các vai trò còn lại đều thuộc chi nhánh
-                    user.setBranchId(branchParam != null && !branchParam.isEmpty()
-                            ? Integer.parseInt(branchParam) : null);
-                    user.setWarehouseId(null);
-                }
-
-                // --- Cập nhật thông tin ---
-                boolean updated = userDAO.updateUser(user);
-
-                // --- Cập nhật ca làm ---
-                if (shiftParam != null && !shiftParam.isEmpty()) {
-                    int newShiftID = Integer.parseInt(shiftParam);
-                    userDAO.updateUserShift(userId, newShiftID);
-                } else {
-                    userDAO.deleteUserShift(userId);
-                }
-
-                response.sendRedirect(updated ? "NhanVien?success=update" : "NhanVien?error=update_failed");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.sendRedirect("NhanVien?error=server");
+        if ("delete".equals(action)) {
+            handleDelete(req, res);
+        } else if ("update".equals(action)) {
+            handleUpdate(req, res);
+        } else {
+            res.sendRedirect("NhanVien?error=invalid_action");
         }
+    }
+
+    private void handleDelete(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        int id = parseInt(req.getParameter("userId"));
+        boolean ok = (id > 0) && userDAO.deleteUser(id);
+        res.sendRedirect(ok ? "NhanVien?success=delete" : "NhanVien?error=delete_failed");
+    }
+
+    private void handleUpdate(HttpServletRequest req, HttpServletResponse res)
+            throws IOException, ServletException {
+
+        int id = parseInt(req.getParameter("userID"));
+        User u = userDAO.getUserById(id);
+        if (u == null) {
+            res.sendRedirect("NhanVien?error=user_not_found");
+            return;
+        }
+
+        String name = safe(req.getParameter("fullName"));
+        String email = safe(req.getParameter("email"));
+        String phone = safe(req.getParameter("phone"));
+
+        // --- VALIDATE ---
+        if (name.isEmpty() || email.isEmpty() || phone.isEmpty()) {
+            req.setAttribute("error", "Vui lòng nhập đầy đủ thông tin!");
+            reloadForm(req, res, u);
+            return;
+        }
+        if (!EMAIL_REGEX.matcher(email).matches()) {
+            req.setAttribute("error", "Email không hợp lệ!");
+            reloadForm(req, res, u);
+            return;
+        }
+        if (!PHONE_REGEX.matcher(phone).matches()) {
+            req.setAttribute("error", "Số điện thoại không hợp lệ!");
+            reloadForm(req, res, u);
+            return;
+        }
+
+        // --- Validate trùng lặp ---
+        if (userDAO.isEmailExists(email) && !email.equalsIgnoreCase(u.getEmail())) {
+            req.setAttribute("error", "Email đã tồn tại!");
+            reloadForm(req, res, u);
+            return;
+        }
+        if (userDAO.isPhoneExists(phone) && !phone.equals(u.getPhone())) {
+            req.setAttribute("error", "Số điện thoại đã tồn tại!");
+            reloadForm(req, res, u);
+            return;
+        }
+
+        // --- GÁN DỮ LIỆU ---
+        u.setFullName(name);
+        u.setEmail(email);
+        u.setPhone(phone);
+        u.setAddress(safe(req.getParameter("address")));
+        u.setGender("Nam".equalsIgnoreCase(req.getParameter("gender")));
+
+        String dob = safe(req.getParameter("dob"));
+        if (!dob.isEmpty()) {
+            u.setDob(Date.valueOf(dob));
+        }
+
+        u.setRoleId(parseInt(req.getParameter("roleID")));
+        u.setIsActive(parseInt(req.getParameter("isActive")));
+
+        if (u.getRoleId() == 3) { // Quản lý kho
+            u.setWarehouseId(parseNullable(req.getParameter("warehouseID")));
+            u.setBranchId(null);
+        } else {
+            u.setBranchId(parseNullable(req.getParameter("branchID")));
+            u.setWarehouseId(null);
+        }
+
+        boolean updated = userDAO.updateUser(u);
+
+        String shift = safe(req.getParameter("shiftID"));
+        if (!shift.isEmpty()) {
+            userDAO.updateUserShift(id, parseInt(shift));
+        } else {
+            userDAO.deleteUserShift(id);
+        }
+
+        if (updated) {
+            res.sendRedirect("NhanVien?success=update");
+        } else {
+            req.setAttribute("error", "Cập nhật thất bại! Vui lòng thử lại.");
+            reloadForm(req, res, u);
+        }
+    }
+
+    // --- Helper ---
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
+    }
+
+    private int parseInt(String s) {
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private Integer parseNullable(String s) {
+        try {
+            return (s == null || s.trim().isEmpty()) ? null : Integer.parseInt(s.trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void redirect(HttpServletResponse res, String err) throws IOException {
+        res.sendRedirect("NhanVien?error=" + err);
+    }
+
+    private void reloadForm(HttpServletRequest req, HttpServletResponse res, User user)
+            throws ServletException, IOException {
+
+        req.setAttribute("user", user);
+        req.setAttribute("roles", roleDAO.getAllRoles());
+        req.setAttribute("branches", branchDAO.getAllBranches());
+        req.setAttribute("warehouses", warehouseDAO.getAllWarehouses());
+        req.setAttribute("shifts", shiftDAO.getAll());
+
+        req.getRequestDispatcher("/WEB-INF/jsp/admin/EditUser.jsp").forward(req, res);
     }
 
     @Override
     public String getServletInfo() {
-        return "Hiển thị, cập nhật và xóa nhân viên, với logic vai trò và ca làm";
+        return "EditUserController optimized with input validation";
     }
 }

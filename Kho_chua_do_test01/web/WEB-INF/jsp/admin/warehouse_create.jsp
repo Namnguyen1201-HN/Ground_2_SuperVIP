@@ -23,12 +23,10 @@
                             <h2><i class="fa-solid fa-warehouse"></i> Tạo kho tổng mới</h2>
                         </div>
 
-                        <% 
-                            String message = (String) request.getAttribute("message");
-                            String msgType = (String) request.getAttribute("msgType");
-                            if (message != null) { 
-                        %>
-                        <div class="alert alert-<%= msgType != null ? msgType : "info" %>"><%= message %></div>
+                        <% if (request.getAttribute("message") != null) { %>
+                        <div class="alert alert-<%= request.getAttribute("msgType") %> text-center fw-bold">
+                            <%= request.getAttribute("message") %>
+                        </div>
                         <% } %>
 
                         <!-- Thông tin kho tổng -->

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*, Model.Role, Model.Branch, Model.Warehouse, Model.Shift, Model.User" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -22,8 +23,8 @@
 
         <div class="staff-edit-container">
             <div class="staff-edit-header">
-                <h2>Chỉnh sửa nhân viên</h2>
-            </div>
+                <h2>Chỉnh sửa nhân viên</h2>              
+            </div>                    
 
             <!-- FORM CHỈNH SỬA NHÂN VIÊN -->
             <form action="EditUser" method="post" id="editUserForm">
@@ -156,7 +157,16 @@
                         </div>
                     </div>
                 </div>
-
+                <%
+                    String error = (String) request.getAttribute("error");
+                    if (error != null) {
+                %>
+                <div style="color:red; font-weight:bold; text-align:center; padding:8px 0;">
+                    Email đã tồn tại!
+                </div>
+                <%
+                    }
+                %>
                 <!-- Nút hành động -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn-save">
@@ -175,6 +185,7 @@
                         <i class="fas fa-trash"></i> Sa thải
                     </a>
                 </div>
+
             </form>
 
             <!-- Form xóa nhân viên (POST riêng để tránh nested form) -->
@@ -208,6 +219,28 @@
 
                 roleSelect.addEventListener("change", toggleFields);
                 toggleFields(); // Chạy khi load trang
+
+                document.getElementById("editUserForm").addEventListener("submit", function (e) {
+                    const name = this.fullName.value.trim();
+                    const email = this.email.value.trim();
+                    const phone = this.phone.value.trim();
+                    const EMAIL_REGEX = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$/;
+                    const PHONE_REGEX = /^\d{9,11}$/;
+
+                    let msg = "";
+                    if (!name)
+                        msg = "Họ tên không được để trống!";
+                    else if (!EMAIL_REGEX.test(email))
+                        msg = "Email không hợp lệ!";
+                    else if (!PHONE_REGEX.test(phone))
+                        msg = "Số điện thoại phải từ 9–11 số!";
+
+                    if (msg) {
+                        alert(msg);
+                        e.preventDefault();
+                    }
+                });
+
             });
         </script>
     </body>
