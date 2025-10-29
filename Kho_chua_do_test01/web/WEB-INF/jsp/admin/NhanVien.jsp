@@ -20,7 +20,7 @@
             <!-- Sidebar + Main -->
             <div class="content">
                 <!-- Sidebar filters -->
-                <aside class="sidebar">
+                <aside class="sidebar" style="margin-top: 70px">
                     <h2>Danh sách nhân viên</h2>
                     <form action="NhanVien" method="get">
 
@@ -108,7 +108,7 @@
                 </aside>
 
                 <!-- Main content -->
-                <main class="main-content">
+                <main class="main-content" style="margin-top: 13px;">
                     <div class="toolbar">
                         <form action="NhanVien" method="get" class="search-bar">
                             <div>

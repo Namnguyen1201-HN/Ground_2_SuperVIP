@@ -64,7 +64,7 @@ public class LoginController extends HttpServlet {
         try {
             String hashedPassword = hashSHA256(password.trim());
             User user = userDAO.authenticateUser(username.trim(), hashedPassword);
-            
+
             if (user == null) {
                 forwardToLoginWithError(request, response, "Tên đăng nhập hoặc mật khẩu không chính xác!");
                 return;
@@ -83,7 +83,16 @@ public class LoginController extends HttpServlet {
 
             // --- Authentication successful, create session ---
             HttpSession session = request.getSession();
-            session.setAttribute("currentUser", user); // Store the whole user object
+            session.setAttribute("currentUser", user);
+            session.setAttribute("userID", user.getUserId());
+            session.setAttribute("username", username.trim());
+            session.setAttribute("roleName", user.getRoleName());
+            session.setAttribute("roleID", user.getRoleId());
+            session.setAttribute("branchID", user.getBranchId());
+            session.setAttribute("warehouseId", user.getWarehouseId()); // ✅ dùng key này
+            session.setAttribute("fullName", user.getFullName());
+            session.setAttribute("email", user.getEmail());
+            session.setAttribute("phone", user.getPhone());
 
             // Set session timeout based on "Remember Me"
             if ("on".equals(remember)) {
@@ -107,7 +116,7 @@ public class LoginController extends HttpServlet {
     private void redirectByRole(HttpServletResponse response, int roleID) throws IOException {
         switch (roleID) {
             case ROLE_ADMIN:
-                
+
             case ROLE_MANAGER:
                 response.sendRedirect("TongQuan");
                 break;

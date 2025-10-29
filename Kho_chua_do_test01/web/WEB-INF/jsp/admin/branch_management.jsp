@@ -23,7 +23,7 @@
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
                 <!-- Nội dung chính -->
-                <div class="col-md-9">
+                <div class="col-md-9" style="margin-top: 60px;">
                     <div class="branch-container">
                         <div class="branch-header">
                             <h2><i class="fas fa-code-branch"></i> Quản lý chi nhánh</h2>

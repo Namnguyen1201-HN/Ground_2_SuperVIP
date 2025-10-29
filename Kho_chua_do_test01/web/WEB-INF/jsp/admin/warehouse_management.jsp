@@ -17,7 +17,7 @@
             <div class="row">
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
-                <div class="col-md-9">
+                <div class="col-md-9" style="margin-top: 60px;">
                     <div class="warehouse-container">
                         <div class="warehouse-header">
                             <h2><i class="fa-solid fa-warehouse"></i> Quản lý kho tổng</h2>

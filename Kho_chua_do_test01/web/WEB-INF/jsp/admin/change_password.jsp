@@ -17,7 +17,7 @@
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
                 <!-- Main Content -->
-                <div class="col-md-9">
+                <div class="col-md-9" style="margin-top: 60px;">
                     <div class="card shadow-sm" style="width: 1000px;">
                         <div class="card-body">
                             <h5 class="mb-4">

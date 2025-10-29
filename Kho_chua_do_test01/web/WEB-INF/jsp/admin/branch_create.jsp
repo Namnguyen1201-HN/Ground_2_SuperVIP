@@ -15,7 +15,7 @@
             <div class="row">
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
-                <div class="col-md-9">
+                <div class="col-md-9" style="margin-top: 60px;">
                     <div class="branch-form-container">
                         <h5><i class="fas fa-code-branch"></i> Tạo chi nhánh mới</h5>
 

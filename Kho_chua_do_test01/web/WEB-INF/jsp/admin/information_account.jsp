@@ -29,7 +29,7 @@
             <div class="row">
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
-                <div class="col-md-9 col-lg-9">
+                <div class="col-md-9 col-lg-9" style="margin-top: 60px;">
                     <div class="card shadow-sm p-4" style="width: 965px;">
                         <h5 class="mb-3"><i class="bi bi-info-circle"></i> Thông tin tài khoản</h5>
 
