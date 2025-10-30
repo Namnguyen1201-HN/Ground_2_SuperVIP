@@ -123,4 +123,61 @@ public class WarehouseDAO extends DataBaseContext {
         return false;
     }
 
+    /**
+     * Đếm tổng số kho
+     */
+    public int countWarehouses() {
+        String sql = "SELECT COUNT(*) FROM Warehouses";
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * Lấy danh sách kho theo trang
+     */
+    public List<Warehouse> getWarehousesPaged(int page, int pageSize) {
+        List<Warehouse> list = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+
+        // SQL Server:
+        String sql = """
+        SELECT WarehouseID, WarehouseName, Address, Phone, IsActive
+        FROM Warehouses
+        ORDER BY WarehouseID
+        OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+    """;
+
+        // Nếu dùng MySQL/MariaDB, thay bằng:
+        // String sql = "SELECT WarehouseID, WarehouseName, Address, Phone, IsActive FROM Warehouses ORDER BY WarehouseID LIMIT ? OFFSET ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            // SQL Server
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
+
+            // MySQL thì:
+            // ps.setInt(1, pageSize);
+            // ps.setInt(2, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Warehouse w = new Warehouse();
+                    w.setWarehouseId(rs.getInt("WarehouseID"));
+                    w.setWarehouseName(rs.getString("WarehouseName"));
+                    w.setAddress(rs.getString("Address"));
+                    w.setPhone(rs.getString("Phone"));
+                    w.setActive(rs.getBoolean("IsActive"));
+                    list.add(w);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
 }

@@ -13,13 +13,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(name = "WHImportRequestController", urlPatterns = {"/wh-import"})
 public class WHImportRequestController extends HttpServlet {
 
-    private static final int DEFAULT_PAGE_SIZE = 10;
+    // ===== PAGE SIZE CỐ ĐỊNH =====
+    private static final int PAGE_SIZE = 6; // đổi số này nếu muốn nhiều/ít dòng hơn
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -34,100 +37,89 @@ public class WHImportRequestController extends HttpServlet {
         String warehouseId = String.valueOf(session.getAttribute("warehouseId"));
 
         // 2) Filters
-        String fromDate = nvl(request.getParameter("fromDate"));
-        String toDate = nvl(request.getParameter("toDate"));
-        String branchId = nvl(request.getParameter("branchId"));
+        String fromDate   = nvl(request.getParameter("fromDate"));
+        String toDate     = nvl(request.getParameter("toDate"));
+        String branchId   = nvl(request.getParameter("branchId"));
         String supplierId = nvl(request.getParameter("supplierId"));
-        String status = nvl(request.getParameter("status")); // "", pending, processing, completed
+        String status     = nvl(request.getParameter("status")); // "", pending, processing, completed
 
-        // 3) Pagination
-        int currentPage = parseIntOrDefault(request.getParameter("page"), 1);
-        int itemsPerPage = parseIntOrDefault(request.getParameter("recordsPerPage"), DEFAULT_PAGE_SIZE);
-        if (currentPage < 1) {
-            currentPage = 1;
-        }
-        if (itemsPerPage < 1) {
-            itemsPerPage = DEFAULT_PAGE_SIZE;
-        }
+        // 3) Pagination (chỉ có currentPage, page size cố định)
+        int currentPage  = parseIntOrDefault(request.getParameter("page"), 1);
+        if (currentPage < 1) currentPage = 1;
 
         StockMovementsRequestDAO dao = new StockMovementsRequestDAO();
-        StockMovementDetailDAO ddao = new StockMovementDetailDAO();
+        StockMovementDetailDAO ddao  = new StockMovementDetailDAO();
 
         try {
-            // ========================== OPTION A (GIỮ DAO NHƯ CŨ) ==========================
-            // DAO vẫn nhận status; controller sẽ TÍNH LẠI trạng thái để đảm bảo hiển thị đúng.
-            int totalItems = dao.getImportRequestsCount(
-                    warehouseId, fromDate, toDate, branchId, supplierId, status
+            
+            // =====================================================================================
+            // ===== [NEW] — TÍNH STATUS TRƯỚC → LỌC THEO STATUS ĐÃ TÍNH → PHÂN TRANG =====
+            final int BIG_PAGE = 1_000_000; // lấy “đủ lớn” để lọc nội bộ (nếu cần tối ưu sẽ refactor DAO)
+            // KHÔNG lọc status ở DB
+            List<StockMovementsRequest> all = dao.getImportRequestsWithFilter(
+                    warehouseId, fromDate, toDate, branchId, supplierId,
+                    /*status=*/"", 1, BIG_PAGE
             );
 
-            int totalPages = totalItems > 0
-                    ? (int) Math.ceil((double) totalItems / itemsPerPage)
-                    : 1;
-
-            if (currentPage > totalPages && totalPages > 0) {
-                currentPage = totalPages;
-                String redirect = buildRedirectUrl("wh-import", fromDate, toDate, branchId, supplierId, status, itemsPerPage, currentPage);
-                response.sendRedirect(redirect);
-                return;
-            }
-
-            List<StockMovementsRequest> importRequests = dao.getImportRequestsWithFilter(
-                    warehouseId, fromDate, toDate, branchId, supplierId, status, currentPage, itemsPerPage
-            );
-
-            // === TÍNH LẠI TRẠNG THÁI THEO SCANNED CHO MỖI PHIẾU ===
-            // Quy ước:
-            // - pending: mọi dòng QuantityScanned = 0 (hoặc không có dòng)
-            // - processing: có dòng đã quét (>0) nhưng chưa đủ tất cả
-            // - completed: mọi dòng quét đủ (>= Quantity)
-            for (StockMovementsRequest m : importRequests) {
+            // Tính trạng thái hiển thị theo scan
+            for (StockMovementsRequest m : all) {
                 String computed = ddao.computeStatusByScanned(m.getMovementId());
-                m.setResponseStatus(computed); // Ghi đè để JSP hiển thị badge đúng
+                m.setResponseStatus(computed);
             }
 
-            int startItem = totalItems > 0 ? ((currentPage - 1) * itemsPerPage) + 1 : 0;
-            int endItem = Math.min(currentPage * itemsPerPage, totalItems);
+            // Lọc theo trạng thái đã tính (nếu có chọn)
+            List<StockMovementsRequest> filtered = new ArrayList<>();
+            if (status.isEmpty()) {
+                filtered = all;
+            } else {
+                for (StockMovementsRequest m : all) {
+                    if (status.equalsIgnoreCase(nvl(m.getResponseStatus()))) {
+                        filtered.add(m);
+                    }
+                }
+            }
 
-            // 6) Set attrs
-            request.setAttribute("importRequests", importRequests);
+            // PHÂN TRANG (page size cố định PAGE_SIZE)
+            int totalItems = filtered.size();
+            int totalPages = totalItems == 0 ? 1 : (int) Math.ceil((double) totalItems / PAGE_SIZE);
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            int fromIdx = (currentPage - 1) * PAGE_SIZE;                 // inclusive
+            int toIdx   = Math.min(fromIdx + PAGE_SIZE, totalItems);      // exclusive
+            if (fromIdx < 0) fromIdx = 0;
+            if (fromIdx > toIdx) fromIdx = toIdx;
+
+            List<StockMovementsRequest> pageItems = filtered.subList(fromIdx, toIdx);
+
+            int startItem = totalItems == 0 ? 0 : fromIdx + 1;
+            int endItem   = totalItems == 0 ? 0 : toIdx;
+
+            // Gắn attribute cho JSP
+            request.setAttribute("importRequests", pageItems);
+
+            // filter echo
             request.setAttribute("fromDate", fromDate);
             request.setAttribute("toDate", toDate);
             request.setAttribute("branchId", branchId);
             request.setAttribute("supplierId", supplierId);
             request.setAttribute("status", status);
 
+            // paging echo
             request.setAttribute("currentPage", currentPage);
             request.setAttribute("totalPages", totalPages);
             request.setAttribute("totalItems", totalItems);
-            request.setAttribute("itemsPerPage", itemsPerPage);
+            request.setAttribute("itemsPerPage", PAGE_SIZE); // để hiện summary thôi
             request.setAttribute("startItem", startItem);
             request.setAttribute("endItem", endItem);
 
+            // base URL (không gồm page)
+            String baseQuery = buildQueryString(fromDate, toDate, branchId, supplierId, status);
+            request.setAttribute("baseQuery", baseQuery);
+
             RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/warehouse/wh-import.jsp");
             rd.forward(request, response);
+            // =====================================================================================
 
-            // ========================== OPTION B (NẾU DAO CHƯA FILTER THEO STATUS MỚI) ==========================
-            // 1) Gọi DAO KHÔNG truyền status để lấy raw-list (toàn bộ) + đếm
-            // 2) Controller tự computeStatusByScanned() cho từng phiếu, rồi TỰ LỌC theo status
-            // 3) TỰ PHÂN TRANG lại trên danh sách đã lọc
-            //
-            // // Ví dụ (bật khi cần):
-            // List<StockMovementsRequest> all = dao.getImportRequestsWithFilter(warehouseId, fromDate, toDate, branchId, supplierId, "", 1, Integer.MAX_VALUE);
-            // List<StockMovementsRequest> filtered = new ArrayList<>();
-            // for (StockMovementsRequest m : all) {
-            //     String computed = ddao.computeStatusByScanned(m.getMovementID());
-            //     m.setResponseStatus(computed);
-            //     if (status.isEmpty() || status.equalsIgnoreCase(computed)) {
-            //         filtered.add(m);
-            //     }
-            // }
-            // int totalItemsB = filtered.size();
-            // int totalPagesB = totalItemsB > 0 ? (int)Math.ceil((double)totalItemsB/itemsPerPage) : 1;
-            // if (currentPage > totalPagesB && totalPagesB > 0) currentPage = totalPagesB;
-            // int fromIdx = Math.max(0, (currentPage-1)*itemsPerPage);
-            // int toIdx   = Math.min(totalItemsB, currentPage*itemsPerPage);
-            // List<StockMovementsRequest> pageList = filtered.subList(fromIdx, toIdx);
-            // // rồi set attribute giống như trên
         } catch (Exception ex) {
             ex.printStackTrace();
             request.setAttribute("error", "Lỗi khi tải danh sách đơn nhập hàng: " + ex.getMessage());
@@ -140,40 +132,29 @@ public class WHImportRequestController extends HttpServlet {
         return (s == null) ? "" : s.trim();
     }
 
-    private static int parseIntOrDefault(String s, int def) {
-        try {
-            return (s == null || s.trim().isEmpty()) ? def : Integer.parseInt(s.trim());
-        } catch (NumberFormatException e) {
-            return def;
-        }
+    private static int parseIntOrDefault(String s, int d) {
+        try { return Integer.parseInt(s); } catch (Exception e) { return d; }
     }
 
-    private static String buildRedirectUrl(String base,
-            String fromDate, String toDate,
-            String branchId, String supplierId, String status,
-            int itemsPerPage, int page) {
-        StringBuilder sb = new StringBuilder(base).append("?page=").append(page)
-                .append("&recordsPerPage=").append(itemsPerPage);
-        if (!fromDate.isEmpty()) {
-            sb.append("&fromDate=").append(fromDate);
-        }
-        if (!toDate.isEmpty()) {
-            sb.append("&toDate=").append(toDate);
-        }
-        if (!branchId.isEmpty()) {
-            sb.append("&branchId=").append(branchId);
-        }
-        if (!supplierId.isEmpty()) {
-            sb.append("&supplierId=").append(supplierId);
-        }
-        if (!status.isEmpty()) {
-            sb.append("&status=").append(status);
-        }
+    private static String enc(String v) {
+        return URLEncoder.encode(nvl(v), StandardCharsets.UTF_8);
+    }
+
+    /** Tạo query giữ nguyên filter, bỏ qua page (page sẽ append sau khi render link) */
+    private static String buildQueryString(String fromDate, String toDate,
+                                           String branchId, String supplierId,
+                                           String status) {
+        StringBuilder sb = new StringBuilder();
+        if (!fromDate.isEmpty())   sb.append("&fromDate=").append(enc(fromDate));
+        if (!toDate.isEmpty())     sb.append("&toDate=").append(enc(toDate));
+        if (!branchId.isEmpty())   sb.append("&branchId=").append(enc(branchId));
+        if (!supplierId.isEmpty()) sb.append("&supplierId=").append(enc(supplierId));
+        if (!status.isEmpty())     sb.append("&status=").append(enc(status));
         return sb.toString();
     }
 
     @Override
     public String getServletInfo() {
-        return "Hiển thị danh sách phiếu nhập kho (quản lý kho)";
+        return "Danh sách đơn nhập hàng (phân trang với page size cố định).";
     }
 }

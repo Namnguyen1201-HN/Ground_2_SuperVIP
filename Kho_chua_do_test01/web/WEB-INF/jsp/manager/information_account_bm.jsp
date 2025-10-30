@@ -94,7 +94,7 @@
 
                                     <div class="mb-3">
                                         <label class="form-label">CCCD/Hộ chiếu:</label>
-                                        <input type="text" class="form-control" name="identificationId"
+                                        <input type="text" class="form-control" name="identificationId" maxlength="12" title="CCCD phải gồm đúng 12 chữ số">
                                                value="<%= (user!=null && user.getIdentificationId()!=null) ? user.getIdentificationId() : "" %>">
                                     </div>
                                 </div>

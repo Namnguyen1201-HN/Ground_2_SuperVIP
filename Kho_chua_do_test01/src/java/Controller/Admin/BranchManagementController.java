@@ -13,14 +13,35 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(name = "BranchManagementController", urlPatterns = {"/BranchManagement"})
 public class BranchManagementController extends HttpServlet {
 
+    private static final int PAGE_SIZE = 5; // chỉnh theo ý bạn
+
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
 
-        BranchDAO dao = new BranchDAO();
-        List<Branch> branches = dao.getAllBranches();
+        BranchDAO dao = new BranchDAO();              
+        
+        // Lấy page hiện tại
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            try { page = Math.max(1, Integer.parseInt(pageParam)); } catch (NumberFormatException ignored) {}
+        }
+
+        int totalItems = dao.countBranches();
+        int totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        if (totalPages == 0) totalPages = 1; // để tránh chia 0 & giữ UI ổn định
+        if (page > totalPages) page = totalPages;
+
+        List<Branch> branches = dao.getBranchesPaged(page, PAGE_SIZE);
+
         request.setAttribute("branches", branches);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", PAGE_SIZE);
+        request.setAttribute("totalItems", totalItems);
 
         request.getRequestDispatcher("/WEB-INF/jsp/admin/branch_management.jsp").forward(request, response);
     }
@@ -33,11 +54,16 @@ public class BranchManagementController extends HttpServlet {
         BranchDAO dao = new BranchDAO();
         String action = request.getParameter("action");
 
+        // Lấy page để redirect về đúng trang sau khi thao tác
+        String page = request.getParameter("page");
+        String pageSuffix = (page != null && !page.isBlank()) ? "&page=" + page : "";
+        
         try {
             if ("delete".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("branchId"));
                 boolean ok = dao.deleteBranch(id);
                 response.sendRedirect("BranchManagement?" + (ok ? "success=delete" : "error=delete_failed"));
+                
             } else if ("update".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("branchId"));
                 String name = request.getParameter("branchName");

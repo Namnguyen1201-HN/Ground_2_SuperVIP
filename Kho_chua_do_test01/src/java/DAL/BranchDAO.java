@@ -120,4 +120,57 @@ public class BranchDAO extends DataBaseContext {
         return null;
     }
 
+    // Đếm tổng số chi nhánh
+    public int countBranches() {
+        String sql = "SELECT COUNT(*) FROM Branches";
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+// Lấy danh sách chi nhánh theo trang
+    public List<Branch> getBranchesPaged(int page, int pageSize) {
+        List<Branch> list = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+
+        // Nếu bạn dùng SQL Server:
+        String sql = """
+        SELECT BranchID, BranchName, Address, Phone, IsActive
+        FROM Branches
+        ORDER BY BranchID
+        OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+    """;
+
+        // Nếu bạn dùng MySQL/MariaDB, thay bằng:
+        // String sql = "SELECT BranchID, BranchName, Address, Phone, IsActive FROM Branches ORDER BY BranchID LIMIT ? OFFSET ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            // SQL Server
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
+
+            // MySQL/MariaDB thì đảo ngược hai dòng trên:
+            // ps.setInt(1, pageSize);
+            // ps.setInt(2, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Branch b = new Branch();
+                    b.setBranchId(rs.getInt("BranchID"));
+                    b.setBranchName(rs.getString("BranchName"));
+                    b.setAddress(rs.getString("Address"));
+                    b.setPhone(rs.getString("Phone"));
+                    b.setActive(rs.getBoolean("IsActive"));
+                    list.add(b);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
 }

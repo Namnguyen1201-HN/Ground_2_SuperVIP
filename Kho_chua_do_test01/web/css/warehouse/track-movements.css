@@ -386,3 +386,89 @@ code{
         background:transparent
     }
 }
+
+/* ===== Pagination (wh-import) ===== */
+.pagination-bar{
+  display:flex;
+  justify-content:center;
+  margin-top:12px;
+}
+
+.pagination{
+  display:flex;
+  gap:6px;
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.page-item { /* holder */ }
+
+.page-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:36px;
+  padding:8px 12px;
+  font-size:14px;
+  line-height:1;
+  color:#0f172a;
+  background:#fff;
+  text-decoration:none;
+  border:1px solid #e2e8f0;
+  border-radius:10px;
+  transition:background .15s, border-color .15s, color .15s, transform .03s;
+}
+
+.page-link:hover{
+  background:#f1f5f9;
+  border-color:#cbd5e1;
+}
+
+.page-item .page-link:active{
+  transform:translateY(1px);
+}
+
+/* Trang hiện tại */
+.page-item.active .page-link{
+  background:#6366f1;
+  border-color:#6366f1;
+  color:#fff;
+}
+
+/* Vô hiệu hóa */
+.page-item.disabled .page-link{
+  opacity:.5;
+  pointer-events:none;
+}
+
+/* Dấu “…” nếu dùng li.disabled > .page-link */
+.page-item.disabled .page-link{
+  background:#fff;
+  border-color:#e2e8f0;
+  color:#94a3b8;
+}
+
+/* Tương thích nền xám nhạt */
+@media (prefers-color-scheme: dark){
+  .page-link{
+    background:#0b0f14;
+    border-color:#263241;
+    color:#d1e0ee;
+  }
+  .page-link:hover{
+    background:#111826;
+    border-color:#34465c;
+  }
+  .page-item.active .page-link{
+    background:#6366f1;
+    border-color:#6366f1;
+    color:#fff;
+  }
+  .page-item.disabled .page-link{
+    background:#0b0f14;
+    border-color:#263241;
+    color:#6b7a8c;
+  }
+}
+

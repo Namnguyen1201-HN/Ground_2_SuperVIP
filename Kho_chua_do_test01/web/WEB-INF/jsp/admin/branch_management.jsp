@@ -103,6 +103,7 @@
                                             <form action="BranchManagement" method="post" onsubmit="return confirm('Xóa chi nhánh này?');">
                                                 <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="branchId" value="<%= b.getBranchId() %>">
+                                                <input type="hidden" name="page" value="<%= request.getAttribute("currentPage") != null ? request.getAttribute("currentPage") : 1 %>">
                                                 <button type="submit" class="btn-delete"><i class="fas fa-trash"></i> Xóa</button>
                                             </form>
                                         </td>
@@ -119,6 +120,7 @@
                                     <form action="BranchManagement" method="post">
                                         <input type="hidden" name="action" value="update">
                                         <input type="hidden" id="branchId" name="branchId">
+                                        <input type="hidden" name="page" value="<%= request.getAttribute("currentPage") != null ? request.getAttribute("currentPage") : 1 %>">
 
                                         <h4><i class="fa fa-edit"></i> Chỉnh sửa chi nhánh</h4>
 
@@ -145,6 +147,40 @@
                                 <div id="overlay" class="modal-overlay"></div>
 
                             </table>
+
+                            <div class="pagination">
+                                <%
+                                    Integer currentPage = (Integer) request.getAttribute("currentPage");
+                                    Integer totalPages = (Integer) request.getAttribute("totalPages");
+                                    if (currentPage == null) currentPage = 1;
+                                    if (totalPages == null) totalPages = 1;
+
+                                    if (totalPages > 1) {
+                                %>
+                                <div>
+                                    <% if (currentPage > 1) { %>
+                                    <a href="BranchManagement?page=<%= currentPage - 1 %>">&laquo; Trước</a>
+                                    <% } else { %>
+                                    <a class="disabled" aria-disabled="true">&laquo; Trước</a>
+                                    <% } %>
+
+                                    <% for (int i = 1; i <= totalPages; i++) { %>
+                                    <% if (i == currentPage) { %>
+                                    <span class="current"><%= i %></span>
+                                    <% } else { %>
+                                    <a href="BranchManagement?page=<%= i %>"><%= i %></a>
+                                    <% } %>
+                                    <% } %>
+
+                                    <% if (currentPage < totalPages) { %>
+                                    <a href="BranchManagement?page=<%= currentPage + 1 %>">Sau &raquo;</a>
+                                    <% } else { %>
+                                    <a class="disabled" aria-disabled="true">Sau &raquo;</a>
+                                    <% } %>
+                                </div>
+                                <% } %>
+                            </div>
+
                         </div>
                     </div>
                 </div>
