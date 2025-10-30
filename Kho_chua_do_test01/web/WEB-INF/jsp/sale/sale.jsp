@@ -71,9 +71,9 @@
         </div>
         <nav class="nav-menu">
            
-            <a href="${pageContext.request.contextPath}/product" class="nav-item active"><span class="icon-products"></span> Hàng hóa</a>
+            <a href="${pageContext.request.contextPath}/sale" class="nav-item active"><span class="icon-products"></span> Hàng hóa</a>
             <a href="${pageContext.request.contextPath}/SAThongBao" class="nav-item"><span class="icon-transactions"></span> Gửi yêu cầu</a>
-            <a href="Supplier" class="nav-item"><span class="icon-partners"></span> Đối tác</a>
+            <a href="SACustomer" class="nav-item"><span class="icon-partners"></span> Đối tác</a>
 
         </nav>
 
