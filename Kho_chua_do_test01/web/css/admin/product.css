@@ -1,6 +1,89 @@
+/* =================== PHÂN TRANG (PAGINATION) =================== */
+
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.pagination-info {
+    font-size: 14px;
+    color: #4b5563;
+    margin-bottom: 8px;
+}
+
+.pagination {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #f9fafb;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    font-size: 14px;
+}
+
+.page-btn:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,123,255,0.3);
+}
+
+/* Active (trang hiện tại) */
+.page-btn.active {
+    background: linear-gradient(45deg, #007bff, #00aaff);
+    color: white;
+    border-color: transparent;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,123,255,0.3);
+}
+
+/* Disabled */
+.page-btn.disabled {
+    pointer-events: none;
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+    opacity: 0.6;
+    cursor: default;
+    box-shadow: none;
+}
+
+/* Responsive tweak */
+@media (max-width: 640px) {
+    .pagination-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .pagination {
+        margin-top: 8px;
+    }
+}
+
+
 /* =========================
    Base & Tokens
    ========================= */
+
 :root{
   --bg-page:#f5f5f5;
   --bg-surface:#fff;
@@ -229,3 +312,4 @@ body{
   .products-table{font-size:12px}
   .products-table th,.products-table td{padding:8px}
 }
+
