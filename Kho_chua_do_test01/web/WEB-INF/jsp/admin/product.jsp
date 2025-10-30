@@ -9,12 +9,6 @@
     <meta charset="UTF-8">
     <title>WM - Quản lý Hàng hóa</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/admin/product.css">
-<<<<<<< Updated upstream
-    <style>
-        body {
-            padding-top: 70px;
-        }
-=======
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
    
@@ -33,14 +27,10 @@
         .header .user-icon i { color: #fff !important; }
         .header .gradient { background: linear-gradient(45deg, #007bff, #00aaff) !important; border-radius: 50% !important; }
 
->>>>>>> Stashed changes
     </style>
 </head>
 
 <body>
-<<<<<<< Updated upstream
-<%@ include file="header_admin.jsp" %>
-=======
 
 <header class="header">
     <div class="header-main">
@@ -71,7 +61,6 @@
         </div>
     </div>
 </header>
->>>>>>> Stashed changes
 
 <div class="main-container">
     <aside class="sidebar">
@@ -341,8 +330,23 @@ if (selectAll) {
     });
 }
 
+/* Dropdown user */
+document.addEventListener('DOMContentLoaded', function () {
+    const dropdown = document.querySelector('.user-dropdown');
+    const toggle = document.getElementById('dropdownToggle');
+    const menu = document.getElementById('dropdownMenu');
 
+    toggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        dropdown.classList.toggle('active');
+    });
 
-
+    document.addEventListener('click', function (e) {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+});
+</script>
 </body>
 </html>

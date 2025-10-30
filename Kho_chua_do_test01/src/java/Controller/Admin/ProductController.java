@@ -7,7 +7,6 @@ import DAL.SupplierDAO;
 import DAL.BranchDAO;
 
 import Model.Product;
-import Model.ProductDTO;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,19 +26,19 @@ public class ProductController extends HttpServlet {
     private static final int DEFAULT_STOCK_THRESHOLD = 30;
     private static final int DEFAULT_BRANCH_ID_FOR_QTY = 1;
 
-    private ProductDAO productDAO;
-    private BrandDAO brandDAO;
+    private ProductDAO  productDAO;
+    private BrandDAO    brandDAO;
     private SupplierDAO supplierDAO;
     private CategoryDAO categoryDAO;
-    private BranchDAO branchDAO;
+    private BranchDAO   branchDAO;
 
     @Override
     public void init() {
-        productDAO = new ProductDAO();
-        brandDAO = new BrandDAO();
+        productDAO  = new ProductDAO();
+        brandDAO    = new BrandDAO();
         supplierDAO = new SupplierDAO();
         categoryDAO = new CategoryDAO();
-        branchDAO = new BranchDAO();
+        branchDAO   = new BranchDAO();
     }
 
     @Override
@@ -49,26 +48,17 @@ public class ProductController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null || action.isBlank()) {
-            action = "list";
-        }
+        if (action == null || action.isBlank()) action = "list";
 
         try {
             switch (action) {
-                case "add" ->
-                    showAddForm(request, response);
-                case "edit" ->
-                    showEditForm(request, response);
-                case "delete" ->
-                    deleteProduct(request, response);
-                case "detail" ->
-                    showDetail(request, response);
-                case "inventory" ->
-                    listInventoryByBranchPaged(request, response);
-                case "list" ->
-                    listProducts(request, response);
-                default ->
-                    listProducts(request, response);
+                case "add"       -> showAddForm(request, response);
+                case "edit"      -> showEditForm(request, response);
+                case "delete"    -> deleteProduct(request, response);
+                case "detail"    -> showDetail(request, response);
+                case "inventory" -> listInventoryByBranchPaged(request, response);
+                case "list"      -> listProducts(request, response);
+                default          -> listProducts(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -82,14 +72,11 @@ public class ProductController extends HttpServlet {
         Integer branchId = DEFAULT_BRANCH_ID_FOR_QTY;
         Object branchIdObj = session.getAttribute("branchId");
         if (branchIdObj != null) {
-            try {
-                branchId = Integer.parseInt(branchIdObj.toString());
-            } catch (NumberFormatException ignore) {
-            }
+            try { branchId = Integer.parseInt(branchIdObj.toString()); } catch (NumberFormatException ignore) {}
         }
 
         int pageSize = parseIntOrDefault(req.getParameter("pageSize"), 10);
-        int page = parseIntOrDefault(req.getParameter("page"), 1);
+        int page     = parseIntOrDefault(req.getParameter("page"), 1);
         page = Math.max(page, 1);
         int offset = (page - 1) * pageSize;
 
@@ -105,36 +92,28 @@ public class ProductController extends HttpServlet {
         req.setAttribute("pageSize", pageSize);
         req.setAttribute("products", products);
 
-        req.getRequestDispatcher("/WEB-INF/jsp/admin/product.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/jsp/manager/products.jsp").forward(req, resp);
     }
 
     /* ========================= LISTING (Product) ========================= */
     private void listProducts(HttpServletRequest request, HttpServletResponse response) throws Exception {
         String productName = trimToNull(request.getParameter("productName"));
-        if (productName == null) {
-            productName = trimToNull(request.getParameter("keyword"));
-        }
+        if (productName == null) productName = trimToNull(request.getParameter("keyword"));
 
         String[] rawCatNames = request.getParameterValues("categoryName");
         List<String> categoryNames = parseStrList(rawCatNames);
         if (categoryNames == null || categoryNames.isEmpty()) {
             List<String> fromCsv = parseCsvStrList(trimToNull(request.getParameter("categoryName")));
-            if (fromCsv != null && !fromCsv.isEmpty()) {
-                categoryNames = fromCsv;
-            }
+            if (fromCsv != null && !fromCsv.isEmpty()) categoryNames = fromCsv;
         }
 
         String stock = request.getParameter("stock");
-        if (stock == null || stock.isBlank()) {
-            stock = "all";
-        }
+        if (stock == null || stock.isBlank()) stock = "all";
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
         // === Phân trang ===
         int pageSize = parseIntOrDefault(request.getParameter("pageSize"), 15);
-        if (pageSize != 15 && pageSize != 30 && pageSize != 50) {
-            pageSize = 15; // bảo vệ
-        }
+        if (pageSize != 15 && pageSize != 30 && pageSize != 50) pageSize = 15; // bảo vệ
         int page = parseIntOrDefault(request.getParameter("page"), 1);
         page = Math.max(page, 1);
 
@@ -146,12 +125,8 @@ public class ProductController extends HttpServlet {
                 threshold
         );
         int totalPages = productDAO.calcTotalPages(totalProducts, pageSize);
-        if (totalPages == 0) {
-            totalPages = 1;
-        }
-        if (page > totalPages) {
-            page = totalPages;
-        }
+        if (totalPages == 0) totalPages = 1;
+        if (page > totalPages) page = totalPages;
 
         var products = productDAO.listProductsByPage(
                 categoryNames,
@@ -241,18 +216,13 @@ public class ProductController extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null) {
-            action = "list";
-        }
+        if (action == null) action = "list";
 
         try {
             switch (action) {
-                case "insert" ->
-                    insertProduct(request, response);
-                case "update" ->
-                    updateProduct(request, response);
-                default ->
-                    doGet(request, response);
+                case "insert" -> insertProduct(request, response);
+                case "update" -> updateProduct(request, response);
+                default       -> doGet(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -283,14 +253,11 @@ public class ProductController extends HttpServlet {
                 HttpSession session = request.getSession(false);
                 Integer branchId = DEFAULT_BRANCH_ID_FOR_QTY;
                 if (session != null && session.getAttribute("branchId") != null) {
-                    try {
-                        branchId = Integer.parseInt(session.getAttribute("branchId").toString());
-                    } catch (NumberFormatException ignore) {
-                    }
+                    try { branchId = Integer.parseInt(session.getAttribute("branchId").toString()); }
+                    catch (NumberFormatException ignore) {}
                 }
                 productDAO.setQuantityForProductAtBranch(id, branchId, newQty);
-            } catch (NumberFormatException ignore) {
-            }
+            } catch (NumberFormatException ignore) { }
         }
 
         response.sendRedirect("product?action=list");
@@ -308,66 +275,43 @@ public class ProductController extends HttpServlet {
 
     /* ========================= HELPERS ========================= */
     private void pushLookups(HttpServletRequest req) {
-        req.setAttribute("brands", brandDAO.getAll());
+        req.setAttribute("brands",     brandDAO.getAll());
         req.setAttribute("categories", categoryDAO.getAll());
-        req.setAttribute("suppliers", supplierDAO.getAllSuppliers());
-        req.setAttribute("branches", branchDAO.getAllBranches());
+        req.setAttribute("suppliers",  supplierDAO.getAllSuppliers());
+        req.setAttribute("branches",   branchDAO.getAllBranches());
     }
 
     private Integer parseIntOrNull(String s) {
-        try {
-            return (s == null || s.isBlank()) ? null : Integer.valueOf(s.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        try { return (s == null || s.isBlank()) ? null : Integer.valueOf(s.trim()); }
+        catch (NumberFormatException e) { return null; }
     }
-
     private int parseIntOrDefault(String s, int def) {
-        try {
-            return (s == null || s.isBlank()) ? def : Integer.parseInt(s.trim());
-        } catch (NumberFormatException e) {
-            return def;
-        }
+        try { return (s == null || s.isBlank()) ? def : Integer.parseInt(s.trim()); }
+        catch (NumberFormatException e) { return def; }
     }
-
     private BigDecimal parseBigDecimalOrNull(String s) {
-        try {
-            return (s == null || s.isBlank()) ? null : new BigDecimal(s.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        try { return (s == null || s.isBlank()) ? null : new BigDecimal(s.trim()); }
+        catch (NumberFormatException e) { return null; }
     }
-
     private String trimToNull(String s) {
-        if (s == null) {
-            return null;
-        }
+        if (s == null) return null;
         String t = s.trim();
         return t.isEmpty() ? null : t;
     }
-
     private List<String> parseStrList(String[] arr) {
-        if (arr == null || arr.length == 0) {
-            return null;
-        }
+        if (arr == null || arr.length == 0) return null;
         List<String> out = new ArrayList<>();
         for (String s : arr) {
             String v = trimToNull(s);
-            if (v != null) {
-                out.add(v);
-            }
+            if (v != null) out.add(v);
         }
         return out.isEmpty() ? null : out;
     }
-
     private List<String> parseCsvStrList(String csv) {
-        if (csv == null || csv.isBlank()) {
-            return null;
-        }
+        if (csv == null || csv.isBlank()) return null;
         String[] parts = csv.split(",");
         return parseStrList(parts);
     }
-
     private Product extractProductFromRequest(HttpServletRequest request) {
         Product p = new Product();
         p.setProductName(trimToNull(request.getParameter("name")));
