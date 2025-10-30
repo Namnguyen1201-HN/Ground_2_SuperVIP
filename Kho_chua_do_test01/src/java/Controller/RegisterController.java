@@ -125,8 +125,8 @@ public class RegisterController extends HttpServlet {
         if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
             return "Định dạng email không hợp lệ.";
         }
-        if (!id.replaceAll("\\s+", "").matches("\\d{9}|\\d{12}")) {
-            return "Số CMND/CCCD không hợp lệ (phải có 9 hoặc 12 chữ số).";
+        if (!id.replaceAll("\\s+", "").matches("\\d{12}")) {
+            return "Số CMND/CCCD không hợp lệ (phải có 12 chữ số).";
         }
         return null; // All validations passed
     }

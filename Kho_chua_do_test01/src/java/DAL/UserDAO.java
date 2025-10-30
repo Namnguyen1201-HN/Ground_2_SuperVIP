@@ -61,8 +61,10 @@ public class UserDAO extends DataBaseContext {
     public User getUserById(int userID) {
         User user = null;
         String query = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, "
-                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, u.DOB,"
-                + "r.RoleName, b.BranchName, w.WarehouseName "
+                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, u.DOB, "
+                + "u.IdentificationID, u.TaxNumber, u.WebURL, "
+                + // ✅ THÊM CÁC CỘT NÀY
+                "r.RoleName, b.BranchName, w.WarehouseName "
                 + "FROM Users u "
                 + "INNER JOIN Roles r ON u.RoleID = r.RoleID "
                 + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
@@ -71,45 +73,48 @@ public class UserDAO extends DataBaseContext {
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, userID);
-            ResultSet rs = stmt.executeQuery();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+                    user.setUserId(rs.getInt("UserID"));
+                    user.setFullName(rs.getString("FullName"));
+                    user.setEmail(rs.getString("Email"));
+                    user.setPhone(rs.getString("Phone"));
+                    user.setPasswordHash(rs.getString("PasswordHash"));
 
-            if (rs.next()) {
-                user = new User();
-                user.setUserId(rs.getInt("UserID"));
-                user.setFullName(rs.getString("FullName"));
-                user.setEmail(rs.getString("Email"));
-                user.setPhone(rs.getString("Phone"));
-                user.setPasswordHash(rs.getString("PasswordHash")); // ✅ thêm dòng này
-                user.setBranchId(rs.getInt("BranchID"));
-                user.setWarehouseId(rs.getInt("WarehouseID"));
-                user.setRoleId(rs.getInt("RoleID"));
-                user.setRoleName(rs.getString("RoleName"));
-                user.setIsActive(rs.getInt("IsActive"));
-                user.setAvaUrl(rs.getString("AvaUrl"));
-                user.setAddress(rs.getString("Address"));
-                user.setBranchName(rs.getString("BranchName"));
-                user.setWarehouseName(rs.getString("WarehouseName"));
+                    // ✅ Dùng getObject để giữ đúng NULL thay vì 0
+                    user.setBranchId((Integer) rs.getObject("BranchID"));
+                    user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
 
-                // ✅ Sửa phần này — xử lý giới tính an toàn
-                Object genderObj = rs.getObject("Gender");
-                if (genderObj != null) {
-                    user.setGender(rs.getBoolean("Gender"));
-                } else {
-                    user.setGender(null);
-                }
+                    user.setRoleId(rs.getInt("RoleID"));
+                    user.setRoleName(rs.getString("RoleName"));
+                    user.setIsActive(rs.getInt("IsActive"));
+                    user.setAvaUrl(rs.getString("AvaUrl"));
+                    user.setAddress(rs.getString("Address"));
+                    user.setBranchName(rs.getString("BranchName"));
+                    user.setWarehouseName(rs.getString("WarehouseName"));
 
-                // ✅ Đọc thêm ngày sinh nếu có
-                Timestamp dob = rs.getTimestamp("DOB");
-                if (dob != null) {
-                    user.setDob(new java.sql.Date(dob.getTime()));
+                    // ✅ Giới tính null-safe
+                    Object genderObj = rs.getObject("Gender");
+                    user.setGender(genderObj != null ? rs.getBoolean("Gender") : null);
+
+                    // ✅ DOB (giữ nguyên độ chính xác)
+                    java.sql.Timestamp dob = rs.getTimestamp("DOB");
+                    if (dob != null) {
+                        user.setDob(dob); // kiểu Timestamp kế thừa java.util.Date
+                    }
+
+                    // ✅ QUAN TRỌNG: Lấy CCCD/Hộ chiếu
+                    user.setIdentificationId(rs.getString("IdentificationID"));
+
+                    // (Tùy bạn có dùng)
+                    user.setTaxNumber(rs.getString("TaxNumber"));
+                    user.setWebUrl(rs.getString("WebURL"));
                 }
             }
-
-            rs.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-
         return user;
     }
 
