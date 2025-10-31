@@ -112,8 +112,8 @@ public class ProductController extends HttpServlet {
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
 
         // === Phân trang ===
-        int pageSize = parseIntOrDefault(request.getParameter("pageSize"), 15);
-        if (pageSize != 15 && pageSize != 30 && pageSize != 50) pageSize = 15; // bảo vệ
+        int pageSize = parseIntOrDefault(request.getParameter("pageSize"), 10);
+        if (pageSize != 10 && pageSize != 20 && pageSize != 30) pageSize = 10; // bảo vệ
         int page = parseIntOrDefault(request.getParameter("page"), 1);
         page = Math.max(page, 1);
 

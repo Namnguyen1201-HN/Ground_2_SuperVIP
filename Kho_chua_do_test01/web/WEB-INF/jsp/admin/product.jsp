@@ -125,8 +125,8 @@
             <div class="filter-item" style="margin-top:10px">
                 <label for="pageSizeSelect">Hiển thị mỗi trang</label>
                 <select id="pageSizeSelect" name="pageSize">
-                    <option value="15" <c:if test="${pageSize == 15}">selected</c:if>>15</option>
-                    <option value="30" <c:if test="${pageSize == 30}">selected</c:if>>30</option>
+                    <option value="15" <c:if test="${pageSize == 15}">selected</c:if>>10</option>
+                    <option value="30" <c:if test="${pageSize == 30}">selected</c:if>>20</option>
                     <option value="50" <c:if test="${pageSize == 50}">selected</c:if>>50</option>
                 </select>
             </div>
