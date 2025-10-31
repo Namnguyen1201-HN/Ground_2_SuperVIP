@@ -819,6 +819,13 @@ public Product getProductByIdWithQty(int id) {
     }
     return null;
 }
+    public List<Product> searchProductsByNameWithQty(String keyword) {
+        return listProducts(null, keyword, StockFilter.ALL, 0);
+    }
+
+    public List<Product> getAllProductsWithQty() {
+        return listProducts(null, null, StockFilter.ALL, 0);
+    }
 
 
 }
