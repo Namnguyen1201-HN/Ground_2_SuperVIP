@@ -441,27 +441,54 @@ public class UserDAO extends DataBaseContext {
 
     public User getUserFullById(int userID) {
         User user = null;
-        String query = "SELECT * FROM Users WHERE UserID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+
+        // JOIN để lấy tên kho (và chỉ lấy tên để tránh trùng cột)
+        String sql
+                = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.Address, u.PasswordHash, "
+                + "       u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, "
+                + "       u.DOB, u.IdentificationID, u.TaxNumber, u.WebURL, "
+                + "       w.WarehouseName AS WarehouseName "
+                + // 👈 thêm tên kho
+                "FROM Users u "
+                + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
+                + "WHERE u.UserID = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userID);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                user = new User();
-                user.setUserId(rs.getInt("UserID"));
-                user.setFullName(rs.getString("FullName"));
-                user.setEmail(rs.getString("Email"));
-                user.setPhone(rs.getString("Phone"));
-                user.setAddress(rs.getString("Address"));
-                user.setPasswordHash(rs.getString("PasswordHash"));
-                user.setBranchId((Integer) rs.getObject("BranchID"));
-                user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
-                user.setRoleId(rs.getInt("RoleID"));
-                user.setIsActive(rs.getInt("IsActive"));
-                user.setGender((Boolean) rs.getObject("Gender"));
-                user.setDob(rs.getTimestamp("DOB"));
-                user.setIdentificationId(rs.getString("IdentificationID"));
-                user.setTaxNumber(rs.getString("TaxNumber"));
-                user.setWebUrl(rs.getString("WebURL"));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+
+                    // Các cột từ Users
+                    user.setUserId(rs.getInt("UserID"));
+                    user.setFullName(rs.getString("FullName"));
+                    user.setEmail(rs.getString("Email"));
+                    user.setPhone(rs.getString("Phone"));
+                    user.setAddress(rs.getString("Address"));
+                    user.setPasswordHash(rs.getString("PasswordHash"));
+
+                    // Các ID có thể null
+                    user.setBranchId((Integer) rs.getObject("BranchID"));
+                    user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
+
+                    user.setRoleId(rs.getInt("RoleID"));
+                    user.setIsActive(rs.getInt("IsActive"));
+
+                    // Gender (BIT) có thể null
+                    Object genderObj = rs.getObject("Gender");
+                    user.setGender(genderObj == null ? null : (rs.getBoolean("Gender")));
+
+                    // DOB có thể null
+                    java.sql.Timestamp dobTs = rs.getTimestamp("DOB");
+                    user.setDob(dobTs == null ? null : new java.util.Date(dobTs.getTime()));
+
+                    user.setIdentificationId(rs.getString("IdentificationID"));
+                    user.setTaxNumber(rs.getString("TaxNumber"));
+                    user.setWebUrl(rs.getString("WebURL"));
+
+                    // Tên kho từ JOIN
+                    user.setWarehouseName(rs.getString("WarehouseName")); // 👈 quan trọng
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
