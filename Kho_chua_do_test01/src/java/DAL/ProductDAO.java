@@ -456,46 +456,61 @@ public class ProductDAO extends DataBaseContext {
     }
 
     /* ===================== REPORT (giữ nguyên) ===================== */
-    public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit) {
-        List<ProductStatisticDTO> list = new ArrayList<>();
-        String dateCondition = "";
-        if ("this_month".equals(period)) {
-            dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(GETDATE()) AND YEAR(o.CreatedAt) = YEAR(GETDATE())";
-        } else if ("last_month".equals(period)) {
-            dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(DATEADD(MONTH, -1, GETDATE())) "
-                          + "AND YEAR(o.CreatedAt) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
-        }
+   public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, int branchId) {
+    List<ProductStatisticDTO> list = new ArrayList<>();
+    String dateCondition = "";
 
-        String orderBy = "revenue".equals(sortBy)
-                ? "SUM(od.Quantity * p.RetailPrice) DESC"
-                : "SUM(od.Quantity) DESC";
-
-        String sql = ""
-                + "SELECT TOP (?) \n"
-                + "    p.ProductName, \n"
-                + "    SUM(od.Quantity) AS TotalQuantity, \n"
-                + "    SUM(od.Quantity * p.RetailPrice) AS Revenue \n"
-                + "FROM Orders o \n"
-                + "JOIN OrderDetails od ON o.OrderID = od.OrderID \n"
-                + "JOIN ProductDetails pd ON od.ProductDetailID = pd.ProductDetailID \n"
-                + "JOIN Products p ON pd.ProductID = p.ProductID \n"
-                + (dateCondition.isEmpty() ? "" : dateCondition + "\n")
-                + "GROUP BY p.ProductName \n"
-                + "ORDER BY " + orderBy + ";";
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, limit);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                ProductStatisticDTO dto = new ProductStatisticDTO();
-                dto.setProductName(rs.getString("ProductName"));
-                dto.setTotalQuantity(rs.getInt("TotalQuantity"));
-                dto.setRevenue(rs.getBigDecimal("Revenue"));
-                list.add(dto);
-            }
-        } catch (SQLException e) { e.printStackTrace(); }
-        return list;
+    if ("this_month".equals(period)) {
+        dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(GETDATE()) AND YEAR(o.CreatedAt) = YEAR(GETDATE())";
+    } else if ("last_month".equals(period)) {
+        dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(DATEADD(MONTH, -1, GETDATE())) "
+                      + "AND YEAR(o.CreatedAt) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
     }
+
+    // nếu có branchId thì thêm điều kiện lọc theo chi nhánh
+    if (branchId > 0) {
+        if (dateCondition.isEmpty()) {
+            dateCondition = "WHERE o.BranchID = ?";
+        } else {
+            dateCondition += " AND o.BranchID = ?";
+        }
+    }
+
+    String orderBy = "revenue".equals(sortBy)
+            ? "SUM(od.Quantity * p.RetailPrice) DESC"
+            : "SUM(od.Quantity) DESC";
+
+    String sql = ""
+            + "SELECT TOP (?) \n"
+            + "    p.ProductName, \n"
+            + "    SUM(od.Quantity) AS TotalQuantity, \n"
+            + "    SUM(od.Quantity * p.RetailPrice) AS Revenue \n"
+            + "FROM Orders o \n"
+            + "JOIN OrderDetails od ON o.OrderID = od.OrderID \n"
+            + "JOIN ProductDetails pd ON od.ProductDetailID = pd.ProductDetailID \n"
+            + "JOIN Products p ON pd.ProductID = p.ProductID \n"
+            + (dateCondition.isEmpty() ? "" : dateCondition + "\n")
+            + "GROUP BY p.ProductName \n"
+            + "ORDER BY " + orderBy + ";";
+
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        int index = 1;
+        ps.setInt(index++, limit);
+        if (branchId > 0) {
+            ps.setInt(index++, branchId);
+        }
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            ProductStatisticDTO dto = new ProductStatisticDTO();
+            dto.setProductName(rs.getString("ProductName"));
+            dto.setTotalQuantity(rs.getInt("TotalQuantity"));
+            dto.setRevenue(rs.getBigDecimal("Revenue"));
+            list.add(dto);
+        }
+    } catch (SQLException e) { e.printStackTrace(); }
+    return list;
+}
+
 
     /* ===================== DTO helpers (nếu cần cho inventory view) ===================== */
     private static Integer getNullableInt(ResultSet rs, String col) throws SQLException {
@@ -764,5 +779,13 @@ public Product getProductByIdWithQty(int id) {
     }
     return null;
 }
+
+public List<Product> getAllProductsWithQty() {
+        return listProducts(null, null, StockFilter.ALL, 0);
+    }
+   public List<Product> searchProductsByNameWithQty(String keyword) {
+        return listProducts(null, keyword, StockFilter.ALL, 0);
+    }
+
 
 }
