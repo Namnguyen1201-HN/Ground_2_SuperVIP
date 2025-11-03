@@ -456,84 +456,60 @@ public class ProductDAO extends DataBaseContext {
     }
 
     /* ===================== REPORT (giữ nguyên) ===================== */
-   // TRƯỚC ĐÂY: public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, int branchId)
-// SAU: nhận Integer branchId (có thể null)
-// Thay thế toàn bộ hàm getTopProducts cũ bằng hàm dưới:
-public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, Integer branchId) {
+   public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, int branchId) {
     List<ProductStatisticDTO> list = new ArrayList<>();
+    String dateCondition = "";
 
-    // Quy tắc sắp xếp
-    String orderBy = "revenue".equalsIgnoreCase(sortBy)
+    if ("this_month".equals(period)) {
+        dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(GETDATE()) AND YEAR(o.CreatedAt) = YEAR(GETDATE())";
+    } else if ("last_month".equals(period)) {
+        dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(DATEADD(MONTH, -1, GETDATE())) "
+                      + "AND YEAR(o.CreatedAt) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
+    }
+
+    // nếu có branchId thì thêm điều kiện lọc theo chi nhánh
+    if (branchId > 0) {
+        if (dateCondition.isEmpty()) {
+            dateCondition = "WHERE o.BranchID = ?";
+        } else {
+            dateCondition += " AND o.BranchID = ?";
+        }
+    }
+
+    String orderBy = "revenue".equals(sortBy)
             ? "SUM(od.Quantity * p.RetailPrice) DESC"
             : "SUM(od.Quantity) DESC";
 
-    StringBuilder sql = new StringBuilder();
-    sql.append(
-        "SELECT TOP (?) \n" +
-        "    p.ProductName,\n" +
-        "    SUM(od.Quantity) AS TotalQuantity,\n" +
-        "    SUM(od.Quantity * p.RetailPrice) AS Revenue\n" +
-        "FROM Orders o \n" +
-        "JOIN OrderDetails od   ON o.OrderID = od.OrderID \n" +
-        "JOIN ProductDetails pd ON od.ProductDetailID = pd.ProductDetailID \n" +
-        "JOIN Products p        ON pd.ProductID = p.ProductID \n" +
-        "WHERE o.OrderStatus = 'Completed' \n"
-    );
+    String sql = ""
+            + "SELECT TOP (?) \n"
+            + "    p.ProductName, \n"
+            + "    SUM(od.Quantity) AS TotalQuantity, \n"
+            + "    SUM(od.Quantity * p.RetailPrice) AS Revenue \n"
+            + "FROM Orders o \n"
+            + "JOIN OrderDetails od ON o.OrderID = od.OrderID \n"
+            + "JOIN ProductDetails pd ON od.ProductDetailID = pd.ProductDetailID \n"
+            + "JOIN Products p ON pd.ProductID = p.ProductID \n"
+            + (dateCondition.isEmpty() ? "" : dateCondition + "\n")
+            + "GROUP BY p.ProductName \n"
+            + "ORDER BY " + orderBy + ";";
 
-    List<Object> params = new ArrayList<Object>();
-    params.add(Integer.valueOf(limit));
-
-    // Lọc theo period nếu là this_month hoặc last_month
-    if ("this_month".equalsIgnoreCase(period) || "last_month".equalsIgnoreCase(period)) {
-        sql.append(
-            "AND o.CreatedAt >= DATEADD(MONTH, CASE WHEN ? = 'this_month' THEN 0 ELSE -1 END,\n" +
-            "                              DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))\n" +
-            "AND o.CreatedAt <  DATEADD(MONTH, CASE WHEN ? = 'this_month' THEN 1 ELSE  0 END,\n" +
-            "                              DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))\n"
-        );
-        params.add(period);
-        params.add(period);
-    }
-
-    // Lọc chi nhánh nullable
-    sql.append("AND ( ? IS NULL OR o.BranchID = ? ) \n");
-    params.add(branchId);
-    params.add(branchId);
-
-    sql.append("GROUP BY p.ProductName \n");
-    sql.append("ORDER BY ").append(orderBy);
-
-    try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
-        int idx = 1;
-        for (Object v : params) {
-            if (v == null) {
-                // chỉ branchId có thể null -> kiểu INTEGER
-                ps.setNull(idx++, Types.INTEGER);
-            } else if (v instanceof Integer) {
-                ps.setInt(idx++, ((Integer) v).intValue());
-            } else if (v instanceof String) {
-                ps.setString(idx++, (String) v);
-            } else {
-                ps.setObject(idx++, v);
-            }
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        int index = 1;
+        ps.setInt(index++, limit);
+        if (branchId > 0) {
+            ps.setInt(index++, branchId);
         }
-
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                ProductStatisticDTO dto = new ProductStatisticDTO();
-                dto.setProductName(rs.getString("ProductName"));
-                dto.setTotalQuantity(rs.getInt("TotalQuantity"));
-                dto.setRevenue(rs.getBigDecimal("Revenue"));
-                list.add(dto);
-            }
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            ProductStatisticDTO dto = new ProductStatisticDTO();
+            dto.setProductName(rs.getString("ProductName"));
+            dto.setTotalQuantity(rs.getInt("TotalQuantity"));
+            dto.setRevenue(rs.getBigDecimal("Revenue"));
+            list.add(dto);
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
+    } catch (SQLException e) { e.printStackTrace(); }
     return list;
 }
-
-
 
 
     /* ===================== DTO helpers (nếu cần cho inventory view) ===================== */

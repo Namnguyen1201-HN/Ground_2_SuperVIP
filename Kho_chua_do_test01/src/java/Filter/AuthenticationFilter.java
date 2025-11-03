@@ -18,7 +18,7 @@ public class AuthenticationFilter implements Filter {
         roleAccessMap.put(0, Arrays.asList(
                 "/TongQuan", "/NhanVien", "/AddUser", "/BranchManagement", "/ChangePassWord", "/Customer", "/EditUser", "/ShiftUser",
                 "/WarehouseManagement", "/InformationAccount", "/Logout", "/product", "/BranchCreate", "/InventoryMoves", "/Orders",
-                "/Supplier", "/WareHouseCreate"
+                "/Supplier", "/WareHouseCreate", "/Promotion", "/Report"
         ));
 
         // ✅ Role 1 – Branch Manager
