@@ -164,6 +164,42 @@ public class UserDAO extends DataBaseContext {
     }
 
     /**
+     * Check if email exists (case insensitive)
+     */
+    public boolean isEmailExists(String email) {
+        String query = "SELECT COUNT(*) FROM Users WHERE LOWER(Email) = LOWER(?)";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, email.trim());
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Check if identification ID exists
+     */
+    public boolean isIdentificationIdExists(String identificationId) {
+        String query = "SELECT COUNT(*) FROM Users WHERE IdentificationID = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, identificationId.trim());
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
      * Insert new user
      */
     private String hashPassword(String password) {
@@ -421,6 +457,133 @@ public class UserDAO extends DataBaseContext {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Get user by email for password reset
+     */
+    public User getUserByEmail(String email) {
+        User user = null;
+        String query = "SELECT UserID, FullName, Email, Phone, PasswordHash, BranchID, WarehouseID, " +
+                      "RoleID, IsActive, Gender, AvaUrl, Address FROM Users WHERE Email = ? AND IsActive = 1";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, email.trim());
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                user = new User();
+                user.setUserId(rs.getInt("UserID"));
+                user.setFullName(rs.getString("FullName"));
+                user.setEmail(rs.getString("Email"));
+                user.setPhone(rs.getString("Phone"));
+                user.setPasswordHash(rs.getString("PasswordHash"));
+                user.setBranchId((Integer) rs.getObject("BranchID"));
+                user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
+                user.setRoleId(rs.getInt("RoleID"));
+                user.setIsActive(rs.getInt("IsActive"));
+                user.setGender((Boolean) rs.getObject("Gender"));
+                user.setAvaUrl(rs.getString("AvaUrl"));
+                user.setAddress(rs.getString("Address"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+    
+    /**
+     * Create password reset token
+     */
+    public boolean createPasswordResetToken(int userId, String token) {
+        // First, delete any existing tokens for this user
+        String deleteQuery = "DELETE FROM PasswordResetTokens WHERE UserID = ?";
+        
+        // Then insert the new token with 24 hour expiry
+        String insertQuery = "INSERT INTO PasswordResetTokens (UserID, Token, ExpiryDate) VALUES (?, ?, DATEADD(HOUR, 24, GETDATE()))";
+        
+        try {
+            // Delete existing tokens
+            try (PreparedStatement deleteStmt = connection.prepareStatement(deleteQuery)) {
+                deleteStmt.setInt(1, userId);
+                deleteStmt.executeUpdate();
+            }
+            
+            // Insert new token
+            try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+                insertStmt.setInt(1, userId);
+                insertStmt.setString(2, token);
+                int rows = insertStmt.executeUpdate();
+                return rows > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Check if reset token is valid (exists and not expired)
+     */
+    public boolean isValidResetToken(String token) {
+        String query = "SELECT COUNT(*) FROM PasswordResetTokens WHERE Token = ? AND ExpiryDate > GETDATE()";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, token);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Reset password using token
+     */
+    public boolean resetPassword(String token, String newPassword) {
+        // First verify token is valid and get user ID
+        String getUserQuery = "SELECT UserID FROM PasswordResetTokens WHERE Token = ? AND ExpiryDate > GETDATE()";
+        String updatePasswordQuery = "UPDATE Users SET PasswordHash = ? WHERE UserID = ?";
+        String deleteTokenQuery = "DELETE FROM PasswordResetTokens WHERE Token = ?";
+        
+        try {
+            int userId = -1;
+            
+            // Get user ID from valid token
+            try (PreparedStatement getUserStmt = connection.prepareStatement(getUserQuery)) {
+                getUserStmt.setString(1, token);
+                ResultSet rs = getUserStmt.executeQuery();
+                
+                if (rs.next()) {
+                    userId = rs.getInt("UserID");
+                } else {
+                    return false; // Token invalid or expired
+                }
+            }
+            
+            // Update password
+            try (PreparedStatement updateStmt = connection.prepareStatement(updatePasswordQuery)) {
+                updateStmt.setString(1, hashPassword(newPassword));
+                updateStmt.setInt(2, userId);
+                int rows = updateStmt.executeUpdate();
+                
+                if (rows > 0) {
+                    // Delete the used token
+                    try (PreparedStatement deleteStmt = connection.prepareStatement(deleteTokenQuery)) {
+                        deleteStmt.setString(1, token);
+                        deleteStmt.executeUpdate();
+                    }
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public static void main(String[] args) {

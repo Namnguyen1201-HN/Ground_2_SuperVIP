@@ -6,7 +6,9 @@ import DAL.UserDAO;
 import DAL.BranchDAO;
 import DAL.ProductDAO;
 import DAL.ProductDetailDAO;
+import DAL.CustomerDAO;
 import Model.Order;
+import Model.Customer;
 import Model.OrderDetail;
 import Model.User;
 import jakarta.servlet.ServletException;
@@ -33,6 +35,7 @@ public class OrdersController extends HttpServlet {
     private BranchDAO branchDAO;
     private ProductDAO productDAO;
     private ProductDetailDAO productDetailDAO;
+    private CustomerDAO customerDAO;
 
     @Override
     public void init() {
@@ -42,6 +45,7 @@ public class OrdersController extends HttpServlet {
         branchDAO = new BranchDAO();
         productDAO = new ProductDAO();
         productDetailDAO = new ProductDetailDAO();
+        customerDAO = new CustomerDAO();
     }
 
     @Override
@@ -118,6 +122,20 @@ public class OrdersController extends HttpServlet {
                                 break;
                             }
                         }
+                    }
+                }
+
+                // Get customer information
+                if (order.getCustomerId() != null) {
+                    Customer customer = customerDAO.getCustomerById(order.getCustomerId());
+                    if (customer != null) {
+                        request.setAttribute("customer", customer);
+                        request.setAttribute("customerName", customer.getFullname());
+                        request.setAttribute("customerPhone", customer.getPhoneNumber());
+                        request.setAttribute("customerEmail", customer.getEmail());
+                        request.setAttribute("customerAddress", customer.getAddress());
+                        request.setAttribute("customerGender", customer.getGender());
+                        request.setAttribute("customerBirthDate", customer.getDateOfBirth());
                     }
                 }
             }

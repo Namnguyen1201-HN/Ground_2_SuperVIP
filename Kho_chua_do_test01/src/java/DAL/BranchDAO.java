@@ -66,5 +66,24 @@ public class BranchDAO extends DataBaseContext {
         return false;
     }
 
-    
+    public Branch getBranchById(int branchId) {
+        String sql = "SELECT BranchID, BranchName, Address, Phone, IsActive FROM Branches WHERE BranchID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, branchId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Branch b = new Branch();
+                    b.setBranchId(rs.getInt("BranchID"));
+                    b.setBranchName(rs.getString("BranchName"));
+                    b.setAddress(rs.getString("Address"));
+                    b.setPhone(rs.getString("Phone"));
+                    b.setActive(rs.getBoolean("IsActive"));
+                    return b;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
