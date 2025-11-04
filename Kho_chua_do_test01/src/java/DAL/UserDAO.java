@@ -237,38 +237,38 @@ public class UserDAO extends DataBaseContext {
     /**
      * Check if email exists (case insensitive)
      */
-    public boolean isEmailExists(String email) {
-        String query = "SELECT COUNT(*) FROM Users WHERE LOWER(Email) = LOWER(?)";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, email.trim());
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-    }
+//    public boolean isEmailExists(String email) {
+//        String query = "SELECT COUNT(*) FROM Users WHERE LOWER(Email) = LOWER(?)";
+//        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+//            stmt.setString(1, email.trim());
+//            ResultSet rs = stmt.executeQuery();
+//
+//            if (rs.next()) {
+//                return rs.getInt(1) > 0;
+//            }
+//        } catch (SQLException ex) {
+//            ex.printStackTrace();
+//        }
+//        return false;
+//    }
 
     /**
      * Check if identification ID exists
      */
-    public boolean isIdentificationIdExists(String identificationId) {
-        String query = "SELECT COUNT(*) FROM Users WHERE IdentificationID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, identificationId.trim());
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-    }
+//    public boolean isIdentificationIdExists(String identificationId) {
+//        String query = "SELECT COUNT(*) FROM Users WHERE IdentificationID = ?";
+//        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+//            stmt.setString(1, identificationId.trim());
+//            ResultSet rs = stmt.executeQuery();
+//
+//            if (rs.next()) {
+//                return rs.getInt(1) > 0;
+//            }
+//        } catch (SQLException ex) {
+//            ex.printStackTrace();
+//        }
+//        return false;
+//    }
 
     /**
      * Insert new user
