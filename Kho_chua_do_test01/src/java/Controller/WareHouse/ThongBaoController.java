@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.util.List;
 
 @WebServlet(name = "ThongBaoController", urlPatterns = {"/ThongBao"})
-public class ThongBaoController extends HttpServlet {
-
+public class ThongBaoController extends HttpServlet {    
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

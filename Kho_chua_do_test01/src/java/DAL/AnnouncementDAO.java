@@ -64,13 +64,9 @@ public class AnnouncementDAO extends DataBaseContext {
         return false;
     }
 
-    // === 2️⃣ Hoạt động gần đây ===
+    // === 2️⃣ Hoạt động gần đây (đã chuẩn hoá nullable branchId) ===
     public List<AnnouncementDTO> getRecentActivities(int limit, Integer branchId) {
         List<AnnouncementDTO> list = new ArrayList<>();
-
-        String branchFilterOrder = (branchId != null) ? " WHERE o.BranchID = ?" : "";
-        String branchFilterStock = (branchId != null) ? " WHERE (smr.FromBranchID = ? OR smr.ToBranchID = ?)" : "";
-        String branchFilterCash = (branchId != null) ? " WHERE cf.BranchID = ?" : "";
 
         String sql = """
         SELECT TOP (?) * FROM (
@@ -83,22 +79,22 @@ public class AnnouncementDAO extends DataBaseContext {
                 CONVERT(NVARCHAR(50), o.OrderID) AS RawDescription,
                 CONVERT(NVARCHAR(100), u.FullName) AS senderName,
                 CONVERT(NVARCHAR(100), b.BranchName) AS locationName,
-                CONVERT(NVARCHAR(100), NULL) AS fromLocation,
-                CONVERT(NVARCHAR(100), NULL) AS toLocation,
+                CAST(NULL AS NVARCHAR(100)) AS fromLocation,
+                CAST(NULL AS NVARCHAR(100)) AS toLocation,
                 o.CreatedAt AS createdAt
             FROM Orders o
             JOIN Users u ON u.UserID = o.CreatedBy
             LEFT JOIN Branches b ON b.BranchID = o.BranchID
-        """ + branchFilterOrder + """
+            WHERE ( ? IS NULL OR o.BranchID = ? )
 
             UNION ALL
 
-            -- 2️⃣ Nhập/Xuất kho
+            -- 2️⃣ Nhập/Xuất/Dịch chuyển kho
             SELECT 
                 smr.MovementID AS AnnouncementID,
                 CASE 
                     WHEN smr.FromSupplierID IS NOT NULL THEN N'Nhập hàng'
-                    WHEN smr.ToWarehouseID IS NOT NULL THEN N'Xuất kho'
+                    WHEN smr.ToWarehouseID   IS NOT NULL THEN N'Xuất kho'
                     ELSE N'Dịch chuyển kho'
                 END AS Category,
                 smr.MovementType AS Status,
@@ -113,11 +109,11 @@ public class AnnouncementDAO extends DataBaseContext {
             JOIN Users u ON u.UserID = smr.CreatedBy
             LEFT JOIN Branches fb ON fb.BranchID = smr.FromBranchID
             LEFT JOIN Branches tb ON tb.BranchID = smr.ToBranchID
-        """ + branchFilterStock + """
+            WHERE ( ? IS NULL OR smr.FromBranchID = ? OR smr.ToBranchID = ? )
 
             UNION ALL
 
-            -- 3️⃣ Thu / Chi tiền
+            -- 3️⃣ Thu/Chi
             SELECT 
                 cf.CashFlowID AS AnnouncementID,
                 N'Thu/Chi' AS Category,
@@ -126,47 +122,49 @@ public class AnnouncementDAO extends DataBaseContext {
                 cf.Description AS RawDescription,
                 CONVERT(NVARCHAR(100), cf.CreatedBy) AS senderName,
                 CONVERT(NVARCHAR(100), b.BranchName) AS locationName,
-                CONVERT(NVARCHAR(100), NULL) AS fromLocation,
-                CONVERT(NVARCHAR(100), NULL) AS toLocation,
+                CAST(NULL AS NVARCHAR(100)) AS fromLocation,
+                CAST(NULL AS NVARCHAR(100)) AS toLocation,
                 cf.CreatedAt AS createdAt
             FROM CashFlows cf
             LEFT JOIN Branches b ON b.BranchID = cf.BranchID
-        """ + branchFilterCash + """
+            WHERE ( ? IS NULL OR cf.BranchID = ? )
         ) AS Combined
         ORDER BY createdAt DESC
-    """;
+        """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            int paramIndex = 1;
-            ps.setInt(paramIndex++, limit);
-            
-            if (branchId != null) {
-                // Order filter
-                ps.setInt(paramIndex++, branchId);
-                // Stock movement filter (2 lần vì có FromBranchID và ToBranchID)
-                ps.setInt(paramIndex++, branchId);
-                ps.setInt(paramIndex++, branchId);
-                // Cash flow filter
-                ps.setInt(paramIndex++, branchId);
-            }
-            
-            ResultSet rs = ps.executeQuery();
+            int i = 1;
+            // limit
+            ps.setInt(i++, limit);
 
-            while (rs.next()) {
-                AnnouncementDTO dto = new AnnouncementDTO();
-                dto.setAnnouncementID(rs.getInt("AnnouncementID"));
-                dto.setCategory(rs.getString("Category"));
-                dto.setStatus(rs.getString("Status"));
-                dto.setDescription(rs.getString("Description"));
-                dto.setRawDescription(rs.getString("RawDescription"));
-                dto.setSenderName(rs.getString("senderName"));
-                dto.setLocationName(rs.getString("locationName"));
-                dto.setFromLocation(rs.getString("fromLocation"));
-                dto.setToLocation(rs.getString("toLocation"));
-                dto.setCreatedAt(rs.getTimestamp("createdAt"));
-                list.add(dto);
-            }
+            // Orders block (2 tham số: IS NULL + =)
+            if (branchId == null) { ps.setNull(i++, Types.INTEGER); ps.setNull(i++, Types.INTEGER); }
+            else { ps.setInt(i++, branchId); ps.setInt(i++, branchId); }
 
+            // Stock movement block (3 tham số: IS NULL + = + =)
+            if (branchId == null) { ps.setNull(i++, Types.INTEGER); ps.setNull(i++, Types.INTEGER); ps.setNull(i++, Types.INTEGER); }
+            else { ps.setInt(i++, branchId); ps.setInt(i++, branchId); ps.setInt(i++, branchId); }
+
+            // Cashflow block (2 tham số: IS NULL + =)
+            if (branchId == null) { ps.setNull(i++, Types.INTEGER); ps.setNull(i++, Types.INTEGER); }
+            else { ps.setInt(i++, branchId); ps.setInt(i++, branchId); }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    AnnouncementDTO dto = new AnnouncementDTO();
+                    dto.setAnnouncementID(rs.getInt("AnnouncementID"));
+                    dto.setCategory(rs.getString("Category"));
+                    dto.setStatus(rs.getString("Status"));
+                    dto.setDescription(rs.getString("Description"));
+                    dto.setRawDescription(rs.getString("RawDescription"));
+                    dto.setSenderName(rs.getString("senderName"));
+                    dto.setLocationName(rs.getString("locationName"));
+                    dto.setFromLocation(rs.getString("fromLocation"));
+                    dto.setToLocation(rs.getString("toLocation"));
+                    dto.setCreatedAt(rs.getTimestamp("createdAt"));
+                    list.add(dto);
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -178,24 +176,25 @@ public class AnnouncementDAO extends DataBaseContext {
     public List<Announcement> getSentAnnouncements(Integer fromWarehouseId, Integer fromUserId) {
         List<Announcement> list = new ArrayList<>();
         String sql = """
-        SELECT a.AnnouncementID, a.Title, a.Description, a.CreatedAt, u.FullName AS FromUserName
-        FROM Announcements a
-        LEFT JOIN Users u ON a.FromUserID = u.UserID
-        WHERE (a.FromWarehouseID = ? OR a.FromUserID = ?)
-        ORDER BY a.CreatedAt DESC
-    """;
+            SELECT a.AnnouncementID, a.Title, a.Description, a.CreatedAt, u.FullName AS FromUserName
+            FROM Announcements a
+            LEFT JOIN Users u ON a.FromUserID = u.UserID
+            WHERE (a.FromWarehouseID = ? OR a.FromUserID = ?)
+            ORDER BY a.CreatedAt DESC
+        """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setObject(1, fromWarehouseId);
             ps.setObject(2, fromUserId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Announcement a = new Announcement();
-                a.setAnnouncementId(rs.getInt("AnnouncementID"));
-                a.setTitle(rs.getString("Title"));
-                a.setDescription(rs.getString("Description"));
-                a.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                a.setFromUserName(rs.getString("FromUserName"));
-                list.add(a);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Announcement a = new Announcement();
+                    a.setAnnouncementId(rs.getInt("AnnouncementID"));
+                    a.setTitle(rs.getString("Title"));
+                    a.setDescription(rs.getString("Description"));
+                    a.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    a.setFromUserName(rs.getString("FromUserName"));
+                    list.add(a);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -203,32 +202,32 @@ public class AnnouncementDAO extends DataBaseContext {
         return list;
     }
 
-// 🟨 Lấy danh sách thông báo nhận được (gửi tới kho này hoặc toàn hệ thống)
+    // 🟨 Lấy danh sách thông báo nhận được (gửi tới kho này hoặc toàn hệ thống)
     public List<Announcement> getReceivedAnnouncements(Integer toWarehouseId) {
         List<Announcement> list = new ArrayList<>();
         String sql = """
-        SELECT a.AnnouncementID, a.Title, a.Description, a.CreatedAt, u.FullName AS FromUserName
-        FROM Announcements a
-        LEFT JOIN Users u ON a.FromUserID = u.UserID
-        WHERE (a.ToWarehouseID = ? OR a.ToWarehouseID IS NULL)
-        ORDER BY a.CreatedAt DESC
-    """;
+            SELECT a.AnnouncementID, a.Title, a.Description, a.CreatedAt, u.FullName AS FromUserName
+            FROM Announcements a
+            LEFT JOIN Users u ON a.FromUserID = u.UserID
+            WHERE (a.ToWarehouseID = ? OR a.ToWarehouseID IS NULL)
+            ORDER BY a.CreatedAt DESC
+        """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setObject(1, toWarehouseId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Announcement a = new Announcement();
-                a.setAnnouncementId(rs.getInt("AnnouncementID"));
-                a.setTitle(rs.getString("Title"));
-                a.setDescription(rs.getString("Description"));
-                a.setCreatedAt(rs.getTimestamp("CreatedAt"));
-                a.setFromUserName(rs.getString("FromUserName"));
-                list.add(a);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Announcement a = new Announcement();
+                    a.setAnnouncementId(rs.getInt("AnnouncementID"));
+                    a.setTitle(rs.getString("Title"));
+                    a.setDescription(rs.getString("Description"));
+                    a.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    a.setFromUserName(rs.getString("FromUserName"));
+                    list.add(a);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
     }
-
 }

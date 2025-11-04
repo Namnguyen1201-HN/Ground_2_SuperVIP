@@ -151,7 +151,7 @@
         opacity: 0 !important;
         transition: opacity 0.3s ease, visibility 0.3s ease !important;
     }
-    
+
     /* Show dropdown when active */
     .nav-dropdown.show .dropdown-menu,
     .nav-dropdown.active .dropdown-menu {
@@ -278,7 +278,7 @@
         opacity: 0 !important;
         transition: opacity 0.3s ease, visibility 0.3s ease !important;
     }
-    
+
     /* Show user dropdown when active */
     .user-dropdown.show .dropdown-menu,
     .user-dropdown.active .dropdown-menu {
@@ -365,9 +365,9 @@
 
             <!-- Giao dịch Dropdown with Role-based Items -->
             <div class="nav-dropdown ${fn:contains(pageContext.request.requestURI, 'Orders') 
-                or fn:contains(pageContext.request.requestURI, 'import-request') 
-                or fn:contains(pageContext.request.requestURI, 'stock-movements') 
-                ? 'active' : ''}">
+                                       or fn:contains(pageContext.request.requestURI, 'import-request') 
+                                       or fn:contains(pageContext.request.requestURI, 'stock-movements') 
+                                       ? 'active' : ''}">
                 <a href="javascript:void(0);" class="dropdown-toggle" >
                     <i class="fas fa-exchange-alt"></i>
                     Giao dịch
@@ -379,7 +379,7 @@
                         <i class="fas fa-shopping-cart"></i>
                         Đơn hàng
                     </a>
-                    
+
                     <c:choose>
                         <c:when test="${sessionScope.currentUser.roleId == 0}">
                             <!-- Admin: Import from Supplier -->
@@ -413,8 +413,8 @@
 
             <!-- Đối tác Dropdown -->
             <div class="nav-dropdown ${fn:contains(pageContext.request.requestURI, 'Supplier') 
-                or fn:contains(pageContext.request.requestURI, 'Customer') 
-                ? 'active' : ''}">
+                                       or fn:contains(pageContext.request.requestURI, 'Customer') 
+                                       ? 'active' : ''}">
                 <a href="javascript:void(0);" class="dropdown-toggle" >
                     <i class="fas fa-handshake"></i>
                     Đối tác
@@ -471,14 +471,24 @@
                     <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
                 </a>
                 <div class="dropdown-menu" id="userDropdownMenu">
-                    <a href="${pageContext.request.contextPath}/InformationAccount" class="dropdown-item">
-                        <i class="fas fa-user-circle"></i>
-                        Thông tin tài khoản
+                    <%
+  Model.User cu = (Model.User) session.getAttribute("currentUser");
+  Integer roleId = (cu != null) ? cu.getRoleId() : null;
+  String ctx = pageContext.getRequest().getServletContext().getContextPath();
+                    %>
+                    <% if (roleId != null && roleId == 0) { %>
+                    <a href="<%= ctx %>/InformationAccount" class="dropdown-item">
+                        <i class="fas fa-user-circle"></i> Thông tin tài khoản
                     </a>
-                    <a href="${pageContext.request.contextPath}/settings" class="dropdown-item">
-                        <i class="fas fa-cog"></i>
-                        Cài đặt
+                    <% } else if (roleId != null && roleId == 1) { %>
+                    <a href="<%= ctx %>/InformationAccountBM" class="dropdown-item">
+                        <i class="fas fa-user-circle"></i> Thông tin tài khoản
                     </a>
+                    <% } else { %>
+                    <a href="<%= ctx %>/InformationAccount" class="dropdown-item">
+                        <i class="fas fa-user-circle"></i> Thông tin tài khoản
+                    </a>
+                    <% } %>
                     <div class="dropdown-divider"></div>
                     <a href="Logout" class="dropdown-item logout">
                         <i class="fas fa-sign-out-alt"></i>
@@ -491,45 +501,45 @@
 </header>
 
 <script>
-    (function() {
+    (function () {
         'use strict';
-        
+
         console.log('Initializing dropdowns...');
-        
+
         // Wait for DOM
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
             init();
         }
-        
+
         function init() {
             var navDropdowns = document.querySelectorAll('.nav-dropdown');
             var userDropdown = document.querySelector('.user-dropdown');
             var userToggle = document.getElementById('userDropdownToggle');
-            
+
             console.log('Found', navDropdowns.length, 'nav dropdowns');
             console.log('Found user dropdown:', !!userDropdown);
-            
+
             // Setup nav dropdowns
-            navDropdowns.forEach(function(dropdown, index) {
+            navDropdowns.forEach(function (dropdown, index) {
                 var toggle = dropdown.querySelector('.dropdown-toggle');
                 if (toggle) {
                     console.log('Setting up nav dropdown', index);
-                    
+
                     // Prevent both mousedown and click
-                    toggle.addEventListener('click', function(e) {
+                    toggle.addEventListener('click', function (e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        
+
                         console.log('Nav dropdown', index, 'clicked');
-                        
+
                         var isOpen = dropdown.classList.contains('show');
                         console.log('Is currently open:', isOpen);
-                        
+
                         // Close all dropdowns first
                         closeAllDropdowns();
-                        
+
                         // Open this one if it was closed
                         if (!isOpen) {
                             dropdown.classList.add('show');
@@ -539,84 +549,84 @@
                         } else {
                             console.log('Was open, now closed');
                         }
-                        
+
                         return false;
                     });
-                    
+
                     // Also prevent mousedown from causing double trigger
-                    toggle.addEventListener('mousedown', function(e) {
+                    toggle.addEventListener('mousedown', function (e) {
                         e.preventDefault();
                     });
                 }
             });
-            
+
             // Setup user dropdown
             if (userToggle && userDropdown) {
                 console.log('Setting up user dropdown');
-                
-                userToggle.addEventListener('click', function(e) {
+
+                userToggle.addEventListener('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     console.log('User dropdown clicked');
-                    
+
                     var isOpen = userDropdown.classList.contains('show');
                     console.log('User dropdown is currently open:', isOpen);
-                    
+
                     // Close all dropdowns
                     closeAllDropdowns();
-                    
+
                     // Open if it was closed
                     if (!isOpen) {
                         userDropdown.classList.add('show');
                         console.log('Opened user dropdown');
                     }
-                    
+
                     return false;
                 });
-                
+
                 // Prevent mousedown from causing issues
-                userToggle.addEventListener('mousedown', function(e) {
+                userToggle.addEventListener('mousedown', function (e) {
                     e.preventDefault();
                 });
             }
-            
+
             // Close all dropdowns
             function closeAllDropdowns() {
-                navDropdowns.forEach(function(d) {
+                navDropdowns.forEach(function (d) {
                     d.classList.remove('show');
                 });
                 if (userDropdown) {
                     userDropdown.classList.remove('show');
                 }
             }
-            
+
             // Close on outside click
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 var clickedInsideDropdown = false;
-                
+
                 // Check if clicked inside any dropdown
-                navDropdowns.forEach(function(dropdown) {
+                navDropdowns.forEach(function (dropdown) {
                     if (dropdown.contains(e.target)) {
                         clickedInsideDropdown = true;
                     }
                 });
-                
+
                 if (userDropdown && userDropdown.contains(e.target)) {
                     clickedInsideDropdown = true;
                 }
-                
+
                 // Close if clicked outside
                 if (!clickedInsideDropdown) {
                     console.log('Clicked outside, closing all');
                     closeAllDropdowns();
                 }
             });
-            
+
             // Prevent dropdown menu from closing when clicking inside (but allow links to work)
             var allMenus = document.querySelectorAll('.dropdown-menu');
-            allMenus.forEach(function(menu) {
-                menu.addEventListener('click', function(e) {
+            allMenus.forEach(function (menu) {
+                menu.addEventListener('click', function (e) {
                     // Only prevent if clicking on menu container, not links
                     if (e.target.tagName !== 'A' && !e.target.closest('a')) {
                         e.stopPropagation();
@@ -624,7 +634,7 @@
                     }
                 });
             });
-            
+
             console.log('Dropdown initialization complete');
         }
     })();

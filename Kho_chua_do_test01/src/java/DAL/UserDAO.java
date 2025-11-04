@@ -18,7 +18,7 @@ public class UserDAO extends DataBaseContext {
                 + "LEFT JOIN Roles r ON u.RoleID = r.RoleID "
                 + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
                 + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
-                + "WHERE (u.Email = ? OR u.Phone = ?) AND u.IsActive = 1";
+                + "WHERE (u.Email = ? OR u.Phone = ?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, username.trim());
@@ -61,8 +61,10 @@ public class UserDAO extends DataBaseContext {
     public User getUserById(int userID) {
         User user = null;
         String query = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.PasswordHash, "
-                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, "
-                + "r.RoleName, b.BranchName, w.WarehouseName "
+                + "u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, u.AvaUrl, u.Address, u.DOB, "
+                + "u.IdentificationID, u.TaxNumber, u.WebURL, "
+                + // ✅ THÊM CÁC CỘT NÀY
+                "r.RoleName, b.BranchName, w.WarehouseName "
                 + "FROM Users u "
                 + "INNER JOIN Roles r ON u.RoleID = r.RoleID "
                 + "LEFT JOIN Branches b ON u.BranchID = b.BranchID "
@@ -71,31 +73,48 @@ public class UserDAO extends DataBaseContext {
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, userID);
-            ResultSet rs = stmt.executeQuery();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+                    user.setUserId(rs.getInt("UserID"));
+                    user.setFullName(rs.getString("FullName"));
+                    user.setEmail(rs.getString("Email"));
+                    user.setPhone(rs.getString("Phone"));
+                    user.setPasswordHash(rs.getString("PasswordHash"));
 
-            if (rs.next()) {
-                user = new User();
-                user.setUserId(rs.getInt("UserID"));
-                user.setFullName(rs.getString("FullName"));
-                user.setEmail(rs.getString("Email"));
-                user.setPhone(rs.getString("Phone"));
-                user.setPasswordHash(rs.getString("PasswordHash")); // ✅ thêm dòng này
-                user.setBranchId(rs.getInt("BranchID"));
-                user.setWarehouseId(rs.getInt("WarehouseID"));
-                user.setRoleId(rs.getInt("RoleID"));
-                user.setRoleName(rs.getString("RoleName"));
-                user.setIsActive(rs.getInt("IsActive"));
-                user.setAvaUrl(rs.getString("AvaUrl"));
-                user.setAddress(rs.getString("Address"));
-                user.setBranchName(rs.getString("BranchName"));
-                user.setWarehouseName(rs.getString("WarehouseName"));
+                    // ✅ Dùng getObject để giữ đúng NULL thay vì 0
+                    user.setBranchId((Integer) rs.getObject("BranchID"));
+                    user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
+
+                    user.setRoleId(rs.getInt("RoleID"));
+                    user.setRoleName(rs.getString("RoleName"));
+                    user.setIsActive(rs.getInt("IsActive"));
+                    user.setAvaUrl(rs.getString("AvaUrl"));
+                    user.setAddress(rs.getString("Address"));
+                    user.setBranchName(rs.getString("BranchName"));
+                    user.setWarehouseName(rs.getString("WarehouseName"));
+
+                    // ✅ Giới tính null-safe
+                    Object genderObj = rs.getObject("Gender");
+                    user.setGender(genderObj != null ? rs.getBoolean("Gender") : null);
+
+                    // ✅ DOB (giữ nguyên độ chính xác)
+                    java.sql.Timestamp dob = rs.getTimestamp("DOB");
+                    if (dob != null) {
+                        user.setDob(dob); // kiểu Timestamp kế thừa java.util.Date
+                    }
+
+                    // ✅ QUAN TRỌNG: Lấy CCCD/Hộ chiếu
+                    user.setIdentificationId(rs.getString("IdentificationID"));
+
+                    // (Tùy bạn có dùng)
+                    user.setTaxNumber(rs.getString("TaxNumber"));
+                    user.setWebUrl(rs.getString("WebURL"));
+                }
             }
-
-            rs.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-
         return user;
     }
 
@@ -160,6 +179,58 @@ public class UserDAO extends DataBaseContext {
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
+        return false;
+    }
+
+    public boolean isEmailExists(String email) {
+        // Thay đổi [Users] và [Email] cho phù hợp với CSDL của bạn
+        String sql = "SELECT COUNT(*) FROM [Users] WHERE LOWER([Email]) = LOWER(?)";
+
+        try (
+                PreparedStatement ps = connection.prepareStatement(sql)) { // Tự động đóng statement
+
+            ps.setString(1, email);
+
+            try (ResultSet rs = ps.executeQuery()) { // Tự động đóng result set
+                if (rs.next()) {
+                    // rs.getInt(1) sẽ lấy giá trị của cột đầu tiên (COUNT(*))
+                    // Nếu count > 0, nghĩa là email đã được tìm thấy.
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            // In lỗi ra console để debug, trong ứng dụng thực tế nên dùng logger
+            e.printStackTrace();
+        }
+        // Trả về false nếu có lỗi xảy ra hoặc không tìm thấy
+        return false;
+    }
+
+    public boolean isIdentificationIdExists(String identificationId) {
+        // Câu lệnh SQL để đếm số bản ghi có IdentificationID trùng khớp
+        String sql = "SELECT COUNT(*) FROM [Users] WHERE [IdentificationID] = ?";
+
+        // Sử dụng try-with-resources để tự động đóng kết nối
+        try (
+                PreparedStatement ps = connection.prepareStatement(sql)) {
+
+            // Gán giá trị cho tham số trong câu lệnh SQL
+            ps.setString(1, identificationId);
+
+            // Thực thi truy vấn và lấy kết quả
+            try (ResultSet rs = ps.executeQuery()) {
+                // Di chuyển con trỏ đến hàng đầu tiên
+                if (rs.next()) {
+                    // Lấy giá trị đếm từ cột đầu tiên. Nếu lớn hơn 0, tức là ID đã tồn tại.
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            // In lỗi ra console để debug
+            e.printStackTrace();
+        }
+
+        // Trả về false nếu có lỗi hoặc không tìm thấy
         return false;
     }
 
@@ -406,27 +477,54 @@ public class UserDAO extends DataBaseContext {
 
     public User getUserFullById(int userID) {
         User user = null;
-        String query = "SELECT * FROM Users WHERE UserID = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+
+        // JOIN để lấy tên kho (và chỉ lấy tên để tránh trùng cột)
+        String sql
+                = "SELECT u.UserID, u.FullName, u.Email, u.Phone, u.Address, u.PasswordHash, "
+                + "       u.BranchID, u.WarehouseID, u.RoleID, u.IsActive, u.Gender, "
+                + "       u.DOB, u.IdentificationID, u.TaxNumber, u.WebURL, "
+                + "       w.WarehouseName AS WarehouseName "
+                + // 👈 thêm tên kho
+                "FROM Users u "
+                + "LEFT JOIN Warehouses w ON u.WarehouseID = w.WarehouseID "
+                + "WHERE u.UserID = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, userID);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                user = new User();
-                user.setUserId(rs.getInt("UserID"));
-                user.setFullName(rs.getString("FullName"));
-                user.setEmail(rs.getString("Email"));
-                user.setPhone(rs.getString("Phone"));
-                user.setAddress(rs.getString("Address"));
-                user.setPasswordHash(rs.getString("PasswordHash"));
-                user.setBranchId((Integer) rs.getObject("BranchID"));
-                user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
-                user.setRoleId(rs.getInt("RoleID"));
-                user.setIsActive(rs.getInt("IsActive"));
-                user.setGender((Boolean) rs.getObject("Gender"));
-                user.setDob(rs.getTimestamp("DOB"));
-                user.setIdentificationId(rs.getString("IdentificationID"));
-                user.setTaxNumber(rs.getString("TaxNumber"));
-                user.setWebUrl(rs.getString("WebURL"));
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    user = new User();
+
+                    // Các cột từ Users
+                    user.setUserId(rs.getInt("UserID"));
+                    user.setFullName(rs.getString("FullName"));
+                    user.setEmail(rs.getString("Email"));
+                    user.setPhone(rs.getString("Phone"));
+                    user.setAddress(rs.getString("Address"));
+                    user.setPasswordHash(rs.getString("PasswordHash"));
+
+                    // Các ID có thể null
+                    user.setBranchId((Integer) rs.getObject("BranchID"));
+                    user.setWarehouseId((Integer) rs.getObject("WarehouseID"));
+
+                    user.setRoleId(rs.getInt("RoleID"));
+                    user.setIsActive(rs.getInt("IsActive"));
+
+                    // Gender (BIT) có thể null
+                    Object genderObj = rs.getObject("Gender");
+                    user.setGender(genderObj == null ? null : (rs.getBoolean("Gender")));
+
+                    // DOB có thể null
+                    java.sql.Timestamp dobTs = rs.getTimestamp("DOB");
+                    user.setDob(dobTs == null ? null : new java.util.Date(dobTs.getTime()));
+
+                    user.setIdentificationId(rs.getString("IdentificationID"));
+                    user.setTaxNumber(rs.getString("TaxNumber"));
+                    user.setWebUrl(rs.getString("WebURL"));
+
+                    // Tên kho từ JOIN
+                    user.setWarehouseName(rs.getString("WarehouseName")); // 👈 quan trọng
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -445,6 +543,7 @@ public class UserDAO extends DataBaseContext {
         }
         return false;
     }
+
     public static String hashSHA256(String password) {
         try {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");

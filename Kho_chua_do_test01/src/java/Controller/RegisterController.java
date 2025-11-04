@@ -3,7 +3,7 @@ package Controller;
 import DAL.UserDAO;
 import Model.User;
 import java.io.IOException;
-import java.util.Date;
+import java.security.MessageDigest;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,16 +13,16 @@ import jakarta.servlet.http.HttpSession;
 
 @WebServlet(name = "RegisterController", urlPatterns = {"/Register"})
 public class RegisterController extends HttpServlet {
+
+    // --- Constants for clarity and easier maintenance ---
+    private static final int DEFAULT_ROLE_ID = 2; // Default role: Sales Staff
+    private static final int STATUS_UNVERIFIED = 2; // Status for newly registered accounts needing verification/activation
+
     private UserDAO userDAO;
 
     @Override
     public void init() {
         userDAO = new UserDAO();
-    }
-
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
     }
 
     @Override
@@ -34,6 +34,7 @@ public class RegisterController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         String fullName = request.getParameter("fullName");
         String identificationId = request.getParameter("identificationId");
         String phone = request.getParameter("phone");
@@ -42,100 +43,128 @@ public class RegisterController extends HttpServlet {
         String confirmPassword = request.getParameter("confirmPassword");
         String terms = request.getParameter("terms");
 
-        // Validate input
-        if (fullName == null || identificationId == null || phone == null || email == null ||
-            password == null || confirmPassword == null || terms == null ||
-            fullName.trim().isEmpty() || identificationId.trim().isEmpty() || phone.trim().isEmpty() ||
-            email.trim().isEmpty() || password.trim().isEmpty() || confirmPassword.trim().isEmpty()) {
-            request.setAttribute("error", "Vui lòng điền đầy đủ thông tin!");
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
+        // --- Centralized Validation ---
+        String validationError = validateInput(fullName, identificationId, phone, email, password, confirmPassword, terms);
+        if (validationError != null) {
+            forwardToRegisterWithError(request, response, validationError);
             return;
         }
 
-        // Validate password match
-        if (!password.equals(confirmPassword)) {
-            request.setAttribute("error", "Mật khẩu xác nhận không khớp!");
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
-            return;
-        }
-
-        // Validate password length
-        if (password.length() < 6) {
-            request.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự!");
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
-            return;
-        }
-
-        // Validate phone format
         String cleanPhone = phone.replaceAll("\\s+", "");
-        if (!cleanPhone.matches("\\d{10,11}")) {
-            request.setAttribute("error", "Số điện thoại không hợp lệ (10-11 chữ số)!");
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
-            return;
-        }
-
-        // Validate email format
-        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            request.setAttribute("error", "Email không hợp lệ!");
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
-            return;
-        }
-
-        // Validate identification ID format (9 or 12 digits)
         String cleanId = identificationId.replaceAll("\\s+", "");
-        if (!cleanId.matches("\\d{9}|\\d{12}")) {
-            request.setAttribute("error", "Căn cước công dân không hợp lệ (9 hoặc 12 chữ số)!");
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
-            return;
-        }
-
-        // Validate terms agreement
-        if (!"on".equals(terms)) {
-            request.setAttribute("error", "Vui lòng đồng ý với điều khoản dịch vụ!");
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
-            return;
-        }
-
+        
         try {
-            // Check if phone exists
-            if (userDAO.isPhoneExists(cleanPhone)) {
-                request.setAttribute("error", "Số điện thoại đã được sử dụng!");
-                request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
+            if (userDAO.isIdentificationIdExists(cleanId)) {
+                forwardToRegisterWithError(request, response, "Số CCCD này đã được sử dụng!");
                 return;
             }
 
-            // Create new user
+            // Check if phone or email already exists
+            if (userDAO.isPhoneExists(cleanPhone)) {
+                forwardToRegisterWithError(request, response, "Số điện thoại này đã được sử dụng!");
+                return;
+            }
+            if (userDAO.isEmailExists(email.trim())) {
+                forwardToRegisterWithError(request, response, "Email này đã được sử dụng!");
+                return;
+            }
+
+            // Create new user object
             User newUser = new User();
             newUser.setFullName(fullName.trim());
-            newUser.setIdentificationId(cleanId);
+            newUser.setIdentificationId(identificationId.replaceAll("\\s+", ""));
             newUser.setPhone(cleanPhone);
             newUser.setEmail(email.trim());
-            newUser.setPasswordHash(password);
-            newUser.setRoleId(2); // Default role: Nhân viên bán hàng
-            newUser.setIsActive(1); // Active by default
 
-            // Insert user
+            newUser.setPasswordHash(password);
+
+            // Use constants for role and status
+            newUser.setRoleId(DEFAULT_ROLE_ID);
+            newUser.setIsActive(STATUS_UNVERIFIED);
+
+            // Insert user into the database
             boolean success = userDAO.insertUser(newUser);
+
             if (success) {
-                request.setAttribute("success", "Đăng ký thành công! Vui lòng đăng nhập.");
+                // 3. Use Post-Redirect-Get pattern for better UX
                 HttpSession session = request.getSession();
-                session.setAttribute("successMessage", "Đăng ký thành công! Vui lòng đăng nhập.");
-                
-                // Redirect to login after 2 seconds (via JavaScript)
-                request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
+                session.setAttribute("successMessage", "Đăng ký thành công! Vui lòng chờ quản trị viên kích hoạt tài khoản.");
+                response.sendRedirect(request.getContextPath() + "/Login");
             } else {
-                request.setAttribute("error", "Có lỗi xảy ra trong quá trình đăng ký!");
-                request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
+                forwardToRegisterWithError(request, response, "Đã có lỗi xảy ra trong quá trình đăng ký. Vui lòng thử lại.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Có lỗi hệ thống xảy ra: " + e.getMessage());
-            request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
+            e.printStackTrace(); // Should be replaced with a proper logger
+            forwardToRegisterWithError(request, response, "Lỗi hệ thống: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Validates all registration form inputs.
+     *
+     * @return An error message string if validation fails, otherwise null.
+     */
+    private String validateInput(String fullName, String id, String phone, String email, String pass, String confirmPass, String terms) {
+        if (fullName == null || fullName.trim().isEmpty() || id == null || id.trim().isEmpty()
+                || phone == null || phone.trim().isEmpty() || email == null || email.trim().isEmpty()
+                || pass == null || pass.isEmpty() || confirmPass == null || confirmPass.isEmpty()) {
+            return "Vui lòng điền đầy đủ tất cả các trường bắt buộc.";
+        }
+        if (!"on".equals(terms)) {
+            return "Bạn phải đồng ý với các điều khoản dịch vụ để đăng ký.";
+        }
+        if (pass.length() < 6) {
+            return "Mật khẩu phải có ít nhất 6 ký tự.";
+        }
+        if (!pass.equals(confirmPass)) {
+            return "Mật khẩu xác nhận không khớp.";
+        }
+        if (!phone.replaceAll("\\s+", "").matches("^0\\d{9}$")) {
+            return "Số điện thoại không hợp lệ (Bắt đầu bằng 0 và có 10 chữ số).";
+        }
+        if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            return "Định dạng email không hợp lệ.";
+        }
+        if (!id.replaceAll("\\s+", "").matches("\\d{12}")) {
+            return "Số CMND/CCCD không hợp lệ (phải có 12 chữ số).";
+        }
+        return null; // All validations passed
+    }
+
+    /**
+     * Helper method to forward back to the registration page with an error
+     * message.
+     */
+    private void forwardToRegisterWithError(HttpServletRequest request, HttpServletResponse response, String message)
+            throws ServletException, IOException {
+        request.setAttribute("error", message);
+        // Also forward back the user's input so they don't have to re-type everything
+        request.setAttribute("fullName", request.getParameter("fullName"));
+        request.setAttribute("identificationId", request.getParameter("identificationId"));
+        request.setAttribute("phone", request.getParameter("phone"));
+        request.setAttribute("email", request.getParameter("email"));
+        request.getRequestDispatcher("/WEB-INF/jsp/includes/Register.jsp").forward(request, response);
+    }
+
+    /**
+     * Hashes a string using the SHA-256 algorithm.
+     */
+    private String hashSHA256(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] bytes = md.digest(password.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Error hashing password", e);
         }
     }
 
     @Override
     public String getServletInfo() {
-        return "Register Controller for WM System";
+        return "Handles user registration.";
     }
 }

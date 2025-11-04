@@ -22,6 +22,15 @@
                 <!-- Nội dung chính -->
                 <div class="col-md-9">
                     <div class="card p-4">
+
+                        <%  String msg = (String) request.getAttribute("msg");
+                            String msgType = (String) request.getAttribute("msgType"); // success | danger | warning | info
+                            if (msg != null) { %>
+                        <div class="alert alert-<%= (msgType != null ? msgType : "info") %>">
+                            <%= msg %>
+                        </div>
+                        <% } %>
+
                         <div class="card-header bg-white mb-3">
                             <i class="fa-solid fa-circle-info me-2 text-primary"></i>Thông tin cá nhân
                         </div>
@@ -79,7 +88,7 @@
                                         <!-- CCCD -->
                                         <div class="mb-3">
                                             <label class="label-bold">CCCD/Hộ chiếu:</label>
-                                            <input type="text" class="form-control" name="identificationId"
+                                            <input type="text" class="form-control" name="identificationId" title="CCCD phải gồm đúng 12 chữ số" pattern="^\d{12}$"
                                                    value="<%= ((Model.User) request.getAttribute("user")).getIdentificationId() != null 
                                                             ? ((Model.User) request.getAttribute("user")).getIdentificationId() 
                                                             : "" %>">
@@ -92,14 +101,7 @@
                                     <div class="info-section">
                                         <h6><i class="fa-solid fa-address-book me-2"></i>Thông tin liên hệ</h6>
 
-                                        <div class="mb-3">
-                                            <label class="label-bold">Kho tổng đang công tác:</label>
-                                            <span class="badge bg-success ms-2">
-                                                <%= ((Model.User) request.getAttribute("user")).getWarehouseName() != null 
-                                                        ? ((Model.User) request.getAttribute("user")).getWarehouseName() 
-                                                        : "Chưa có dữ liệu" %>
-                                            </span>
-                                        </div>
+
 
                                         <!-- Email -->
                                         <div class="mb-3">
@@ -111,7 +113,7 @@
                                         <!-- Số điện thoại -->
                                         <div class="mb-3">
                                             <label class="label-bold">Số điện thoại:</label>
-                                            <input type="text" class="form-control" name="phone" 
+                                            <input type="text" class="form-control" name="phone" title="Số điện thoại 10 số và bắt đầu bằng 0" pattern="^0\d{9}$"
                                                    value="<%= ((Model.User) request.getAttribute("user")).getPhone() %>">
                                         </div>
 
@@ -121,6 +123,25 @@
                                             <input type="text" class="form-control" name="address" 
                                                    value="<%= ((Model.User) request.getAttribute("user")).getAddress() %>">
                                         </div>
+
+                                        <div class="mb-3">
+                                            <label class="label-bold">Tên kho tổng:</label>
+                                            <span class="badge bg-success ms-2">
+                                                <%= ((Model.User) request.getAttribute("user")).getWarehouseName() != null 
+                                                        ? ((Model.User) request.getAttribute("user")).getWarehouseName() 
+                                                        : "Chưa có dữ liệu" %>
+                                            </span>
+                                        </div>
+
+                                        <!-- Địa chỉ kho tổng -->
+                                        <div class="mb-3">
+                                            <label class="label-bold">Địa chỉ kho tổng:</label>
+                                            <span class="badge bg-info ms-2">
+                                                <%= request.getAttribute("warehouseAddress") != null
+                                                      ? (String) request.getAttribute("warehouseAddress")
+                                                      : "Chưa có dữ liệu" %>
+                                            </span>
+                                        </div>    
 
                                         <!-- 🟢 Trạng thái tài khoản -->
                                         <div class="mb-3">

@@ -15,6 +15,8 @@
     <body>
         <%@ include file="../warehouse/header-warehouse.jsp" %>
 
+        
+
         <div class="page-container">
             <!-- Cột trái -->
             <div class="left-column">
@@ -81,6 +83,9 @@
                     </div>
                     <% } %>
                 </div>
+
+                
+
             </div>
         </div>
     </body>

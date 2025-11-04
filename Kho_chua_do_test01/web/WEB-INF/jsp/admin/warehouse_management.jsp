@@ -17,8 +17,46 @@
             <div class="row">
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
-                <div class="col-md-9">
+                <div class="col-md-9" style="margin-top: 60px;">
                     <div class="warehouse-container">
+                        <%-- ALERT từ redirect --%>
+                        <%
+                            String success = request.getParameter("success");
+                            String error = request.getParameter("error");
+                        %>
+
+                        <% if (success != null) { %>
+                        <div class="alert alert-success text-center fw-bold" role="alert" style="margin-top:10px;">
+                            <% if ("create".equals(success)) { %>
+                            ✅ Thêm kho thành công!
+                            <% } else if ("update".equals(success)) { %>
+                            ✅ Cập nhật kho thành công!
+                            <% } else if ("delete".equals(success)) { %>
+                            ✅ Xóa kho thành công!
+                            <% } else { %>
+                            ✅ Thao tác thành công!
+                            <% } %>
+                        </div>
+                        <% } else if (error != null) { %>
+                        <div class="alert alert-danger text-center fw-bold" role="alert" style="margin-top:10px;">
+                            <% if ("empty_fields".equals(error)) { %>
+                            ⚠️ Vui lòng nhập đầy đủ thông tin!
+                            <% } else if ("invalid_phone".equals(error)) { %>
+                            📵 Số điện thoại không hợp lệ (bắt đầu bằng 0 và 9–11 số)!
+                            <% } else if ("update_failed".equals(error)) { %>
+                            ❌ Cập nhật kho thất bại!
+                            <% } else if ("delete_failed".equals(error)) { %>
+                            ❌ Xóa kho thất bại!
+                            <% } else if ("duplicate_phone".equals(error)) { %>
+                            📞 Số điện thoại đã tồn tại, vui lòng nhập số khác!
+                            <% } else if ("exception".equals(error)) { %>
+                            ⚠️ Đã xảy ra lỗi trong quá trình xử lý!
+                            <% } else { %>
+                            ❌ Thao tác thất bại!
+                            <% } %>
+                        </div>
+                        <% } %>
+
                         <div class="warehouse-header">
                             <h2><i class="fa-solid fa-warehouse"></i> Quản lý kho tổng</h2>
                             <form action="WareHouseCreate" method="get">
@@ -69,6 +107,7 @@
                                             <form action="WareHouseManagement" method="post" onsubmit="return confirm('Bạn có chắc muốn xóa kho này không?');">
                                                 <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="warehouseId" value="<%= w.getWarehouseId() %>">
+                                                <input type="hidden" name="page" value="<%= request.getAttribute("currentPage") != null ? request.getAttribute("currentPage") : 1 %>">
                                                 <button type="submit" class="btn-delete"><i class="fas fa-trash"></i> Xóa</button>
                                             </form>
                                         </td>
@@ -81,6 +120,39 @@
                                     <% } %>
                                 </tbody>
                             </table>
+                            <div class="pagination">
+                                <%
+                                    Integer currentPage = (Integer) request.getAttribute("currentPage");
+                                    Integer totalPages = (Integer) request.getAttribute("totalPages");
+                                    if (currentPage == null) currentPage = 1;
+                                    if (totalPages == null) totalPages = 1;
+
+                                    if (totalPages > 1) {
+                                %>
+                                <div>
+                                    <% if (currentPage > 1) { %>
+                                    <a href="WareHouseManagement?page=<%= currentPage - 1 %>">&laquo; Trước</a>
+                                    <% } else { %>
+                                    <a class="disabled" aria-disabled="true">&laquo; Trước</a>
+                                    <% } %>
+
+                                    <% for (int i = 1; i <= totalPages; i++) { %>
+                                    <% if (i == currentPage) { %>
+                                    <span class="current"><%= i %></span>
+                                    <% } else { %>
+                                    <a href="WareHouseManagement?page=<%= i %>"><%= i %></a>
+                                    <% } %>
+                                    <% } %>
+
+                                    <% if (currentPage < totalPages) { %>
+                                    <a href="WareHouseManagement?page=<%= currentPage + 1 %>">Sau &raquo;</a>
+                                    <% } else { %>
+                                    <a class="disabled" aria-disabled="true">Sau &raquo;</a>
+                                    <% } %>
+                                </div>
+                                <% } %>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -92,24 +164,23 @@
             <form action="WareHouseManagement" method="post">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" id="warehouseId" name="warehouseId">
+                <input type="hidden" name="page" value="<%= request.getAttribute("currentPage") != null ? request.getAttribute("currentPage") : 1 %>">
 
-                <h4><i class="fa fa-edit"></i> Chỉnh sửa kho tổng</h4>
-
-                <label>Tên kho tổng *</label>
+                <label>Tên kho *</label>
                 <input type="text" id="warehouseName" name="warehouseName" class="form-control" required>
 
                 <label>Địa chỉ *</label>
                 <input type="text" id="address" name="address" class="form-control" required>
 
                 <label>Số điện thoại *</label>
-                <input type="text" id="phone" name="phone" class="form-control" required pattern="[0-9]{10,11}">
+                <input type="text" id="phone" name="phone" class="form-control" required>
 
-                <div class="mt-3">
+                <div style="margin-top:10px;">
                     <input type="checkbox" id="isActive" name="isActive">
                     <label for="isActive">Kho đang hoạt động</label>
                 </div>
 
-                <div class="text-end mt-3">
+                <div class="text-end" style="margin-top:15px;">
                     <button type="button" class="btn btn-secondary" onclick="hideModal()">Hủy</button>
                     <button type="submit" class="btn btn-success">Cập nhật</button>
                 </div>

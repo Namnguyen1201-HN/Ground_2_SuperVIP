@@ -4,6 +4,7 @@
 <%@ page import="Model.User" %>
 <%@ page import="Model.Branch" %>
 <%@ page import="Model.Role" %>
+
 <html lang="vi">
     <head>
         <meta charset="UTF-8">
@@ -20,7 +21,7 @@
             <!-- Sidebar + Main -->
             <div class="content">
                 <!-- Sidebar filters -->
-                <aside class="sidebar">
+                <aside class="sidebar" style="margin-top: 70px">
                     <h2>Danh sách nhân viên</h2>
                     <form action="NhanVien" method="get">
 
@@ -108,7 +109,7 @@
                 </aside>
 
                 <!-- Main content -->
-                <main class="main-content">
+                <main class="main-content" style="margin-top: 13px;">
                     <div class="toolbar">
                         <form action="NhanVien" method="get" class="search-bar">
                             <div>
@@ -120,7 +121,8 @@
                         <div class="btn-group">
                             <a href="AddUser" class="btn add">Thêm nhân viên</a>
                             <a href="ShiftUser" class="btn add">Ca làm</a>                          
-                        </div>
+                        </div>                       
+
                     </div>
 
                     <table class="emp-table">

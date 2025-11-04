@@ -24,6 +24,22 @@
     if (status   == null) status   = (paramStatus != null ? paramStatus.trim() : "");
 
     String ctx = request.getContextPath();
+    
+    // ===== Paging attributes coming from Controller =====
+    Integer _pgCurrent  = (Integer) request.getAttribute("currentPage");
+    Integer _pgTotal    = (Integer) request.getAttribute("totalPages");
+    Integer _pgItems    = (Integer) request.getAttribute("totalItems");
+    Integer _pgStart    = (Integer) request.getAttribute("startItem");
+    Integer _pgEnd      = (Integer) request.getAttribute("endItem");
+    String  baseQuery   = (String)  request.getAttribute("baseQuery");
+
+    int currentPage = (_pgCurrent == null) ? 1  : _pgCurrent;
+    int totalPages  = (_pgTotal   == null) ? 1  : _pgTotal;
+    int totalItems  = (_pgItems   == null) ? 0  : _pgItems;
+    int startItem   = (_pgStart   == null) ? 0  : _pgStart;
+    int endItem     = (_pgEnd     == null) ? 0  : _pgEnd;
+
+    if (baseQuery == null) baseQuery = "";
 
     // Formatter
     SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -93,6 +109,15 @@
                     }
                 %>
 
+                <div class="list-summary" style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;">
+                    <div class="left">
+                        <small>
+                            Hiển thị <strong><%= startItem %></strong>–<strong><%= endItem %></strong>
+                            trên tổng <strong><%= totalItems %></strong> kết quả
+                        </small>
+                    </div>
+                </div>
+
                 <table class="invoices-table">
                     <thead>
                         <tr>
@@ -115,6 +140,7 @@
                                     try {
                                         dateStr = (item.getCreatedAt() != null) ? df.format(item.getCreatedAt()) : "";
                                     } catch (Exception ignore) {}
+                                    
                                     String resp = (item.getResponseStatus() == null) ? "" : item.getResponseStatus().toLowerCase();
                                     String statusBadge = "Chờ xử lý";
                                     String statusClass = "badge-pending";
@@ -129,7 +155,7 @@
                                     } catch (Exception ignore) {}
                         %>
                         <tr>
-                            <td><%= i+1 %></td>
+                            <td><%= (startItem == 0 ? (i + 1) : (startItem + i)) %></td>
                             <td><%= item.getFromSupplierName() == null ? "" : item.getFromSupplierName() %></td>
                             <td><%= dateStr %></td>
                             <td><%= item.getCreatedByName() == null ? "" : item.getCreatedByName() %></td>
@@ -166,6 +192,50 @@
                         %>
                     </tbody>
                 </table>
+
+                <%-- Pagination --%>
+                <%
+                    int window = 2; // số trang hiển thị 2 bên trang hiện tại
+                    int start = Math.max(1, currentPage - window);
+                    int end   = Math.min(totalPages, currentPage + window);
+                %>
+
+                <nav class="pagination-bar" aria-label="Pagination" style="margin-top:12px;">
+                    <ul class="pagination" style="display:flex;gap:4px;justify-content:flex-end;list-style:none;padding:0;">
+                        <li class="page-item <%= (currentPage <= 1 ? "disabled" : "") %>">
+                            <a class="page-link" href="<%=ctx%>/wh-import?page=<%= (currentPage - 1) %><%= baseQuery %>">Trước</a>
+                        </li>
+
+                        <% if (start > 1) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="<%=ctx%>/wh-import?page=1<%= baseQuery %>">1</a>
+                        </li>
+                        <% if (start > 2) { %>
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                            <% } %>
+                            <% } %>
+
+                        <% for (int p = start; p <= end; p++) { %>
+                        <li class="page-item <%= (p == currentPage ? "active" : "") %>">
+                            <a class="page-link" href="<%=ctx%>/wh-import?page=<%= p %><%= baseQuery %>"><%= p %></a>
+                        </li>
+                        <% } %>
+
+                        <% if (end < totalPages) { %>
+                        <% if (end < totalPages - 1) { %>
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                            <% } %>
+                        <li class="page-item">
+                            <a class="page-link" href="<%=ctx%>/wh-import?page=<%= totalPages %><%= baseQuery %>"><%= totalPages %></a>
+                        </li>
+                        <% } %>
+
+                        <li class="page-item <%= (currentPage >= totalPages ? "disabled" : "") %>">
+                            <a class="page-link" href="<%=ctx%>/wh-import?page=<%= (currentPage + 1) %><%= baseQuery %>">Sau</a>
+                        </li>
+                    </ul>
+                </nav>    
+
             </main>
         </div>
 

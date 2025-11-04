@@ -29,12 +29,18 @@
             <div class="row">
                 <%@ include file="../admin/sidebar-store-admin.jsp" %>
 
-                <div class="col-md-9 col-lg-9">
+                <div class="col-md-9 col-lg-9" style="margin-top: 60px;">
                     <div class="card shadow-sm p-4" style="width: 965px;">
                         <h5 class="mb-3"><i class="bi bi-info-circle"></i> Thông tin tài khoản</h5>
 
-                        <% if (msg != null) { %>
-                        <div class="alert alert-info"><%= msg %></div>
+                        <% if (request.getAttribute("error") != null) { %>
+                        <div class="alert alert-danger text-center fw-bold">
+                            <%= request.getAttribute("error") %>
+                        </div>
+                        <% } else if (request.getAttribute("success") != null) { %>
+                        <div class="alert alert-success text-center fw-bold">
+                            <%= request.getAttribute("success") %>
+                        </div>
                         <% } %>
 
                         <form action="InformationAccount" method="post">
@@ -86,7 +92,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Trạng thái tài khoản:</label>
-                                            <select class="form-select" name="isActive">
+                                            <select class="form-select" name="isActive" disabled>
                                                 <option value="1" <%= user.getIsActive()==1 ? "selected" : "" %>>Đang hoạt động</option>
                                                 <option value="0" <%= user.getIsActive()==0 ? "selected" : "" %>>Ngừng hoạt động</option>
                                             </select>
