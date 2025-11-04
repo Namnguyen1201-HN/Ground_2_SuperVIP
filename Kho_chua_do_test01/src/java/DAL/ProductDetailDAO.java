@@ -277,9 +277,11 @@ public class ProductDetailDAO extends DataBaseContext {
      */
     public ProductDetail getProductDetailById(int productDetailID) {
         String sql = "SELECT pd.ProductDetailID, pd.ProductID, pd.Description, pd.ProductCode, " +
-                     "pd.WarrantyPeriod, pd.ProductNameUnsigned, pd.CreatedAt, p.CostPrice, p.RetailPrice " +
+                     "pd.WarrantyPeriod, pd.ProductNameUnsigned, pd.CreatedAt, p.CostPrice, p.RetailPrice, " +
+                     "p.ProductName, p.ImageURL, s.SupplierName " +
                      "FROM ProductDetails pd " +
                      "JOIN Products p ON p.ProductID = pd.ProductID " +
+                     "LEFT JOIN Suppliers s ON s.SupplierID = p.SupplierID " +
                      "WHERE pd.ProductDetailID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, productDetailID);
@@ -295,6 +297,9 @@ public class ProductDetailDAO extends DataBaseContext {
                     pd.setCreatedAt(rs.getTimestamp("CreatedAt"));
                     pd.setCostPrice(rs.getDouble("CostPrice"));
                     pd.setRetailPrice(rs.getDouble("RetailPrice"));
+                    pd.setProductName(rs.getString("ProductName"));
+                    pd.setImageURL(rs.getString("ImageURL"));
+                    pd.setSupplierName(rs.getString("SupplierName"));
                     return pd;
                 }
             }

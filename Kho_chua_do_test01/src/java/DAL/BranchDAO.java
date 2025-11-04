@@ -66,6 +66,8 @@ public class BranchDAO extends DataBaseContext {
         return false;
     }
 
+    public Branch getBranchById(int branchId) {
+        String sql = "SELECT BranchID, BranchName, Address, Phone, IsActive FROM Branches WHERE BranchID = ?";
     // Kiểm tra tên chi nhánh có tồn tại chưa
     public boolean isBranchNameExists(String branchName) {
         String sql = "SELECT COUNT(*) FROM Branches WHERE LOWER(BranchName) = LOWER(?)";

@@ -163,7 +163,7 @@
                     <label for="branchId">Chi nhánh</label>
                     <select id="branchId" name="branchId" class="control pretty-select">
                         <c:forEach var="br" items="${branches}">
-                            <option value="${br.branchID}">${br.branchName}</option>
+                            <option value="${br.branchId}">${br.branchName}</option>
                         </c:forEach>
                     </select>
                 </div>
@@ -190,7 +190,7 @@
         <div class="grid">
             <div class="row">
                 <label for="imageUrl">Ảnh (URL)</label>
-                <input id="imageUrl" class="control" type="url" name="imageUrl"
+                <input id="imageUrl" class="control" name="imageUrl"
                        value="<c:out value='${product != null ? product.imageUrl : ""}'/>"
                        placeholder="https://..." />
             </div>

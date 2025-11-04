@@ -297,18 +297,9 @@
 
             .suppliers-table th:last-child, /* Hành động */
             .suppliers-table td:last-child {
-                min-width: 230px;
+                min-width: 150px;
                 text-align: center;
                 white-space: normal;
-            }
-
-            /* Status Update Form & Select - Quan trọng cho cột Hành động */
-            .status-update-form {
-                display: flex;
-                gap: 6px;
-                align-items: center;
-                justify-content: center;
-                flex-wrap: wrap; /* Cho phép form wrap nếu không đủ 230px */
             }
 
             /* Status Badge Styles */
@@ -358,74 +349,7 @@
                 color: #212529 !important;
             }
 
-            .status-select {
-                padding: 5px 8px;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                font-size: 11px;
-                font-weight: 500;
-                min-width: 100px;
-                max-width: 110px;
-                background: white;
-                cursor: pointer;
-                transition: all 0.2s ease;
-            }
 
-            .status-select:focus {
-                outline: none;
-                border-color: #007bff;
-                box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
-            }
-
-            .status-select:disabled {
-                background: #e9ecef;
-                cursor: not-allowed;
-                opacity: 0.6;
-            }
-
-            .btn-save {
-                padding: 5px 10px;
-                font-size: 11px;
-                border-radius: 5px;
-                border: none;
-                background: #28a745;
-                color: white;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                white-space: nowrap;
-            }
-
-            .btn-save:hover:not(:disabled) {
-                background: #218838;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
-            }
-
-            .btn-save:disabled {
-                background: #6c757d;
-                cursor: not-allowed;
-                opacity: 0.5;
-            }
-
-            .btn-view {
-                padding: 5px 10px;
-                font-size: 11px;
-                border-radius: 5px;
-                border: 1px solid #17a2b8;
-                background: white;
-                color: #17a2b8;
-                cursor: pointer;
-                text-decoration: none;
-                transition: all 0.2s ease;
-                white-space: nowrap;
-            }
-
-            .btn-view:hover {
-                background: #17a2b8;
-                color: white;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 6px rgba(23, 162, 184, 0.3);
-            }
 
             .nav-item.dropdown {
                 position: relative;
@@ -562,7 +486,7 @@
                                 <th style="min-width:140px;">Ngày tạo</th>
                                 <th style="min-width:110px; text-align:center;">Thanh toán</th>
                                 <th style="min-width:120px; text-align:right;">Tổng tiền</th>
-                                <th style="min-width:230px; text-align:center;">Hành động</th>
+                                <th style="min-width:150px; text-align:center;">Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -658,24 +582,10 @@
                                             <fmt:formatNumber value="${o.grandTotal}" type="number" groupingUsed="true" /> ₫
                                         </div>
                                     </td>
-                                    <td>
-                                        <form class="status-update-form" method="post" action="Orders">
-                                            <input type="hidden" name="action" value="updateStatus" />
-                                            <input type="hidden" name="orderId" value="${o.orderId}" />
-                                            <c:set var="locked" value="${o.orderStatus eq 'Completed' or o.orderStatus eq 'Cancelled'}" />
-                                            <select class="status-select" name="status" ${locked ? 'disabled' : ''}>
-                                                <option value="Pending" ${o.orderStatus eq 'Pending' ? 'selected' : ''}>Pending</option>
-                                                <option value="Processing" ${o.orderStatus eq 'Processing' ? 'selected' : ''}>Processing</option>
-                                                <option value="Completed" ${o.orderStatus eq 'Completed' ? 'selected' : ''}>Completed</option>
-                                                <option value="Cancelled" ${o.orderStatus eq 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                                            </select>
-                                            <button class="btn-save" type="submit" ${locked ? 'disabled' : ''}>
-                                                <i class="fas fa-save"></i> Lưu
-                                            </button>
-                                            <a class="btn-view" href="Orders?action=detail&id=${o.orderId}">
-                                                <i class="fas fa-eye"></i> Xem
-                                            </a>
-                                        </form>
+                                    <td style="text-align: center;">
+                                        <a class="btn btn-info btn-sm" href="Orders?action=detail&id=${o.orderId}">
+                                            <i class="fas fa-eye me-1"></i> Xem chi tiết
+                                        </a>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -707,14 +617,7 @@
         const msg = '${msg}';
         const error = '${error}';
 
-        if (msg === 'status-updated') {
-            Swal.fire({
-                icon: 'success',
-                title: 'Đã cập nhật trạng thái đơn hàng',
-                timer: 2000,
-                showConfirmButton: false
-            });
-        } else if (msg === 'deleted') {
+        if (msg === 'deleted') {
             Swal.fire({
                 icon: 'success',
                 title: 'Đã xóa đơn hàng',

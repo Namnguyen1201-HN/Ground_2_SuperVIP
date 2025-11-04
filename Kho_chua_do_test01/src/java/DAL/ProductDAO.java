@@ -801,6 +801,103 @@ public Product getProductByIdWithQty(int id) {
     } catch (SQLException e) {
         e.printStackTrace();
     }
+
+    /**
+     * Lấy danh sách sản phẩm theo chi nhánh (dành cho Manager)
+     * Kết nối với bảng Inventory và InventoryProducts để filter theo branch
+     */
+    public List<Product> listProductsByBranch(Integer branchId, List<String> categoryNames, 
+                                            String productName, StockFilter stockFilter, int threshold) {
+        List<Product> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder();
+        
+        sql.append("SELECT DISTINCT p.ProductID, p.ProductName, p.IsActive, p.CostPrice, p.RetailPrice, ")
+           .append("p.ImageURL, p.CreatedAt, c.CategoryName, b.BrandName, ")
+           .append("ISNULL(inv_sum.TotalQuantity, 0) AS TotalQuantity ")
+           .append("FROM Products p ")
+           .append("LEFT JOIN Categories c ON p.CategoryID = c.CategoryID ")
+           .append("LEFT JOIN Brands b ON p.BrandID = b.BrandID ")
+           .append("INNER JOIN ProductDetails pd ON p.ProductID = pd.ProductID ")
+           .append("INNER JOIN InventoryProducts ip ON pd.ProductDetailID = ip.ProductDetailID ")
+           .append("INNER JOIN Inventory inv ON ip.InventoryID = inv.InventoryID ")
+           .append("LEFT JOIN ( ")
+           .append("    SELECT pd2.ProductID, SUM(ip2.Quantity) AS TotalQuantity ")
+           .append("    FROM ProductDetails pd2 ")
+           .append("    JOIN InventoryProducts ip2 ON pd2.ProductDetailID = ip2.ProductDetailID ")
+           .append("    JOIN Inventory inv2 ON ip2.InventoryID = inv2.InventoryID ")
+           .append("    WHERE inv2.BranchID = ? ")
+           .append("    GROUP BY pd2.ProductID ")
+           .append(") inv_sum ON p.ProductID = inv_sum.ProductID ")
+           .append("WHERE inv.BranchID = ? ");
+
+        List<Object> params = new ArrayList<>();
+        params.add(branchId);  // Cho subquery
+        params.add(branchId);  // Cho WHERE chính
+
+        // Filter theo category
+        if (categoryNames != null && !categoryNames.isEmpty()) {
+            String placeholders = String.join(",", Collections.nCopies(categoryNames.size(), "?"));
+            sql.append("AND c.CategoryName IN (").append(placeholders).append(") ");
+            params.addAll(categoryNames);
+        }
+
+        // Filter theo tên sản phẩm
+        if (productName != null && !productName.trim().isEmpty()) {
+            sql.append("AND p.ProductName LIKE ? ");
+            params.add("%" + productName + "%");
+        }
+
+        // Filter theo stock level
+        if (stockFilter != null && stockFilter != StockFilter.ALL) {
+            switch (stockFilter) {
+                case BELOW_MIN:
+                    sql.append("AND ISNULL(inv_sum.TotalQuantity, 0) <= ? ");
+                    params.add(threshold);
+                    break;
+                case OUT:
+                    sql.append("AND ISNULL(inv_sum.TotalQuantity, 0) = 0 ");
+                    break;
+                case IN:
+                    sql.append("AND ISNULL(inv_sum.TotalQuantity, 0) > 0 ");
+                    break;
+            }
+        }
+
+        sql.append("ORDER BY p.ProductName");
+
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Product product = new Product();
+                product.setProductId(rs.getInt("ProductID"));
+                product.setProductName(rs.getString("ProductName"));
+                product.setIsActive(rs.getBoolean("IsActive"));
+                product.setCostPrice(rs.getBigDecimal("CostPrice"));
+                product.setRetailPrice(rs.getBigDecimal("RetailPrice"));
+                product.setImageUrl(rs.getString("ImageURL"));
+                // Note: Product model doesn't have setDescription method
+                // product.setDescription(rs.getString("Description"));
+                java.sql.Timestamp timestamp = rs.getTimestamp("CreatedAt");
+                if (timestamp != null) {
+                    product.setCreatedAt(timestamp.toLocalDateTime());
+                }
+                // Note: Product model doesn't have setUpdatedAt method
+                // product.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+                product.setCategoryName(rs.getString("CategoryName"));
+                product.setBrandName(rs.getString("BrandName"));
+                product.setTotalQty(rs.getInt("TotalQuantity"));
+                list.add(product);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+}
     return null;
 }
 

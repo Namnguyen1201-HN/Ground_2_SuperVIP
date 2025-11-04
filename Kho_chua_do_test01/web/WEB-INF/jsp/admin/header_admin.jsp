@@ -440,7 +440,8 @@
                 Nhân viên
             </a>
 
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/Promotions" 
+               class="nav-item ${fn:contains(pageContext.request.requestURI, 'Promotions') ? 'active' : ''}">
                 <i class="fas fa-tags"></i>
                 Khuyến mãi
             </a>
