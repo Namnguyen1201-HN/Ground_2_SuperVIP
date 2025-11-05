@@ -347,7 +347,7 @@
             <div class="logo-icon">
                 🏢
             </div>
-            <span>VM</span>
+            <span>WM</span>
         </a>
 
         <nav class="nav-menu">
