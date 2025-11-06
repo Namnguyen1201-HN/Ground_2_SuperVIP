@@ -582,9 +582,10 @@
             Promotion editPromotion = (Promotion) request.getAttribute("promotion");
             if (editPromotion != null) {
         %>
+        console.log('Edit mode detected for promotion ID: <%= editPromotion.getPromotionId() %>');
         (function() {
             let retryCount = 0;
-            const maxRetries = 50;
+            const maxRetries = 100;
             
             function loadEditForm() {
                 const modalTitleText = document.getElementById('modalTitleText');
@@ -601,8 +602,11 @@
                     !promoName || !discountPercent || !startDate || !endDate || !modal) {
                     // Elements not ready, retry
                     retryCount++;
+                    console.log('Retry ' + retryCount + ': Waiting for elements...');
                     if (retryCount < maxRetries) {
                         setTimeout(loadEditForm, 50);
+                    } else {
+                        console.error('Failed to load edit form: elements not found after ' + maxRetries + ' retries');
                     }
                     return;
                 }
@@ -675,6 +679,7 @@
                 });
                 
                 // Show modal
+                console.log('Opening modal for edit...');
                 modal.style.display = 'flex';
                 
                 // Wait for DOM to fully render checkboxes, then update counts
@@ -691,10 +696,12 @@
             
             // Try to load immediately if DOM is ready
             if (document.readyState === 'loading') {
+                console.log('DOM is loading, waiting for DOMContentLoaded...');
                 document.addEventListener('DOMContentLoaded', loadEditForm);
             } else {
                 // DOM already loaded, wait a bit for everything to render
-                setTimeout(loadEditForm, 100);
+                console.log('DOM already loaded, starting loadEditForm...');
+                setTimeout(loadEditForm, 200);
             }
         })();
         <%
@@ -764,6 +771,7 @@
         
         // Form validation
         function validateForm() {
+            console.log('=== validateForm called ===');
             let isValid = true;
             
             // Clear previous errors
@@ -772,8 +780,28 @@
             // Log form data for debugging
             const formActionEl = document.getElementById('formAction');
             const promotionIdEl = document.getElementById('promotionId');
+            const promoNameEl = document.getElementById('promoName');
+            const discountPercentEl = document.getElementById('discountPercent');
+            const startDateEl = document.getElementById('startDate');
+            const endDateEl = document.getElementById('endDate');
+            
             if (formActionEl && promotionIdEl) {
-                console.log('Submitting form - Action:', formActionEl.value, 'Promotion ID:', promotionIdEl.value);
+                console.log('Form Action:', formActionEl.value);
+                console.log('Promotion ID:', promotionIdEl.value);
+                console.log('Promo Name:', promoNameEl ? promoNameEl.value : 'N/A');
+                console.log('Discount:', discountPercentEl ? discountPercentEl.value : 'N/A');
+                console.log('Start Date:', startDateEl ? startDateEl.value : 'N/A');
+                console.log('End Date:', endDateEl ? endDateEl.value : 'N/A');
+            }
+            
+            // Log all form fields
+            const form = document.getElementById('promoForm');
+            if (form) {
+                const formData = new FormData(form);
+                console.log('All form data:');
+                for (let [key, value] of formData.entries()) {
+                    console.log('  ' + key + ': ' + value);
+                }
             }
             
             // Validate promo name
@@ -811,8 +839,28 @@
                 isValid = false;
             }
             
+            console.log('Form validation result:', isValid);
+            if (!isValid) {
+                console.log('Form validation failed, preventing submit');
+            } else {
+                console.log('Form validation passed, submitting...');
+            }
             return isValid;
         }
+        
+        // Add form submit event listener for debugging
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('promoForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    console.log('=== Form submit event triggered ===');
+                    const formAction = document.getElementById('formAction');
+                    const promotionId = document.getElementById('promotionId');
+                    console.log('Action:', formAction ? formAction.value : 'N/A');
+                    console.log('Promotion ID:', promotionId ? promotionId.value : 'N/A');
+                });
+            }
+        });
 
         function deletePromotion(id, name) {
             if (confirm('Bạn có chắc chắn muốn xóa khuyến mãi "' + name + '"?')) {

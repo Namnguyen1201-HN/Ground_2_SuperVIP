@@ -393,6 +393,11 @@
                                 <i class="fas fa-list-alt"></i>
                                 Danh sách nhập
                             </a>
+                            <a href="${pageContext.request.contextPath}/warehouse-export-orders" 
+                               class="dropdown-item ${fn:contains(pageContext.request.requestURI, 'warehouse-export-orders') ? 'active' : ''}">
+                                <i class="fas fa-upload"></i>
+                                Xuất hàng
+                            </a>
                         </c:when>
                         <c:when test="${sessionScope.currentUser.roleId == 1}">
                             <!-- Branch Manager: Export from Warehouse -->
@@ -405,6 +410,11 @@
                                class="dropdown-item ${fn:contains(pageContext.request.requestURI, 'stock-movements') ? 'active' : ''}">
                                 <i class="fas fa-list-alt"></i>
                                 Danh sách xuất
+                            </a>
+                            <a href="${pageContext.request.contextPath}/warehouse-export-orders" 
+                               class="dropdown-item ${fn:contains(pageContext.request.requestURI, 'warehouse-export-orders') ? 'active' : ''}">
+                                <i class="fas fa-upload"></i>
+                                Xuất hàng
                             </a>
                         </c:when>
                     </c:choose>
@@ -434,8 +444,8 @@
                 </div>
             </div>
 
-            <a href="${pageContext.request.contextPath}/NhanVien" 
-               class="nav-item ${fn:contains(pageContext.request.requestURI, 'NhanVien') ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/StaffManagement" 
+               class="nav-item ${fn:contains(pageContext.request.requestURI, 'StaffManagement') || fn:contains(pageContext.request.requestURI, 'NhanVien') ? 'active' : ''}">
                 <i class="fas fa-users"></i>
                 Nhân viên
             </a>
@@ -446,7 +456,8 @@
                 Khuyến mãi
             </a>
 
-            <a href="#" class="nav-item">
+            <a href="${pageContext.request.contextPath}/Report" 
+               class="nav-item ${fn:contains(pageContext.request.requestURI, 'Report') ? 'active' : ''}">
                 <i class="fas fa-chart-bar"></i>
                 Báo cáo
             </a>

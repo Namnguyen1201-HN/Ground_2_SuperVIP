@@ -20,8 +20,6 @@
     <main class="main-content">
         <div class="container-fluid">
             <div class="row">
-                <!-- Sidebar -->
-                <!-- <%@ include file="../admin/sidebar-store-admin.jsp" %> -->
                 <%@ include file="../admin/header_admin.jsp" %>
 
                 <!-- Nội dung chính -->
@@ -272,6 +270,9 @@
         </div>
     </main>
 
+    <!-- SheetJS library for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <script>
         function loadEmployees(branchId) {
             const employeeSelect = document.getElementById('employeeSelect');
@@ -303,6 +304,111 @@
             const type = document.querySelector('input[name="type"]').value;
             window.location.href = 'Report?type=' + type;
         }
+
+        // Export to Excel function
+        function exportToExcel() {
+            const table = document.querySelector('.report-table');
+            if (!table) {
+                alert('Không tìm thấy bảng dữ liệu');
+                return;
+            }
+
+            // Get report type
+            const urlParams = new URLSearchParams(window.location.search);
+            const reportType = urlParams.get('type') || 'revenue';
+            const reportTitle = reportType === 'expense' ? 'Báo cáo chi phí' : 'Báo cáo doanh thu thuần';
+            
+            // Get filter values for filename
+            const fromDate = urlParams.get('fromDate') || '';
+            const toDate = urlParams.get('toDate') || '';
+            const branchId = urlParams.get('branchId') || '';
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Get table headers
+            const headers = [];
+            const headerRow = table.querySelector('thead tr');
+            headerRow.querySelectorAll('th').forEach(th => {
+                headers.push(th.textContent.trim());
+            });
+            
+            // Get table data
+            const data = [headers];
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const rowData = [];
+                const cells = row.querySelectorAll('td');
+                
+                // Skip "no data" rows
+                if (cells.length === 1 && cells[0].classList.contains('no-data')) {
+                    return;
+                }
+                
+                cells.forEach((cell, index) => {
+                    let cellValue = cell.textContent.trim();
+                    
+                    // Remove HTML tags and clean up
+                    cellValue = cellValue.replace(/\s+/g, ' ');
+                    
+                    // For amount column, extract number only
+                    if (index === headers.length - 1 && cellValue.includes('₫')) {
+                        // Extract number from currency format
+                        cellValue = cellValue.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.');
+                    }
+                    
+                    rowData.push(cellValue);
+                });
+                
+                if (rowData.length > 0) {
+                    data.push(rowData);
+                }
+            });
+            
+            // Add summary row
+            const summaryTotal = document.querySelector('.summary-total');
+            if (summaryTotal) {
+                const totalText = summaryTotal.textContent.trim();
+                data.push([]); // Empty row
+                data.push([totalText]);
+            }
+            
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            
+            // Set column widths
+            const colWidths = [];
+            headers.forEach(() => {
+                colWidths.push({ wch: 15 });
+            });
+            ws['!cols'] = colWidths;
+            
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, reportTitle);
+            
+            // Generate filename
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
+            let filename = reportTitle + '_' + dateStr;
+            
+            if (fromDate && toDate) {
+                filename += '_' + fromDate.replace(/-/g, '') + '_' + toDate.replace(/-/g, '');
+            }
+            
+            // Export to Excel
+            XLSX.writeFile(wb, filename + '.xlsx');
+        }
+
+        // Attach export function to button
+        document.addEventListener('DOMContentLoaded', function() {
+            const exportBtn = document.querySelector('.btn-export');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    exportToExcel();
+                });
+            }
+        });
     </script>
 </body>
 </html>

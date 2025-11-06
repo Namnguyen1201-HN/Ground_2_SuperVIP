@@ -18,22 +18,27 @@ public class AuthenticationFilter implements Filter {
         roleAccessMap.put(0, Arrays.asList(
                 "/TongQuan", "/NhanVien", "/AddUser", "/BranchManagement", "/ChangePassWord", "/Customer", "/EditUser", "/ShiftUser",
                 "/WarehouseManagement", "/InformationAccount", "/Logout", "/product", "/BranchCreate", "/InventoryMoves", "/Orders",
-                "/Supplier", "/WareHouseCreate", "/Promotion", "/Report"
+                "/Supplier", "/WareHouseCreate", "/Promotion", "/Report",
+                "/warehouse-export-orders", "/serial-check", "/wh-import-export-detail", "/wh-complete-request"
         ));
 
         // ✅ Role 1 – Branch Manager
         roleAccessMap.put(1, Arrays.asList(
-                "/", "/", "/", "/Logout"
+                "/TongQuan", "/Orders", "/Customer", "/Supplier", "/Promotion", "/StaffManagement", "/Report",
+                "/InformationAccountBM", "/ChangePassWord", "/Logout", "/import-request", "/stock-movements",
+                "/warehouse-export-orders", "/serial-check", "/wh-import-export-detail", "/wh-complete-request"
         ));
 
         // ✅ Role 2 – Sale
         roleAccessMap.put(2, Arrays.asList(
-                "/sale", "/", "/", "/", "/Logout"
+                "/sale", "/", "/", "/", "/Logout",
+                "/warehouse-export-orders", "/serial-check", "/wh-import-export-detail", "/wh-complete-request"
         ));
 
         // ✅ Role 3 – Warehouse Manager
         roleAccessMap.put(3, Arrays.asList(
-                "/WareHouseProduct", "/NhapHang", "/XuatHang", "/ThongBao", "/Information", "/Logout"
+                "/WareHouseProduct", "/NhapHang", "/XuatHang", "/ThongBao", "/Information", "/Logout",
+                "/warehouse-export-orders", "/serial-check", "/wh-import-export-detail", "/wh-complete-request", "/wh-import"
         ));
     }
 

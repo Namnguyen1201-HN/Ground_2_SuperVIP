@@ -14,7 +14,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "WHStockSerialCheckController", urlPatterns = {"/wh-import-export-detail"})
+@WebServlet(name = "WHStockSerialCheckController", urlPatterns = {"/wh-import-export-detail", "/serial-check"})
 public class WHStockSerialCheckController extends HttpServlet {
 
     private final StockMovementsRequestDAO requestDAO = new StockMovementsRequestDAO();
@@ -25,19 +25,41 @@ public class WHStockSerialCheckController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            // 1) Lấy ID đơn nhập
+            // 1) Lấy ID đơn và loại (import/export)
             String idParam = firstNonEmpty(request.getParameter("id"), request.getParameter("movementId"));
             Integer movementId = tryParseInt(idParam);
+            String movementType = request.getParameter("movementType");
+            if (movementType == null || movementType.isEmpty()) {
+                movementType = "import"; // default
+            }
+
             if (movementId == null) {
-                response.sendRedirect("wh-import");
+                if ("export".equalsIgnoreCase(movementType)) {
+                    response.sendRedirect("warehouse-export-orders");
+                } else {
+                    response.sendRedirect("wh-import");
+                }
                 return;
             }
 
-            // 2) Header phiếu
-            StockMovementsRequest movement = requestDAO.getImportRequestById(movementId);
+            // 2) Header phiếu - check both import and export
+            StockMovementsRequest movement = null;
+            if ("export".equalsIgnoreCase(movementType)) {
+                movement = requestDAO.getExportRequestById(movementId);
+            } else {
+                movement = requestDAO.getImportRequestById(movementId);
+            }
+
             if (movement == null) {
-                request.setAttribute("errorMessage", "Không tìm thấy đơn nhập hàng #" + movementId);
-                request.getRequestDispatcher("/WEB-INF/jsp/warehouse/wh-import.jsp").forward(request, response);
+                String errorMsg = "export".equalsIgnoreCase(movementType) 
+                    ? "Không tìm thấy đơn xuất hàng #" + movementId
+                    : "Không tìm thấy đơn nhập hàng #" + movementId;
+                request.setAttribute("errorMessage", errorMsg);
+                if ("export".equalsIgnoreCase(movementType)) {
+                    request.getRequestDispatcher("/WEB-INF/jsp/warehouse/wh-export-orders.jsp").forward(request, response);
+                } else {
+                    request.getRequestDispatcher("/WEB-INF/jsp/warehouse/wh-import.jsp").forward(request, response);
+                }
                 return;
             }
 
@@ -52,7 +74,7 @@ public class WHStockSerialCheckController extends HttpServlet {
             request.setAttribute("movement", movement);
             request.setAttribute("movementDetails", movementDetails);
             request.setAttribute("movementID", movementId);
-            request.setAttribute("movementType", movement.getMovementType());
+            request.setAttribute("movementType", movementType);
             request.setAttribute("totalItems", movementDetails.size());
             request.setAttribute("startItem", movementDetails.isEmpty() ? 0 : 1);
             request.setAttribute("endItem", movementDetails.size());
@@ -74,8 +96,16 @@ public class WHStockSerialCheckController extends HttpServlet {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            request.setAttribute("errorMessage", "Lỗi khi tải chi tiết đơn nhập hàng: " + ex.getMessage());
-            request.getRequestDispatcher("/WEB-INF/jsp/warehouse/wh-import.jsp").forward(request, response);
+            String movementType = request.getParameter("movementType");
+            String errorMsg = "export".equalsIgnoreCase(movementType) 
+                ? "Lỗi khi tải chi tiết đơn xuất hàng: " + ex.getMessage()
+                : "Lỗi khi tải chi tiết đơn nhập hàng: " + ex.getMessage();
+            request.setAttribute("errorMessage", errorMsg);
+            if ("export".equalsIgnoreCase(movementType)) {
+                request.getRequestDispatcher("/WEB-INF/jsp/warehouse/wh-export-orders.jsp").forward(request, response);
+            } else {
+                request.getRequestDispatcher("/WEB-INF/jsp/warehouse/wh-import.jsp").forward(request, response);
+            }
         }
     }
 
@@ -92,18 +122,28 @@ public class WHStockSerialCheckController extends HttpServlet {
                 request.getParameter("movementId")));
         Integer movementDetailId = tryParseInt(request.getParameter("movementDetailId"));
 
+        String movementType = request.getParameter("movementType");
+        if (movementType == null || movementType.isEmpty()) {
+            movementType = "import";
+        }
+
         if (movementId == null || movementDetailId == null) {
             request.getSession().setAttribute("errorMessage", "Thiếu tham số id hoặc movementDetailId.");
-            response.sendRedirect("wh-import");
+            if ("export".equalsIgnoreCase(movementType)) {
+                response.sendRedirect("warehouse-export-orders");
+            } else {
+                response.sendRedirect("wh-import");
+            }
             return;
         }
 
         // Chặn nếu phiếu đã completed
         try {
             String latest = responseDAO.getLatestStatusByMovementId(movementId);
-            if ("completed".equalsIgnoreCase(latest)) {
+            if ("completed".equalsIgnoreCase(latest) || "Hoàn thành".equalsIgnoreCase(latest)) {
                 request.getSession().setAttribute("errorMessage", "Đơn đã hoàn thành, không thể chỉnh serial.");
-                response.sendRedirect("wh-import-export-detail?id=" + movementId);
+                String redirectUrl = "serial-check?id=" + movementId + "&movementType=" + movementType;
+                response.sendRedirect(redirectUrl);
                 return;
             }
         } catch (Exception ignore) {
@@ -119,7 +159,8 @@ public class WHStockSerialCheckController extends HttpServlet {
                 // chặn overflow dòng
                 if (ddao.isDetailCompleted(movementDetailId)) {
                     request.getSession().setAttribute("errorMessage", "Dòng này đã đủ số lượng, không thể thêm serial.");
-                    response.sendRedirect("wh-import-export-detail?id=" + movementId);
+                    String redirectUrl = "serial-check?id=" + movementId + "&movementType=" + movementType;
+                    response.sendRedirect(redirectUrl);
                     return;
                 }
 
@@ -165,7 +206,8 @@ public class WHStockSerialCheckController extends HttpServlet {
             request.getSession().setAttribute("errorMessage", "Có lỗi khi xử lý serial.");
         }
 
-        response.sendRedirect("wh-import-export-detail?id=" + movementId);
+        String redirectUrl = "serial-check?id=" + movementId + "&movementType=" + movementType;
+        response.sendRedirect(redirectUrl);
     }
 
     // ===== Helpers (trong class, ngoài phương thức) =====
@@ -193,6 +235,6 @@ public class WHStockSerialCheckController extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Xem chi tiết phiếu nhập (bao gồm sản phẩm và serials)";
+        return "Xem chi tiết phiếu nhập/xuất (bao gồm sản phẩm và serials)";
     }
 }

@@ -87,21 +87,62 @@ public class CustomerDAO extends DataBaseContext {
     }
 
     /**
-     * Lấy thông tin chi tiết 1 customer theo ID
+     * Lấy thông tin chi tiết 1 customer theo ID (bao gồm totalSpent và BranchId từ Orders)
      */
     public Customer getCustomerById(int customerId) {
-        String sql = "SELECT * FROM Customers WHERE CustomerID = ?";
+        System.out.println("[DEBUG CustomerDAO] getCustomerById called with ID: " + customerId);
+        // Join với Orders để lấy BranchId từ Order gần nhất
+        String sql = """
+            SELECT c.*, 
+                   (SELECT TOP 1 o.BranchID 
+                    FROM Orders o 
+                    WHERE o.CustomerID = c.CustomerID 
+                    ORDER BY o.CreatedAt DESC) AS BranchId
+            FROM Customers c
+            WHERE c.CustomerID = ?
+        """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, customerId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapResultSetToCustomer(rs);
+                    System.out.println("[DEBUG CustomerDAO] Customer found in database");
+                    Customer c = mapResultSetToCustomer(rs);
+                    System.out.println("[DEBUG CustomerDAO] Mapped customer - BranchId: " + c.getBranchId());
+                    // Tính totalSpent riêng
+                    c.setTotalSpent(getTotalSpentByCustomerId(customerId));
+                    System.out.println("[DEBUG CustomerDAO] TotalSpent: " + c.getTotalSpent());
+                    return c;
+                } else {
+                    System.out.println("[DEBUG CustomerDAO] No customer found with ID: " + customerId);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("[DEBUG CustomerDAO] SQLException in getCustomerById: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("[DEBUG CustomerDAO] Exception in getCustomerById: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("[DEBUG CustomerDAO] Returning null");
+        return null;
+    }
+
+    /**
+     * Tính tổng chi tiêu của khách hàng
+     */
+    private double getTotalSpentByCustomerId(int customerId) {
+        String sql = "SELECT COALESCE(SUM(GrandTotal), 0) AS TotalSpent FROM Orders WHERE CustomerID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("TotalSpent");
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return 0.0;
     }
 
     /**
@@ -135,12 +176,14 @@ public class CustomerDAO extends DataBaseContext {
      * Cập nhật customer
      */
     public boolean updateCustomer(Customer c) {
+        System.out.println("[DEBUG CustomerDAO] updateCustomer called for ID: " + c.getCustomerID());
         String sql = """
             UPDATE Customers
             SET FullName = ?, PhoneNumber = ?, Email = ?, Address = ?, Gender = ?, DateOfBirth = ?, UpdatedAt = GETDATE()
             WHERE CustomerID = ?
         """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            System.out.println("[DEBUG CustomerDAO] Setting parameters...");
             ps.setString(1, c.getFullname());
             ps.setString(2, c.getPhoneNumber());
             ps.setString(3, c.getEmail());
@@ -152,10 +195,18 @@ public class CustomerDAO extends DataBaseContext {
                 ps.setNull(6, java.sql.Types.DATE);
             }
             ps.setInt(7, c.getCustomerID());
-            return ps.executeUpdate() > 0;
+            System.out.println("[DEBUG CustomerDAO] Executing update...");
+            int rowsAffected = ps.executeUpdate();
+            System.out.println("[DEBUG CustomerDAO] Rows affected: " + rowsAffected);
+            return rowsAffected > 0;
         } catch (SQLException e) {
+            System.out.println("[DEBUG CustomerDAO] SQLException in updateCustomer: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("[DEBUG CustomerDAO] Exception in updateCustomer: " + e.getMessage());
             e.printStackTrace();
         }
+        System.out.println("[DEBUG CustomerDAO] Update failed");
         return false;
     }
 
@@ -177,16 +228,57 @@ public class CustomerDAO extends DataBaseContext {
      * Helper: Map dữ liệu ResultSet sang Customer object
      */
     private Customer mapResultSetToCustomer(ResultSet rs) throws SQLException {
+        System.out.println("[DEBUG CustomerDAO] mapResultSetToCustomer - Starting");
         Customer c = new Customer();
-        c.setCustomerID(rs.getInt("CustomerID"));
-        c.setFullname(rs.getString("FullName"));
-        c.setPhoneNumber(rs.getString("PhoneNumber"));
-        c.setEmail(rs.getString("Email"));
-        c.setAddress(rs.getString("Address"));
-        c.setGender(rs.getBoolean("Gender"));
-        c.setDateOfBirth(rs.getDate("DateOfBirth"));
-        c.setCreatedAt(rs.getTimestamp("CreatedAt"));
-        c.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+        try {
+            c.setCustomerID(rs.getInt("CustomerID"));
+            System.out.println("[DEBUG CustomerDAO] CustomerID: " + c.getCustomerID());
+            
+            c.setFullname(rs.getString("FullName"));
+            c.setPhoneNumber(rs.getString("PhoneNumber"));
+            c.setEmail(rs.getString("Email"));
+            c.setAddress(rs.getString("Address"));
+            
+            // Handle nullable Gender
+            try {
+                boolean gender = rs.getBoolean("Gender");
+                if (rs.wasNull()) {
+                    c.setGender(null);
+                    System.out.println("[DEBUG CustomerDAO] Gender: null");
+                } else {
+                    c.setGender(gender);
+                    System.out.println("[DEBUG CustomerDAO] Gender: " + gender);
+                }
+            } catch (SQLException e) {
+                c.setGender(null);
+                System.out.println("[DEBUG CustomerDAO] Gender: null (exception)");
+            }
+            
+            c.setDateOfBirth(rs.getDate("DateOfBirth"));
+            c.setCreatedAt(rs.getTimestamp("CreatedAt"));
+            c.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+            
+            // Handle nullable BranchId - Get from Orders JOIN (subquery in SELECT)
+            try {
+                int branchId = rs.getInt("BranchId");
+                if (rs.wasNull()) {
+                    c.setBranchId(null);
+                    System.out.println("[DEBUG CustomerDAO] BranchId: null (no orders found)");
+                } else {
+                    c.setBranchId(branchId);
+                    System.out.println("[DEBUG CustomerDAO] BranchId: " + branchId + " (from Orders)");
+                }
+            } catch (SQLException e) {
+                // BranchId might not be in result set
+                c.setBranchId(null);
+                System.out.println("[DEBUG CustomerDAO] BranchId: null (exception: " + e.getMessage() + ")");
+            }
+        } catch (Exception e) {
+            System.out.println("[DEBUG CustomerDAO] Exception in mapResultSetToCustomer: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+        System.out.println("[DEBUG CustomerDAO] mapResultSetToCustomer - Completed");
         return c;
     }
 
