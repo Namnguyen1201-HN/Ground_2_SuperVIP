@@ -8,6 +8,32 @@
     /* Sidebar Styling */
     .sidebar {
         width: 300px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .sidebar-section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 8px 0;
+        margin-top: 16px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+    }
+
+    .sidebar-section-title:first-child {
+        margin-top: 0;
+    }
+
+    .sidebar-section-title i {
+        color: #2563eb;
+        font-size: 12px;
     }
 
     .sidebar-link {
@@ -15,21 +41,32 @@
         align-items: center;
         color: #374151;
         text-decoration: none;
-        padding: 8px 12px;
-        border-radius: 6px;
-        margin-bottom: 4px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        margin-bottom: 6px;
         transition: all 0.2s;
+        font-size: 14px;
+        font-weight: 500;
     }
 
     .sidebar-link:hover {
         background-color: #eff6ff;
         color: #2563eb;
+        transform: translateX(4px);
     }
 
     .sidebar-link.active {
         background-color: #dbeafe;
         color: #2563eb;
         font-weight: 600;
+        border-left: 3px solid #2563eb;
+        padding-left: 11px;
+    }
+
+    .sidebar-link i {
+        width: 20px;
+        text-align: center;
+        font-size: 16px;
     }
 
     /* Card & Form */
@@ -89,25 +126,35 @@
 
 <div class="col-md-3" style="margin-top: 60px;">
     <div class="sidebar p-3 bg-white shadow-sm rounded">
-        <h6 class="text-secondary mb-3">Gian hàng</h6>
+        <!-- Section: Cá nhân -->
+        <h6 class="sidebar-section-title mb-3">
+            <i class="fas fa-user me-2"></i>Cá nhân
+        </h6>
 
-        <!-- Thông tin gian hàng (Admin -> /InformationAccount, BM -> /InformationAccountBM) -->
+        <!-- Thông tin cá nhân (Personal Information) -->
         <a href="<%= sb_infoUrl %>" class="sidebar-link <%= sb_activeInfo ? "active" : "" %>">
-            <i class="bi bi-info-circle me-2"></i> Thông tin gian hàng
+            <i class="fas fa-info-circle me-2"></i> Thông tin cá nhân
         </a>
 
-        <!-- Đổi mật khẩu (dùng chung) -->
+        <!-- Đổi mật khẩu (Change Password) -->
         <a href="<%= sb_ctx %>/ChangePassWord" class="sidebar-link <%= sb_activeChange ? "active" : "" %>">
-            <i class="bi bi-lock me-2"></i> Đổi mật khẩu
+            <i class="fas fa-lock me-2"></i> Đổi mật khẩu
         </a>
 
         <% if (sb_isAdmin) { %>
-        <!-- Chỉ Admin mới thấy -->
+        <!-- Section: Quản lý (Admin only) -->
+        <h6 class="sidebar-section-title mb-3 mt-4">
+            <i class="fas fa-cog me-2"></i>Quản lý
+        </h6>
+        
+        <!-- Quản lý chi nhánh -->
         <a href="<%= sb_ctx %>/BranchManagement" class="sidebar-link <%= sb_activeBranch ? "active" : "" %>">
-            <i class="bi bi-key me-2"></i> Quản lý chi nhánh
+            <i class="fas fa-building me-2"></i> Quản lý chi nhánh
         </a>
+        
+        <!-- Quản lý kho tổng -->
         <a href="<%= sb_ctx %>/WareHouseManagement" class="sidebar-link <%= sb_activeWH ? "active" : "" %>">
-            <i class="bi bi-house-door me-2"></i> Quản lý kho tổng
+            <i class="fas fa-warehouse me-2"></i> Quản lý kho tổng
         </a>
         <% } %>
     </div>
