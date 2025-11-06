@@ -21,6 +21,7 @@ public class Customer {
     private Date createdAt;
     private Date updatedAt;
     private Double totalSpent;
+    private Integer branchId;
 
     public Customer() {
     }
@@ -116,6 +117,14 @@ public class Customer {
 
     public void setTotalSpent(Double setTotalSpent) {
         this.totalSpent = setTotalSpent;
+    }
+
+    public Integer getBranchId() {
+        return branchId;
+    }
+
+    public void setBranchId(Integer branchId) {
+        this.branchId = branchId;
     }
 
     @Override

@@ -130,6 +130,60 @@ public class SupplierDAO extends DataBaseContext {
         return data;
     }
 
+    public Supplier getSupplierById(int supplierId) {
+        System.out.println("[DEBUG SupplierDAO] getSupplierById called with ID: " + supplierId);
+        String sql = "SELECT * FROM Suppliers WHERE SupplierID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, supplierId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    System.out.println("[DEBUG SupplierDAO] Supplier found in database");
+                    Supplier supplier = new Supplier();
+                    supplier.setSupplierId(rs.getInt("SupplierID"));
+                    supplier.setSupplierName(rs.getString("SupplierName"));
+                    supplier.setContactName(rs.getString("ContactName"));
+                    supplier.setEmail(rs.getString("Email"));
+                    supplier.setPhone(rs.getString("Phone"));
+                    supplier.setCreatedAt(rs.getTimestamp("CreatedAt"));
+                    supplier.setUpdatedAt(rs.getTimestamp("UpdatedAt"));
+                    System.out.println("[DEBUG SupplierDAO] Mapped supplier - Name: " + supplier.getSupplierName());
+                    return supplier;
+                } else {
+                    System.out.println("[DEBUG SupplierDAO] No supplier found with ID: " + supplierId);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("[DEBUG SupplierDAO] Exception in getSupplierById: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("[DEBUG SupplierDAO] Returning null");
+        return null;
+    }
+
+    public boolean updateSupplier(Supplier supplier) {
+        System.out.println("[DEBUG SupplierDAO] updateSupplier called for ID: " + supplier.getSupplierId());
+        String sql = """
+            UPDATE Suppliers 
+            SET SupplierName = ?, ContactName = ?, Email = ?, Phone = ?, UpdatedAt = GETDATE()
+            WHERE SupplierID = ?
+        """;
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, supplier.getSupplierName());
+            ps.setString(2, supplier.getContactName());
+            ps.setString(3, supplier.getEmail());
+            ps.setString(4, supplier.getPhone());
+            ps.setInt(5, supplier.getSupplierId());
+            
+            int rowsAffected = ps.executeUpdate();
+            System.out.println("[DEBUG SupplierDAO] Update result: " + rowsAffected + " rows affected");
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println("[DEBUG SupplierDAO] Exception in updateSupplier: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static void main(String[] args) {
         SupplierDAO sd = new SupplierDAO();
         List<Supplier> data = new ArrayList<>();

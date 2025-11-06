@@ -324,18 +324,21 @@ public class ProductDAO extends DataBaseContext {
 
     public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, Integer branchId) {
         List<ProductStatisticDTO> list = new ArrayList<>();
-
         String dateCondition = "";
         if ("this_month".equals(period)) {
             dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(GETDATE()) AND YEAR(o.CreatedAt) = YEAR(GETDATE())";
         } else if ("last_month".equals(period)) {
             dateCondition = "WHERE MONTH(o.CreatedAt) = MONTH(DATEADD(MONTH, -1, GETDATE())) "
-                    + "AND YEAR(o.CreatedAt) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
+                        + "AND YEAR(o.CreatedAt) = YEAR(DATEADD(MONTH, -1, GETDATE()))";
         }
 
-        // Thêm filter chi nhánh
-        if (branchId != null) {
-            dateCondition += (dateCondition.isEmpty() ? "WHERE " : " AND ") + "o.BranchID = ?";
+        // nếu có branchId thì thêm điều kiện lọc theo chi nhánh
+        if (branchId != null && branchId > 0) {
+            if (dateCondition.isEmpty()) {
+                dateCondition = "WHERE o.BranchID = ?";
+            } else {
+                dateCondition += " AND o.BranchID = ?";
+            }
         }
 
         String orderBy = "revenue".equals(sortBy)
@@ -351,18 +354,15 @@ public class ProductDAO extends DataBaseContext {
                 + "JOIN OrderDetails od ON o.OrderID = od.OrderID \n"
                 + "JOIN ProductDetails pd ON od.ProductDetailID = pd.ProductDetailID \n"
                 + "JOIN Products p ON pd.ProductID = p.ProductID \n"
-                + (dateCondition.isEmpty() ? "" : dateCondition + "\n") // đảm bảo có dòng riêng
+                + (dateCondition.isEmpty() ? "" : dateCondition + "\n")
                 + "GROUP BY p.ProductName \n"
                 + "ORDER BY " + orderBy + ";";
 
-        // In SQL ra để debug
-        System.out.println("=== DEBUG SQL ===\n" + sql + "\n=================");
-
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            int paramIndex = 1;
-            ps.setInt(paramIndex++, limit);
-            if (branchId != null) {
-                ps.setInt(paramIndex++, branchId);
+            int index = 1;
+            ps.setInt(index++, limit);
+            if (branchId != null && branchId > 0) {
+                ps.setInt(index++, branchId);
             }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -372,12 +372,10 @@ public class ProductDAO extends DataBaseContext {
                 dto.setRevenue(rs.getBigDecimal("Revenue"));
                 list.add(dto);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
+        } catch (SQLException e) { e.printStackTrace(); }
         return list;
     }
+
     // TOTAL = Inventory + Warehouse (không lọc phạm vi)
 // Tổng tồn theo branch (dùng InventoryProducts)
 String SQL_BASE_BRANCH = """

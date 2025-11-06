@@ -41,14 +41,33 @@ public class InformationAccountController extends HttpServlet {
 
         User loggedUser = (User) session.getAttribute("currentUser");
 
-        // Cập nhật lại user đầy đủ từ DB (đảm bảo luôn “fresh”)
-        User fresh = userDAO.getUserFullById(loggedUser.getUserId());
+        // Cập nhật lại user đầy đủ từ DB (đảm bảo luôn "fresh") - dùng getUserById để có branchName
+        User fresh = userDAO.getUserById(loggedUser.getUserId());
+        if (fresh == null) {
+            fresh = userDAO.getUserFullById(loggedUser.getUserId());
+        }
         session.setAttribute("currentUser", fresh);
 
         // Thu thập số liệu hiển thị
         loadCounts(request);
+        
+        // Lấy tên cửa hàng và chi nhánh
+        String storeName = "";
+        String branchName = "";
+        if (fresh != null) {
+            // Nếu có warehouseName thì dùng làm storeName, nếu không thì dùng branchName
+            if (fresh.getWarehouseName() != null && !fresh.getWarehouseName().trim().isEmpty()) {
+                storeName = fresh.getWarehouseName();
+            } else if (fresh.getBranchName() != null && !fresh.getBranchName().trim().isEmpty()) {
+                storeName = fresh.getBranchName();
+            }
+            branchName = (fresh.getBranchName() != null && !fresh.getBranchName().trim().isEmpty()) 
+                    ? fresh.getBranchName() : "—";
+        }
 
         request.setAttribute("user", fresh);
+        request.setAttribute("storeName", storeName);
+        request.setAttribute("branchName", branchName);
         request.getRequestDispatcher("/WEB-INF/jsp/admin/information_account.jsp").forward(request, response);
     }
 
@@ -73,7 +92,10 @@ public class InformationAccountController extends HttpServlet {
             return;
         }
 
-        User user = userDAO.getUserFullById(userId);
+        User user = userDAO.getUserById(userId);
+        if (user == null) {
+            user = userDAO.getUserFullById(userId);
+        }
         if (user == null) {
             request.setAttribute("error", "Người dùng không tồn tại!");
             doGet(request, response);
@@ -97,7 +119,7 @@ public class InformationAccountController extends HttpServlet {
 
         // Họ tên bắt buộc
         if (isBlank(fullName)) {
-            errors.add("Tên không được để trống!");
+            errors.add("Họ và tên không được để trống!");
         } else if (!fullName.matches("^[\\p{L} .'-]{2,100}$")) {
             errors.add("Họ và tên không hợp lệ (chỉ gồm chữ và khoảng trắng, 2–100 ký tự).");
         }
@@ -109,14 +131,60 @@ public class InformationAccountController extends HttpServlet {
             errors.add("Định dạng email không hợp lệ!");
         }
 
-        // Điện thoại (chuẩn 10 số bắt đầu 0)
-        if (isBlank(phone) || !phone.matches(PHONE_REGEX)) {
+        // Điện thoại bắt buộc (chuẩn 10 số bắt đầu 0)
+        if (isBlank(phone)) {
+            errors.add("Số điện thoại không được để trống!");
+        } else if (!phone.matches(PHONE_REGEX)) {
             errors.add("Số điện thoại phải gồm 10 chữ số và bắt đầu bằng 0!");
         }
 
-        // CCCD: không bắt buộc; nếu nhập phải 12 số
-        if (!isBlank(identificationId) && !identificationId.matches(CCCD_REGEX)) {
-            errors.add("CCCD phải gồm đúng 12 chữ số!");
+        // Giới tính bắt buộc
+        if (isBlank(genderStr)) {
+            errors.add("Vui lòng chọn giới tính!");
+        }
+
+        // Ngày sinh bắt buộc và phải trên 18 tuổi
+        Date dob = null;
+        if (isBlank(dobStr)) {
+            errors.add("Ngày sinh không được để trống!");
+        } else {
+            try {
+                dob = parseDate(dobStr);
+                if (dob != null) {
+                    // Tính tuổi
+                    Calendar today = Calendar.getInstance();
+                    Calendar birthDate = Calendar.getInstance();
+                    birthDate.setTime(dob);
+                    
+                    int age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR);
+                    if (today.get(Calendar.DAY_OF_YEAR) < birthDate.get(Calendar.DAY_OF_YEAR)) {
+                        age--;
+                    }
+                    
+                    if (age < 18) {
+                        errors.add("Bạn phải từ 18 tuổi trở lên!");
+                    }
+                    
+                    // Kiểm tra ngày sinh không được trong tương lai
+                    if (dob.after(new Date())) {
+                        errors.add("Ngày sinh không được là ngày trong tương lai!");
+                    }
+                }
+            } catch (ParseException e) {
+                errors.add("Ngày sinh không hợp lệ!");
+            }
+        }
+
+        // Địa chỉ bắt buộc
+        if (isBlank(address)) {
+            errors.add("Địa chỉ không được để trống!");
+        }
+
+        // CCCD bắt buộc và phải 12 số
+        if (isBlank(identificationId)) {
+            errors.add("CCCD/Hộ chiếu không được để trống!");
+        } else if (!identificationId.matches(CCCD_REGEX)) {
+            errors.add("CCCD/Hộ chiếu phải gồm đúng 12 chữ số!");
         }
 
         // --- Check trùng (chỉ khi đổi) ---
@@ -139,7 +207,23 @@ public class InformationAccountController extends HttpServlet {
             // trả lại dữ liệu người dùng vừa nhập (không commit DB)
             bindFormToUser(user, fullName, email, phone, address, identificationId, taxNumber, webUrl, dobStr, genderStr, isActive);
             loadCounts(request);
+            
+            // Lấy tên cửa hàng và chi nhánh
+            String storeName = "";
+            String branchName = "";
+            if (user != null) {
+                if (user.getWarehouseName() != null && !user.getWarehouseName().trim().isEmpty()) {
+                    storeName = user.getWarehouseName();
+                } else if (user.getBranchName() != null && !user.getBranchName().trim().isEmpty()) {
+                    storeName = user.getBranchName();
+                }
+                branchName = (user.getBranchName() != null && !user.getBranchName().trim().isEmpty()) 
+                        ? user.getBranchName() : "—";
+            }
+            
             request.setAttribute("user", user);
+            request.setAttribute("storeName", storeName);
+            request.setAttribute("branchName", branchName);
             request.getRequestDispatcher("/WEB-INF/jsp/admin/information_account.jsp").forward(request, response);
             return;
         }
@@ -149,13 +233,47 @@ public class InformationAccountController extends HttpServlet {
 
         boolean updated = userDAO.updateUser(user);
         if (updated) {
-            User refreshed = userDAO.getUserFullById(userId);
+            User refreshed = userDAO.getUserById(userId);
+            if (refreshed == null) {
+                refreshed = userDAO.getUserFullById(userId);
+            }
             request.getSession().setAttribute("currentUser", refreshed);
+            
+            // Lấy tên cửa hàng và chi nhánh
+            String storeName = "";
+            String branchName = "";
+            if (refreshed != null) {
+                if (refreshed.getWarehouseName() != null && !refreshed.getWarehouseName().trim().isEmpty()) {
+                    storeName = refreshed.getWarehouseName();
+                } else if (refreshed.getBranchName() != null && !refreshed.getBranchName().trim().isEmpty()) {
+                    storeName = refreshed.getBranchName();
+                }
+                branchName = (refreshed.getBranchName() != null && !refreshed.getBranchName().trim().isEmpty()) 
+                        ? refreshed.getBranchName() : "—";
+            }
+            
             request.setAttribute("success", "✅ Cập nhật thông tin thành công!");
             request.setAttribute("user", refreshed);
+            request.setAttribute("storeName", storeName);
+            request.setAttribute("branchName", branchName);
         } else {
             request.setAttribute("error", "❌ Cập nhật thất bại. Vui lòng thử lại sau!");
             request.setAttribute("user", user); // dữ liệu đã bind
+            
+            // Lấy tên cửa hàng và chi nhánh
+            String storeName = "";
+            String branchName = "";
+            if (user != null) {
+                if (user.getWarehouseName() != null && !user.getWarehouseName().trim().isEmpty()) {
+                    storeName = user.getWarehouseName();
+                } else if (user.getBranchName() != null && !user.getBranchName().trim().isEmpty()) {
+                    storeName = user.getBranchName();
+                }
+                branchName = (user.getBranchName() != null && !user.getBranchName().trim().isEmpty()) 
+                        ? user.getBranchName() : "—";
+            }
+            request.setAttribute("storeName", storeName);
+            request.setAttribute("branchName", branchName);
         }
 
         loadCounts(request);
@@ -205,20 +323,21 @@ public class InformationAccountController extends HttpServlet {
         // isActive: nếu null thì giữ nguyên; nếu có thì set
         if (isActive != null) user.setIsActive(isActive);
 
-        // gender: "true"/"false" hoặc "1"/"0"
+        // gender: "true"/"false" hoặc "1"/"0" - bắt buộc
         Boolean g = boolFromStr(genderStr);
-        if (g != null) user.setGender(g);
+        if (g == null) {
+            throw new IllegalArgumentException("Giới tính không được để trống!");
+        }
+        user.setGender(g);
 
-        // DOB: cho phép clear khi để trống
+        // DOB: bắt buộc, đã được validate trước đó
         try {
-            if (!isBlank(dobStr)) {
-                user.setDob(parseDate(dobStr));
-            } else {
-                user.setDob(null);
+            if (isBlank(dobStr)) {
+                throw new IllegalArgumentException("Ngày sinh không được để trống!");
             }
+            user.setDob(parseDate(dobStr));
         } catch (ParseException e) {
-            // không ném ra ngoài; view đã validate trước đó
-            user.setDob(null);
+            throw new IllegalArgumentException("Ngày sinh không hợp lệ!", e);
         }
     }
 
