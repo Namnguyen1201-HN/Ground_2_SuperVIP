@@ -1,74 +1,197 @@
 package Controller.Admin;
 
-import DAL.PromotionDAO;
 import DAL.BranchDAO;
 import DAL.ProductDetailDAO;
-import Model.Promotion;
-import Model.User;
+import DAL.PromotionDAO;
 import Model.Branch;
 import Model.ProductDetail;
+import Model.Promotion;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
 
-@WebServlet(name = "PromotionsController", urlPatterns = {"/Promotions"})
+@WebServlet(name = "PromotionController", urlPatterns = {"/Promotion"})
 public class PromotionsController extends HttpServlet {
 
     private PromotionDAO promotionDAO;
-    private BranchDAO branchDAO;
-    private ProductDetailDAO productDetailDAO;
 
     @Override
     public void init() {
         promotionDAO = new PromotionDAO();
-        branchDAO = new BranchDAO();
-        productDetailDAO = new ProductDetailDAO();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        HttpSession session = request.getSession();
-        User currentUser = (User) session.getAttribute("currentUser");
-        
-        if (currentUser == null) {
-            response.sendRedirect("Login");
-            return;
-        }
-
         String action = request.getParameter("action");
         
-        if ("create".equals(action)) {
-            if (currentUser.getRoleId() != 0) {
-                response.sendRedirect("Promotions?error=access_denied");
+        if ("delete".equals(action)) {
+            handleDelete(request, response);
+            return;
+        }
+        
+        if ("edit".equals(action)) {
+            handleEditGet(request, response);
+            return;
+        }
+        
+        if ("view".equals(action)) {
+            handleView(request, response);
+            return;
+        }
+        
+        // Get all promotions
+        List<Promotion> promotions = promotionDAO.getAllPromotions();
+        request.setAttribute("promotions", promotions);
+        
+        // Load branches and products for form
+        loadFormData(request);
+        
+        // Forward to JSP
+        request.getRequestDispatcher("/WEB-INF/jsp/admin/promotion_management.jsp").forward(request, response);
+    }
+
+    private void loadFormData(HttpServletRequest request) {
+        BranchDAO branchDAO = new BranchDAO();
+        ProductDetailDAO productDetailDAO = new ProductDetailDAO();
+        
+        List<Branch> branches = branchDAO.getAllBranches();
+        List<ProductDetail> products = productDetailDAO.getAllProductDetails();
+        
+        request.setAttribute("branches", branches);
+        request.setAttribute("products", products);
+    }
+
+    private void handleEditGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idParam = request.getParameter("id");
+        
+        System.out.println("=== [PromotionController] handleEditGet called ===");
+        System.out.println("ID parameter: " + idParam);
+        
+        if (idParam == null || idParam.trim().isEmpty()) {
+            System.out.println("Error: Invalid ID parameter");
+            response.sendRedirect("Promotion?error=invalid_id");
+            return;
+        }
+        
+        try {
+            int promotionId = Integer.parseInt(idParam);
+            System.out.println("Parsed promotion ID: " + promotionId);
+            
+            Promotion promo = promotionDAO.getPromotionById(promotionId);
+            
+            if (promo == null) {
+                System.out.println("Error: Promotion not found with ID: " + promotionId);
+                response.sendRedirect("Promotion?error=not_found");
                 return;
             }
-            showCreateForm(request, response);
-        } else if ("edit".equals(action)) {
-            if (currentUser.getRoleId() != 0) {
-                response.sendRedirect("Promotions?error=access_denied");
+            
+            System.out.println("Found promotion: " + promo.getPromoName());
+            
+            // Get selected branches and products
+            List<Integer> selectedBranchIds = promotionDAO.getBranchIdsByPromotion(promotionId);
+            List<Integer> selectedProductDetailIds = promotionDAO.getProductDetailIdsByPromotion(promotionId);
+            
+            // Ensure lists are not null
+            if (selectedBranchIds == null) {
+                selectedBranchIds = new ArrayList<>();
+            }
+            if (selectedProductDetailIds == null) {
+                selectedProductDetailIds = new ArrayList<>();
+            }
+            
+            System.out.println("Selected branches: " + selectedBranchIds.size());
+            System.out.println("Selected products: " + selectedProductDetailIds.size());
+            
+            request.setAttribute("promotion", promo);
+            request.setAttribute("selectedBranchIds", selectedBranchIds);
+            request.setAttribute("selectedProductDetailIds", selectedProductDetailIds);
+            
+            // Load branches and products
+            loadFormData(request);
+            
+            // Get all promotions for table
+            List<Promotion> promotions = promotionDAO.getAllPromotions();
+            request.setAttribute("promotions", promotions);
+            
+            System.out.println("Forwarding to JSP with promotion data...");
+            request.getRequestDispatcher("/WEB-INF/jsp/admin/promotion_management.jsp").forward(request, response);
+        } catch (NumberFormatException e) {
+            System.out.println("Error: NumberFormatException - " + e.getMessage());
+            response.sendRedirect("Promotion?error=invalid_id");
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            response.sendRedirect("Promotion?error=edit_failed");
+        }
+    }
+
+    private void handleView(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idParam = request.getParameter("id");
+        
+        if (idParam == null || idParam.trim().isEmpty()) {
+            response.sendRedirect("Promotion?error=invalid_id");
+            return;
+        }
+        
+        try {
+            int promotionId = Integer.parseInt(idParam);
+            Promotion promo = promotionDAO.getPromotionById(promotionId);
+            
+            if (promo == null) {
+                response.sendRedirect("Promotion?error=not_found");
                 return;
             }
-            showEditForm(request, response);
-        } else if ("view".equals(action)) {
-            showPromotionDetail(request, response);
-        } else if ("loadProducts".equals(action)) {
-            if (currentUser.getRoleId() != 0) {
-                response.sendRedirect("Promotions?error=access_denied");
-                return;
+            
+            // Get selected branches and products with details
+            List<Integer> selectedBranchIds = promotionDAO.getBranchIdsByPromotion(promotionId);
+            List<Integer> selectedProductDetailIds = promotionDAO.getProductDetailIdsByPromotion(promotionId);
+            
+            // Load branch and product details
+            BranchDAO branchDAO = new BranchDAO();
+            ProductDetailDAO productDetailDAO = new ProductDetailDAO();
+            
+            List<Branch> selectedBranches = new ArrayList<>();
+            if (selectedBranchIds != null && !selectedBranchIds.isEmpty()) {
+                List<Branch> allBranches = branchDAO.getAllBranches();
+                for (Branch branch : allBranches) {
+                    if (selectedBranchIds.contains(branch.getBranchId())) {
+                        selectedBranches.add(branch);
+                    }
+                }
             }
-            loadProductsJson(request, response);
-        } else {
-            showPromotionsList(request, response, currentUser);
+            
+            List<ProductDetail> selectedProducts = new ArrayList<>();
+            if (selectedProductDetailIds != null && !selectedProductDetailIds.isEmpty()) {
+                List<ProductDetail> allProducts = productDetailDAO.getAllProductDetails();
+                for (ProductDetail product : allProducts) {
+                    if (selectedProductDetailIds.contains(product.getProductDetailID())) {
+                        selectedProducts.add(product);
+                    }
+                }
+            }
+            
+            request.setAttribute("promotion", promo);
+            request.setAttribute("selectedBranches", selectedBranches);
+            request.setAttribute("selectedProducts", selectedProducts);
+            
+            request.getRequestDispatcher("/WEB-INF/jsp/admin/promotion_detail.jsp").forward(request, response);
+        } catch (NumberFormatException e) {
+            response.sendRedirect("Promotion?error=invalid_id");
         }
     }
 
@@ -76,441 +199,264 @@ public class PromotionsController extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        request.setCharacterEncoding("UTF-8");
-        
-        // Check user authentication and role
-        HttpSession session = request.getSession();
-        User currentUser = (User) session.getAttribute("currentUser");
-        
-        if (currentUser == null) {
-            response.sendRedirect("Login");
-            return;
-        }
-        
-        // Only Admin can perform create, update, delete operations
-        if (currentUser.getRoleId() != 0) {
-            response.sendRedirect("Promotions?error=access_denied");
-            return;
-        }
-        
+        System.out.println("=== [PromotionController] doPost called ===");
         String action = request.getParameter("action");
+        System.out.println("Action parameter: " + action);
         
         if ("create".equals(action)) {
-            createPromotion(request, response);
+            System.out.println("Handling create...");
+            handleCreate(request, response);
         } else if ("update".equals(action)) {
-            updatePromotion(request, response);
-        } else if ("delete".equals(action)) {
-            deletePromotion(request, response);
+            System.out.println("Handling update...");
+            handleUpdate(request, response);
+        } else {
+            System.out.println("Unknown action, redirecting to Promotion page");
+            response.sendRedirect("Promotion");
         }
     }
 
-    private void showPromotionsList(HttpServletRequest request, HttpServletResponse response, User currentUser)
-            throws ServletException, IOException {
+    private void handleDelete(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        String idParam = request.getParameter("id");
         
-        // Get filter parameters
-        String statusFilter = request.getParameter("status");
-        String discountFilter = request.getParameter("discount");
-        String searchKeyword = request.getParameter("search");
-        
-        // Debug logging
-        System.out.println("Filter Parameters - Status: " + statusFilter + ", Discount: " + discountFilter + ", Search: " + searchKeyword);
-        
-        List<Promotion> promotions;
-        
-        // Role-based data filtering
-        if (currentUser.getRoleId() == 0) { // Admin - see all promotions
-            promotions = promotionDAO.getAllPromotions();
-        } else { // Branch Manager - see only branch promotions
-            promotions = promotionDAO.getPromotionsByBranch(currentUser.getBranchId());
+        if (idParam == null || idParam.trim().isEmpty()) {
+            response.sendRedirect("Promotion?error=invalid_id");
+            return;
         }
-        
-        // Apply filters
-        promotions = applyFilters(promotions, statusFilter, discountFilter, searchKeyword);
-        
-        // Get statistics for cards
-        int totalPromotions = currentUser.getRoleId() == 0 
-            ? promotionDAO.countAllPromotions()
-            : promotionDAO.countPromotionsByBranch(currentUser.getBranchId());
-        
-        int activePromotions = promotionDAO.countActivePromotions();
-        int expiredPromotions = promotionDAO.countExpiredPromotions();
-        int scheduledPromotions = promotionDAO.countScheduledPromotions();
-        
-        request.setAttribute("promotions", promotions);
-        request.setAttribute("totalPromotions", totalPromotions);
-        request.setAttribute("activePromotions", activePromotions);
-        request.setAttribute("expiredPromotions", expiredPromotions);
-        request.setAttribute("scheduledPromotions", scheduledPromotions);
-        request.setAttribute("currentUser", currentUser);
-        
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/promotions.jsp").forward(request, response);
-    }
-
-    private void showCreateForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        // Get all branches for dropdown
-        List<Branch> branches = branchDAO.getAllBranches();
-        request.setAttribute("branches", branches);
-        
-        // Get all products for dropdown (you might want to implement pagination here)
-        // For now, we'll just provide the structure
-        
-        request.getRequestDispatcher("/WEB-INF/jsp/admin/promotion_create.jsp").forward(request, response);
-    }
-
-    private void createPromotion(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
         
         try {
-            String promoName = request.getParameter("promoName");
-            String discountPercentStr = request.getParameter("discountPercent");
-            String startDateStr = request.getParameter("startDate");
-            String endDateStr = request.getParameter("endDate");
-            String[] branchIdStrs = request.getParameterValues("branchIds");
-            String[] productDetailIdStrs = request.getParameterValues("productDetailIds");
+            int promotionId = Integer.parseInt(idParam);
             
-            // Validate inputs
-            if (promoName == null || promoName.trim().isEmpty()) {
-                response.sendRedirect("Promotions?error=invalid_name");
+            // Check if promotion exists before deleting
+            Promotion promo = promotionDAO.getPromotionById(promotionId);
+            if (promo == null) {
+                response.sendRedirect("Promotion?error=not_found");
                 return;
             }
             
-            BigDecimal discountPercent = new BigDecimal(discountPercentStr);
-            if (discountPercent.compareTo(BigDecimal.ZERO) <= 0 || discountPercent.compareTo(new BigDecimal("100")) > 0) {
-                response.sendRedirect("Promotions?error=invalid_discount");
-                return;
-            }
+            boolean deleted = promotionDAO.deletePromotion(promotionId);
             
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            java.util.Date startDate = sdf.parse(startDateStr);
-            java.util.Date endDate = sdf.parse(endDateStr);
-            
-            if (startDate.after(endDate)) {
-                response.sendRedirect("Promotions?error=invalid_date_range");
-                return;
-            }
-            
-            // Create promotion object
-            Promotion promotion = new Promotion();
-            promotion.setPromoName(promoName);
-            promotion.setDiscountPercent(discountPercent);
-            promotion.setStartDate(startDate);
-            promotion.setEndDate(endDate);
-            
-            // Parse branch IDs - if empty, apply to all branches
-            List<Integer> branchIds = new ArrayList<>();
-            if (branchIdStrs != null && branchIdStrs.length > 0) {
-                for (String branchIdStr : branchIdStrs) {
-                    if (branchIdStr != null && !branchIdStr.trim().isEmpty()) {
-                        branchIds.add(Integer.parseInt(branchIdStr));
-                    }
-                }
-            }
-            // If no branches selected, get all branches
-            if (branchIds.isEmpty()) {
-                List<Branch> allBranches = branchDAO.getAllBranches();
-                for (Branch branch : allBranches) {
-                    branchIds.add(branch.getBranchId());
-                }
-            }
-            
-            // Parse product detail IDs - if empty, apply to all products
-            List<Integer> productDetailIds = new ArrayList<>();
-            if (productDetailIdStrs != null && productDetailIdStrs.length > 0) {
-                for (String productDetailIdStr : productDetailIdStrs) {
-                    if (productDetailIdStr != null && !productDetailIdStr.trim().isEmpty()) {
-                        productDetailIds.add(Integer.parseInt(productDetailIdStr));
-                    }
-                }
-            }
-            // If no products selected, leave empty (DAO will handle as "apply to all")
-            
-            // Create promotion
-            boolean success = promotionDAO.createPromotion(promotion, branchIds, productDetailIds);
-            
-            if (success) {
-                response.sendRedirect("Promotions?msg=created");
+            if (deleted) {
+                response.sendRedirect("Promotion?success=delete");
             } else {
-                response.sendRedirect("Promotions?error=create_failed");
+                response.sendRedirect("Promotion?error=delete_failed");
             }
-            
+        } catch (NumberFormatException e) {
+            response.sendRedirect("Promotion?error=invalid_id");
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("Promotions?error=invalid_input");
+            response.sendRedirect("Promotion?error=delete_failed");
         }
     }
 
-    private void deletePromotion(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void handleCreate(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        String promoName = request.getParameter("promoName");
+        String discountPercent = request.getParameter("discountPercent");
+        String startDate = request.getParameter("startDate");
+        String endDate = request.getParameter("endDate");
+        String[] branchIds = request.getParameterValues("branchIds");
+        String[] productDetailIds = request.getParameterValues("productDetailIds");
         
-        try {
-            int promotionId = Integer.parseInt(request.getParameter("promotionId"));
-            
-            boolean success = promotionDAO.deletePromotion(promotionId);
-            
-            if (success) {
-                response.sendRedirect("Promotions?msg=deleted");
-            } else {
-                response.sendRedirect("Promotions?error=delete_failed");
-            }
-            
-        } catch (NumberFormatException e) {
-            response.sendRedirect("Promotions?error=invalid_id");
-        }
-    }
-
-    private void loadProductsJson(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
-        String search = request.getParameter("search");
-        if (search == null) search = "";
-        
-        // Use ProductDetailDAO to get products with details
-        List<ProductDetailDAO.DetailMini> products = productDetailDAO.search(search);
-        
-        StringBuilder json = new StringBuilder();
-        json.append("{\"items\":[");
-        
-        for (int i = 0; i < products.size(); i++) {
-            ProductDetailDAO.DetailMini product = products.get(i);
-            if (i > 0) json.append(",");
-            
-            json.append("{")
-                .append("\"id\":").append(product.getId()).append(",")
-                .append("\"text\":\"").append(escapeJson(product.getName()))
-                .append(product.getSku() != null ? " - " + escapeJson(product.getSku()) : "")
-                .append("\"")
-                .append("}");
+        // Validation
+        String validationError = validatePromotionData(promoName, discountPercent, startDate, endDate);
+        if (validationError != null) {
+            response.sendRedirect("Promotion?error=" + validationError);
+            return;
         }
         
-        json.append("],\"total_count\":").append(products.size()).append("}");
-        
-        response.getWriter().write(json.toString());
-    }
-    
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
         try {
-            int promotionId = Integer.parseInt(request.getParameter("id"));
-            
-            Promotion promotion = promotionDAO.getPromotionById(promotionId);
-            if (promotion == null) {
-                response.sendRedirect("Promotions?error=not_found");
-                return;
-            }
-            
-            // Get all branches for dropdown
-            List<Branch> branches = branchDAO.getAllBranches();
-            
-            // Get selected branch IDs and product IDs for pre-selection
-            List<Integer> selectedBranchIds = promotionDAO.getPromotionBranchIds(promotionId);
-            List<Integer> selectedProductIds = promotionDAO.getPromotionProductIds(promotionId);
-            
-            request.setAttribute("branches", branches);
-            request.setAttribute("promotion", promotion);
-            request.setAttribute("selectedBranchIds", selectedBranchIds);
-            request.setAttribute("selectedProductIds", selectedProductIds);
-            
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/promotion_edit.jsp").forward(request, response);
-            
-        } catch (NumberFormatException e) {
-            response.sendRedirect("Promotions?error=invalid_id");
-        }
-    }
-
-    private void showPromotionDetail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        try {
-            int promotionId = Integer.parseInt(request.getParameter("id"));
-            
-            Promotion promotion = promotionDAO.getPromotionById(promotionId);
-            if (promotion == null) {
-                response.sendRedirect("Promotions?error=not_found");
-                return;
-            }
-            
-            // Load branches and products for this promotion
-            List<Integer> branchIds = promotionDAO.getPromotionBranchIds(promotionId);
-            List<Integer> productIds = promotionDAO.getPromotionProductIds(promotionId);
-            
-            // Get actual branch and product objects
-            List<Branch> promotionBranches = new ArrayList<>();
-            if (!branchIds.isEmpty()) {
-                for (Integer branchId : branchIds) {
-                    Branch branch = branchDAO.getBranchById(branchId);
-                    if (branch != null) {
-                        promotionBranches.add(branch);
-                    }
-                }
-            }
-            
-            List<ProductDetail> promotionProducts = new ArrayList<>();
-            if (!productIds.isEmpty()) {
-                for (Integer productId : productIds) {
-                    ProductDetail product = productDetailDAO.getProductDetailById(productId);
-                    if (product != null) {
-                        promotionProducts.add(product);
-                    }
-                }
-            }
-            
-            request.setAttribute("promotion", promotion);
-            request.setAttribute("promotionBranches", promotionBranches);
-            request.setAttribute("promotionProducts", promotionProducts);
-            request.getRequestDispatcher("/WEB-INF/jsp/admin/promotion_detail.jsp").forward(request, response);
-            
-        } catch (NumberFormatException e) {
-            response.sendRedirect("Promotions?error=invalid_id");
-        }
-    }
-
-    private void updatePromotion(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        try {
-            int promotionId = Integer.parseInt(request.getParameter("promotionId"));
-            String promoName = request.getParameter("promoName");
-            String discountPercentStr = request.getParameter("discountPercent");
-            String startDateStr = request.getParameter("startDate");
-            String endDateStr = request.getParameter("endDate");
-            String[] branchIdStrs = request.getParameterValues("branchIds");
-            String[] productDetailIdStrs = request.getParameterValues("productDetailIds");
-            
-            // Validate inputs
-            if (promoName == null || promoName.trim().isEmpty()) {
-                response.sendRedirect("Promotions?error=invalid_name");
-                return;
-            }
-            
-            BigDecimal discountPercent = new BigDecimal(discountPercentStr);
-            if (discountPercent.compareTo(BigDecimal.ZERO) <= 0 || discountPercent.compareTo(new BigDecimal("100")) > 0) {
-                response.sendRedirect("Promotions?error=invalid_discount");
-                return;
-            }
+            Promotion promo = new Promotion();
+            promo.setPromoName(promoName.trim());
+            promo.setDiscountPercent(new BigDecimal(discountPercent));
             
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            java.util.Date startDate = sdf.parse(startDateStr);
-            java.util.Date endDate = sdf.parse(endDateStr);
+            promo.setStartDate(sdf.parse(startDate));
+            promo.setEndDate(sdf.parse(endDate));
             
-            if (startDate.after(endDate)) {
-                response.sendRedirect("Promotions?error=invalid_date_range");
-                return;
-            }
+            // Insert promotion
+            boolean created = promotionDAO.insertPromotion(promo);
             
-            // Create promotion object
-            Promotion promotion = new Promotion();
-            promotion.setPromotionId(promotionId);
-            promotion.setPromoName(promoName);
-            promotion.setDiscountPercent(discountPercent);
-            promotion.setStartDate(startDate);
-            promotion.setEndDate(endDate);
-            
-            // Parse branch IDs - if empty, apply to all branches
-            List<Integer> branchIds = new ArrayList<>();
-            if (branchIdStrs != null && branchIdStrs.length > 0) {
-                for (String branchIdStr : branchIdStrs) {
-                    if (branchIdStr != null && !branchIdStr.trim().isEmpty()) {
-                        branchIds.add(Integer.parseInt(branchIdStr));
-                    }
+            if (created && promo.getPromotionId() > 0) {
+                // Insert branches if any
+                if (branchIds != null && branchIds.length > 0) {
+                    List<Integer> branchIdList = Arrays.stream(branchIds)
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList());
+                    promotionDAO.insertPromotionBranches(promo.getPromotionId(), branchIdList);
                 }
-            }
-            // If no branches selected, get all branches
-            if (branchIds.isEmpty()) {
-                List<Branch> allBranches = branchDAO.getAllBranches();
-                for (Branch branch : allBranches) {
-                    branchIds.add(branch.getBranchId());
+                
+                // Insert products if any
+                if (productDetailIds != null && productDetailIds.length > 0) {
+                    List<Integer> productDetailIdList = Arrays.stream(productDetailIds)
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList());
+                    promotionDAO.insertPromotionProducts(promo.getPromotionId(), productDetailIdList);
                 }
+                
+                response.sendRedirect("Promotion?success=create");
+            } else {
+                response.sendRedirect("Promotion?error=create_failed");
             }
+        } catch (ParseException e) {
+            response.sendRedirect("Promotion?error=invalid_date_format");
+        } catch (NumberFormatException e) {
+            response.sendRedirect("Promotion?error=invalid_discount");
+        }
+    }
+
+    private void handleUpdate(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        System.out.println("=== [PromotionController] handleUpdate called ===");
+        
+        String idParam = request.getParameter("promotionId");
+        String promoName = request.getParameter("promoName");
+        String discountPercent = request.getParameter("discountPercent");
+        String startDate = request.getParameter("startDate");
+        String endDate = request.getParameter("endDate");
+        String[] branchIds = request.getParameterValues("branchIds");
+        String[] productDetailIds = request.getParameterValues("productDetailIds");
+        
+        System.out.println("promotionId: " + idParam);
+        System.out.println("promoName: " + promoName);
+        System.out.println("discountPercent: " + discountPercent);
+        System.out.println("startDate: " + startDate);
+        System.out.println("endDate: " + endDate);
+        System.out.println("branchIds: " + (branchIds != null ? Arrays.toString(branchIds) : "null"));
+        System.out.println("productDetailIds: " + (productDetailIds != null ? Arrays.toString(productDetailIds) : "null"));
+        
+        if (idParam == null || idParam.trim().isEmpty()) {
+            System.out.println("Error: promotionId is null or empty");
+            response.sendRedirect("Promotion?error=invalid_id");
+            return;
+        }
+        
+        // Validation
+        String validationError = validatePromotionData(promoName, discountPercent, startDate, endDate);
+        if (validationError != null) {
+            System.out.println("Validation error: " + validationError);
+            response.sendRedirect("Promotion?error=" + validationError);
+            return;
+        }
+        
+        try {
+            int promotionId = Integer.parseInt(idParam);
+            System.out.println("Parsed promotionId: " + promotionId);
             
-            // Parse product detail IDs
-            List<Integer> productDetailIds = new ArrayList<>();
-            if (productDetailIdStrs != null && productDetailIdStrs.length > 0) {
-                for (String productDetailIdStr : productDetailIdStrs) {
-                    if (productDetailIdStr != null && !productDetailIdStr.trim().isEmpty()) {
-                        productDetailIds.add(Integer.parseInt(productDetailIdStr));
-                    }
-                }
-            }
+            Promotion promo = new Promotion();
+            promo.setPromotionId(promotionId);
+            promo.setPromoName(promoName.trim());
+            promo.setDiscountPercent(new BigDecimal(discountPercent));
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            promo.setStartDate(sdf.parse(startDate));
+            promo.setEndDate(sdf.parse(endDate));
+            
+            System.out.println("Updating promotion: " + promo.getPromoName());
             
             // Update promotion
-            boolean success = promotionDAO.updatePromotion(promotion, branchIds, productDetailIds);
+            boolean updated = promotionDAO.updatePromotion(promo);
+            System.out.println("Update result: " + updated);
             
-            if (success) {
-                response.sendRedirect("Promotions?msg=updated");
+            if (updated) {
+                // Delete existing branches and products
+                System.out.println("Deleting existing branches and products...");
+                promotionDAO.deletePromotionBranches(promotionId);
+                promotionDAO.deletePromotionProducts(promotionId);
+                
+                // Insert new branches if any
+                if (branchIds != null && branchIds.length > 0) {
+                    System.out.println("Inserting " + branchIds.length + " branches...");
+                    List<Integer> branchIdList = Arrays.stream(branchIds)
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList());
+                    boolean branchesInserted = promotionDAO.insertPromotionBranches(promotionId, branchIdList);
+                    System.out.println("Branches inserted: " + branchesInserted);
+                } else {
+                    System.out.println("No branches to insert");
+                }
+                
+                // Insert new products if any
+                if (productDetailIds != null && productDetailIds.length > 0) {
+                    System.out.println("Inserting " + productDetailIds.length + " products...");
+                    List<Integer> productDetailIdList = Arrays.stream(productDetailIds)
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList());
+                    boolean productsInserted = promotionDAO.insertPromotionProducts(promotionId, productDetailIdList);
+                    System.out.println("Products inserted: " + productsInserted);
+                } else {
+                    System.out.println("No products to insert");
+                }
+                
+                System.out.println("Update successful, redirecting...");
+                response.sendRedirect("Promotion?success=update");
             } else {
-                response.sendRedirect("Promotions?error=update_failed");
+                System.out.println("Update failed - no rows affected");
+                response.sendRedirect("Promotion?error=update_failed");
             }
-            
-        } catch (Exception e) {
+        } catch (ParseException e) {
+            System.out.println("ParseException: " + e.getMessage());
             e.printStackTrace();
-            response.sendRedirect("Promotions?error=invalid_input");
+            response.sendRedirect("Promotion?error=invalid_date_format");
+        } catch (NumberFormatException e) {
+            System.out.println("NumberFormatException: " + e.getMessage());
+            e.printStackTrace();
+            response.sendRedirect("Promotion?error=invalid_id");
+        } catch (Exception e) {
+            System.out.println("Unexpected exception: " + e.getMessage());
+            e.printStackTrace();
+            response.sendRedirect("Promotion?error=update_failed");
         }
     }
 
-    private List<Promotion> applyFilters(List<Promotion> promotions, String statusFilter, String discountFilter, String searchKeyword) {
-        java.util.Date currentDate = new java.util.Date();
+    private String validatePromotionData(String promoName, String discountPercent, 
+                                          String startDate, String endDate) {
+        // Check null/empty
+        if (promoName == null || promoName.trim().isEmpty()) {
+            return "empty_promo_name";
+        }
         
-        return promotions.stream()
-            .filter(promotion -> {
-                // Search filter
-                if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
-                    if (!promotion.getPromoName().toLowerCase().contains(searchKeyword.toLowerCase())) {
-                        return false;
-                    }
-                }
-                
-                // Status filter
-                if (statusFilter != null && !statusFilter.isEmpty()) {
-                    boolean isActive = currentDate.after(promotion.getStartDate()) && currentDate.before(promotion.getEndDate());
-                    boolean isExpired = currentDate.after(promotion.getEndDate());
-                    boolean isScheduled = currentDate.before(promotion.getStartDate());
-                    
-                    switch (statusFilter) {
-                        case "active":
-                            if (!isActive) return false;
-                            break;
-                        case "expired":
-                            if (!isExpired) return false;
-                            break;
-                        case "scheduled":
-                            if (!isScheduled) return false;
-                            break;
-                    }
-                }
-                
-                // Discount filter
-                if (discountFilter != null && !discountFilter.isEmpty()) {
-                    double discount = promotion.getDiscountPercent().doubleValue();
-                    switch (discountFilter) {
-                        case "low":
-                            if (discount >= 15) return false;
-                            break;
-                        case "medium":
-                            if (discount < 15 || discount > 25) return false;
-                            break;
-                        case "high":
-                            if (discount <= 25) return false;
-                            break;
-                    }
-                }
-                
-                return true;
-            })
-            .collect(java.util.stream.Collectors.toList());
-    }
-
-    private String escapeJson(String text) {
-        if (text == null) return "";
-        return text.replace("\"", "\\\"")
-                  .replace("\\", "\\\\")
-                  .replace("\n", "\\n")
-                  .replace("\r", "\\r")
-                  .replace("\t", "\\t");
+        if (discountPercent == null || discountPercent.trim().isEmpty()) {
+            return "empty_discount";
+        }
+        
+        if (startDate == null || startDate.trim().isEmpty()) {
+            return "empty_start_date";
+        }
+        
+        if (endDate == null || endDate.trim().isEmpty()) {
+            return "empty_end_date";
+        }
+        
+        // Check length
+        if (promoName.trim().length() > 255) {
+            return "promo_name_too_long";
+        }
+        
+        // Check discount value
+        try {
+            BigDecimal discount = new BigDecimal(discountPercent);
+            if (discount.compareTo(BigDecimal.ZERO) < 0 || discount.compareTo(new BigDecimal("100")) > 0) {
+                return "invalid_discount_range";
+            }
+        } catch (NumberFormatException e) {
+            return "invalid_discount";
+        }
+        
+        // Check dates
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date start = sdf.parse(startDate);
+            Date end = sdf.parse(endDate);
+            
+            if (start.after(end)) {
+                return "invalid_dates";
+            }
+        } catch (ParseException e) {
+            return "invalid_date_format";
+        }
+        
+        return null; // No error
     }
 }
+
