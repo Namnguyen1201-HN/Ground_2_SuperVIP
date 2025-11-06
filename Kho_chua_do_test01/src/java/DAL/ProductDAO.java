@@ -456,7 +456,7 @@ public class ProductDAO extends DataBaseContext {
     }
 
     /* ===================== REPORT (giữ nguyên) ===================== */
-   public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, int branchId) {
+   public List<ProductStatisticDTO> getTopProducts(String sortBy, String period, int limit, Integer branchId) {
     List<ProductStatisticDTO> list = new ArrayList<>();
     String dateCondition = "";
 
@@ -468,7 +468,7 @@ public class ProductDAO extends DataBaseContext {
     }
 
     // nếu có branchId thì thêm điều kiện lọc theo chi nhánh
-    if (branchId > 0) {
+    if (branchId != null && branchId > 0) {
         if (dateCondition.isEmpty()) {
             dateCondition = "WHERE o.BranchID = ?";
         } else {
@@ -496,7 +496,7 @@ public class ProductDAO extends DataBaseContext {
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
         int index = 1;
         ps.setInt(index++, limit);
-        if (branchId > 0) {
+        if (branchId != null && branchId > 0) {
             ps.setInt(index++, branchId);
         }
         ResultSet rs = ps.executeQuery();

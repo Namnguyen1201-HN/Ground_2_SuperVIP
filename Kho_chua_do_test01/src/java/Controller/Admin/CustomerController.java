@@ -9,9 +9,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import jakarta.servlet.*;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 @WebServlet(name = "CustomerController", urlPatterns = {"/Customer"})
@@ -283,8 +290,16 @@ public class CustomerController extends HttpServlet {
         } catch (NumberFormatException e) {
             System.out.println("[DEBUG] NumberFormatException: " + e.getMessage());
             e.printStackTrace();
-            json.put("success", false);
-            json.put("message", "Mã khách hàng không hợp lệ");
+            try {
+                json.put("success", false);
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                json.put("message", "Mã khách hàng không hợp lệ");
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } catch (IllegalStateException e) {
             // Response already committed - log error
             System.out.println("[DEBUG] IllegalStateException: " + e.getMessage());
@@ -293,13 +308,25 @@ public class CustomerController extends HttpServlet {
             System.out.println("[DEBUG] Exception in handleGetCustomerDetails: " + e.getClass().getName());
             System.out.println("[DEBUG] Exception message: " + e.getMessage());
             e.printStackTrace();
-            json.put("success", false);
+            try {
+                json.put("success", false);
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
             String errorMsg = e.getMessage();
             if (errorMsg == null || errorMsg.isEmpty()) {
                 errorMsg = "Lỗi khi lấy thông tin khách hàng: " + e.getClass().getSimpleName();
             }
-            json.put("message", errorMsg);
-            json.put("exceptionType", e.getClass().getName());
+            try {
+                json.put("message", errorMsg);
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                json.put("exceptionType", e.getClass().getName());
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } finally {
             try {
                 if (out != null && !response.isCommitted()) {
@@ -558,8 +585,16 @@ public class CustomerController extends HttpServlet {
         } catch (NumberFormatException e) {
             System.out.println("[DEBUG] NumberFormatException in update: " + e.getMessage());
             e.printStackTrace();
-            json.put("success", false);
-            json.put("message", "Mã khách hàng không hợp lệ");
+            try {
+                json.put("success", false);
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                json.put("message", "Mã khách hàng không hợp lệ");
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
             // Send JSON even on exception
             try {
                 if (!response.isCommitted() && out != null) {
@@ -577,13 +612,25 @@ public class CustomerController extends HttpServlet {
             System.out.println("[DEBUG] Exception in handleUpdateCustomer: " + e.getClass().getName());
             System.out.println("[DEBUG] Exception message: " + e.getMessage());
             e.printStackTrace();
-            json.put("success", false);
+            try {
+                json.put("success", false);
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
             String errorMsg = e.getMessage();
             if (errorMsg == null || errorMsg.isEmpty()) {
                 errorMsg = "Lỗi khi cập nhật khách hàng: " + e.getClass().getSimpleName();
             }
-            json.put("message", errorMsg);
-            json.put("exceptionType", e.getClass().getName());
+            try {
+                json.put("message", errorMsg);
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+                json.put("exceptionType", e.getClass().getName());
+            } catch (JSONException ex) {
+                Logger.getLogger(CustomerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
             // Send JSON even on exception
             try {
                 if (!response.isCommitted()) {

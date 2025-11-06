@@ -18,6 +18,9 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.json.JSONObject;
 import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONException;
 
 /**
  *
@@ -249,10 +252,18 @@ public class SupplierController extends HttpServlet {
             System.out.println("[DEBUG] Exception message: " + e.getMessage());
             e.printStackTrace();
             if (out != null && !response.isCommitted()) {
-                json.put("success", false);
-                json.put("message", "Lỗi khi lấy thông tin nhà cung cấp: " + e.getMessage());
-                out.print(json.toString());
-                out.flush();
+                try {
+                    try {
+                        json.put("success", false);
+                    } catch (JSONException ex) {
+                        Logger.getLogger(SupplierController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    json.put("message", "Lỗi khi lấy thông tin nhà cung cấp: " + e.getMessage());
+                    out.print(json.toString());
+                    out.flush();
+                } catch (JSONException ex) {
+                    Logger.getLogger(SupplierController.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }
@@ -437,47 +448,59 @@ public class SupplierController extends HttpServlet {
             System.out.println("[DEBUG] Response sent successfully (update)");
 
         } catch (NumberFormatException e) {
-            System.out.println("[DEBUG] NumberFormatException in update: " + e.getMessage());
-            e.printStackTrace();
-            json.put("success", false);
-            json.put("message", "Mã nhà cung cấp không hợp lệ");
             try {
-                if (!response.isCommitted() && out != null) {
-                    out.print(json.toString());
-                    out.flush();
+                System.out.println("[DEBUG] NumberFormatException in update: " + e.getMessage());
+                e.printStackTrace();
+                json.put("success", false);
+                json.put("message", "Mã nhà cung cấp không hợp lệ");
+                try {
+                    if (!response.isCommitted() && out != null) {
+                        out.print(json.toString());
+                        out.flush();
+                    }
+                } catch (Exception e2) {
+                    e2.printStackTrace();
                 }
-            } catch (Exception e2) {
-                e2.printStackTrace();
+            } catch (JSONException ex) {
+                Logger.getLogger(SupplierController.class.getName()).log(Level.SEVERE, null, ex);
             }
         } catch (IllegalStateException e) {
             System.out.println("[DEBUG] IllegalStateException in update: " + e.getMessage());
             e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("[DEBUG] Exception in handleUpdateSupplier: " + e.getClass().getName());
-            System.out.println("[DEBUG] Exception message: " + e.getMessage());
-            e.printStackTrace();
-            json.put("success", false);
-            String errorMsg = e.getMessage();
-            if (errorMsg == null || errorMsg.isEmpty()) {
-                errorMsg = "Lỗi khi cập nhật nhà cung cấp: " + e.getClass().getSimpleName();
-            }
-            json.put("message", errorMsg);
-            json.put("exceptionType", e.getClass().getName());
             try {
-                if (!response.isCommitted()) {
-                    if (out == null) {
-                        out = response.getWriter();
-                    }
-                    if (out != null) {
-                        response.setContentType("application/json;charset=UTF-8");
-                        out.print(json.toString());
-                        out.flush();
-                        System.out.println("[DEBUG] Error JSON sent successfully");
-                    }
+                System.out.println("[DEBUG] Exception in handleUpdateSupplier: " + e.getClass().getName());
+                System.out.println("[DEBUG] Exception message: " + e.getMessage());
+                e.printStackTrace();
+                json.put("success", false);
+                String errorMsg = e.getMessage();
+                if (errorMsg == null || errorMsg.isEmpty()) {
+                    errorMsg = "Lỗi khi cập nhật nhà cung cấp: " + e.getClass().getSimpleName();
                 }
-            } catch (Exception e2) {
-                System.out.println("[DEBUG] Error sending error JSON: " + e2.getMessage());
-                e2.printStackTrace();
+                json.put("message", errorMsg);
+                try {
+                    json.put("exceptionType", e.getClass().getName());
+                } catch (JSONException ex) {
+                    Logger.getLogger(SupplierController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                try {
+                    if (!response.isCommitted()) {
+                        if (out == null) {
+                            out = response.getWriter();
+                        }
+                        if (out != null) {
+                            response.setContentType("application/json;charset=UTF-8");
+                            out.print(json.toString());
+                            out.flush();
+                            System.out.println("[DEBUG] Error JSON sent successfully");
+                        }
+                    }
+                } catch (Exception e2) {
+                    System.out.println("[DEBUG] Error sending error JSON: " + e2.getMessage());
+                    e2.printStackTrace();
+                }
+            } catch (JSONException ex) {
+                Logger.getLogger(SupplierController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
