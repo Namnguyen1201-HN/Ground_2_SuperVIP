@@ -1,0 +1,178 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Quản lý Khách Hàng - SWP391</title>
+        <link rel="stylesheet" href="css/admin/Supplier.css">
+ <style> body { background-color: #f5f7fa; font-family: 'Inter', sans-serif; padding-top: 70px; } .main-container { display: flex; gap: 25px; padding: 25px; } /* 🎨 FILTER SIDEBAR */ .filter-container { width: 280px; background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.07); padding: 22px; transition: all 0.3s ease; } .filter-container:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.1); } .filter-header { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; } .filter-header i { color: #007bff; font-size: 18px; } .filter-header h2 { font-size: 17px; font-weight: 600; margin: 0; color: #333; } .filter-group { margin-bottom: 22px; } .filter-group h3 { font-size: 14px; font-weight: 600; color: #555; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; } .filter-group h3 i { color: #007bff; } .filter-container input[type="number"], .filter-container select { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid #d0d7de; background-color: #fafbfc; font-size: 14px; transition: 0.2s; } .filter-container input:focus, .filter-container select:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.15); background-color: #fff; } .radio-group { padding-left: 4px; } .radio-group label { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 14px; cursor: pointer; } .radio-group input { accent-color: #007bff; } .filter-container button { width: 100%; padding: 10px 0; border-radius: 10px; border: none; color: white; font-weight: 500; font-size: 14px; cursor: pointer; transition: background 0.3s ease; } .btn-clear { background-color: #adb5bd; margin-bottom: 10px; } .btn-clear:hover { background-color: #9aa1a7; } .btn-apply { background-color: #007bff; } .btn-apply:hover { background-color: #0069d9; } /* TABLE */ .table-container { flex: 1; background: white; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.07); padding: 25px; } .search-container { display: flex; justify-content: flex-end; margin-bottom: 15px; padding: 0px !important; } .search-input { padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; width: 260px; } .suppliers-table { width: 100%; border-collapse: collapse; } .suppliers-table th, .suppliers-table td { padding: 12px; border-bottom: 1px solid #eee; } .suppliers-table th { background: #f1f3f5; color: #333; font-weight: 600; } .suppliers-table tr:hover { background-color: #f9fafb; } .table-container { background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); padding: 20px; margin-top: 20px; } .suppliers-table { width: 100%; border-collapse: collapse; } .suppliers-table th, .suppliers-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; } .suppliers-table th { background-color: #f2f2f2; } .search-container { display: flex; align-items: center; margin-bottom: 20px; } .search-input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px; flex: 1; } .search-input:focus { border-color: #007bff; outline: none; } .pagination-container { margin-top: 20px; } .page-btn { padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; margin: 0 3px; text-decoration: none; color: #333; } .page-btn.active { background-color: #007bff; color: white; border-color: #007bff; } .page-btn.disabled { pointer-events: none; opacity: 0.5; } .nav-item.dropdown { position: relative; } .nav-item.dropdown .dropdown-toggle { display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #333; padding: 10px 15px; cursor: pointer; } .nav-item.dropdown .dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 180px; z-index: 1000; } .nav-item.dropdown:hover .dropdown-menu { display: block; } .dropdown-item { display: block; padding: 10px 15px; color: #333; text-decoration: none; transition: background 0.2s; } .dropdown-item:hover { background-color: #f2f2f2; } .dropdown-item.active { background-color: #007bff; color: white; } </style>    </head>
+    <body>
+        <%@ include file="../admin/header_admin.jsp" %>
+
+        <div class="main-container">
+            <!-- FILTER SIDEBAR -->
+            <div class="filter-container">
+                <div class="filter-header">
+                    <i class="fas fa-filter"></i>
+                    <h2>Bộ lọc khách hàng</h2>
+                </div>
+                <form action="sa-customer" method="get">
+                    <div class="filter-group">
+                        <h3><i class="fas fa-dollar-sign"></i> Khoảng chi tiêu</h3>
+                        <input type="number" name="minSpent" placeholder="Từ..." value="${fn:escapeXml(param.minSpent)}">
+                        <input type="number" name="maxSpent" placeholder="Đến..." value="${fn:escapeXml(param.maxSpent)}">
+                    </div>
+
+                    <div class="filter-group">
+                        <h3><i class="fas fa-venus-mars"></i> Giới tính</h3>
+                        <div class="radio-group">
+                            <label>
+                                <input type="radio" name="gender" value="all"
+                                    <c:if test="${empty param.gender || param.gender == 'all'}">checked="checked"</c:if> > Tất cả
+                            </label>
+                            <label>
+                                <input type="radio" name="gender" value="male"
+                                    <c:if test="${param.gender == 'male'}">checked="checked"</c:if> > Nam
+                            </label>
+                            <label>
+                                <input type="radio" name="gender" value="female"
+                                    <c:if test="${param.gender == 'female'}">checked="checked"</c:if> > Nữ
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h3><i class="fas fa-store"></i> Chi nhánh</h3>
+                        <select name="branchId">
+                            <option value="0">
+                                -- Tất cả chi nhánh --
+                            </option>
+                            <c:forEach var="b" items="${branches}">
+                                <option value="${b.branchId}">
+                                    <c:out value="${b.branchName}" />
+                                </option>
+                                <c:if test="${param.branchId == fn:trim(b.branchId)}">
+                                    <!-- Note: this won't set selected because above option already emitted.
+                                         Instead we print selected attribute inside option properly below. -->
+                                </c:if>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                    <!-- Better: render options with selected inside loop -->
+                    <!-- Replace previous select with this version if you prefer: -->
+                    <%-- 
+                    <select name="branchId">
+                        <option value="0"><c:out value="-- Tất cả chi nhánh --"/></option>
+                        <c:forEach var="b" items="${branches}">
+                            <option value="${b.branchId}">
+                                <c:out value="${b.branchName}"/>
+                                <c:if test="${param.branchId == b.branchId}">
+                                    selected="selected"
+                                </c:if>
+                            </option>
+                        </c:forEach>
+                    </select>
+                    --%>
+
+                    <button type="submit" class="btn-clear" name="action" value="clear">
+                        <i class="fas fa-rotate-left"></i> Xóa bộ lọc
+                    </button>
+                    <button type="submit" class="btn-apply" name="action" value="filter">
+                        <i class="fas fa-check"></i> Áp dụng lọc
+                    </button>
+                </form>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-container">
+                <div class="search-container">
+                    <form action="sa-customer" method="get" style="display:flex; width:100%;">
+                        <input type="text" name="keyword" class="search-input" placeholder="Theo mã, tên khách hàng..."
+                               value="${fn:escapeXml(param.keyword)}">
+                        <button type="submit" style="background:none; border:none; cursor:pointer;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Thông báo -->
+                <c:if test="${not empty successMessage}">
+                    <div style="padding:10px; background:#e6ffed; border:1px solid #b6f0c6; margin-bottom:12px;">
+                        <c:out value="${successMessage}" />
+                    </div>
+                </c:if>
+                <c:if test="${not empty errorMessage}">
+                    <div style="padding:10px; background:#fff0f0; border:1px solid #f3c2c2; margin-bottom:12px;">
+                        <c:out value="${errorMessage}" />
+                    </div>
+                </c:if>
+
+                <table class="suppliers-table">
+                    <thead>
+                        <tr>
+                            <th>Mã KH</th>
+                            <th>Tên khách hàng</th>
+                            <th>Số điện thoại</th>
+                            <th>Địa chỉ</th>
+                            <th>Tổng chi tiêu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:choose>
+                            <c:when test="${empty customers}">
+                                <tr><td colspan="5" style="text-align:center; color:#888;">Không tìm thấy khách hàng phù hợp.</td></tr>
+                            </c:when>
+                            <c:otherwise>
+                                <c:forEach var="cust" items="${customers}">
+                                    <tr>
+                                        <td><c:out value="${cust.customerID}" /></td>
+                                        <td><c:out value="${cust.fullname}" /></td>
+                                        <td><c:out value="${cust.phoneNumber}" /></td>
+                                        <td><c:out value="${cust.address}" /></td>
+                                        <td>
+                                            <c:choose>
+                                                <c:when test="${not empty cust.totalSpent}">
+                                                    <c:out value="${cust.totalSpent}" />
+                                                </c:when>
+                                                <c:otherwise>0</c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </c:otherwise>
+                        </c:choose>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <c:if test="${totalPages > 1}">
+                        <c:forEach var="p" begin="1" end="${totalPages}">
+                            <c:choose>
+                                <c:when test="${p == currentPage}">
+                                    <span class="page-btn active">${p}</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <a class="page-btn" href="sa-customer?page=${p}
+                                        <c:if test='${not empty param.keyword}'> &amp;keyword=${fn:escapeXml(param.keyword)}</c:if>
+                                        <c:if test='${not empty param.gender}'> &amp;gender=${fn:escapeXml(param.gender)}</c:if>
+                                        <c:if test='${not empty param.minSpent}'> &amp;minSpent=${fn:escapeXml(param.minSpent)}</c:if>
+                                        <c:if test='${not empty param.maxSpent}'> &amp;maxSpent=${fn:escapeXml(param.maxSpent)}</c:if>
+                                        <c:if test='${not empty param.branchId}'> &amp;branchId=${fn:escapeXml(param.branchId)}</c:if>
+                                        ">
+                                        ${p}
+                                    </a>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:forEach>
+                    </c:if>
+                </div>
+
+            </div>
+        </div>
+    </body>
+</html>
