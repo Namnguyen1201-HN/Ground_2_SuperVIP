@@ -19,44 +19,13 @@
             <div class="content-left">
                 <!-- Stats Section -->
                 <section class="stats-section">
-                    <%
-                        // Lấy thông tin user hiện tại
-                        Model.User currentUser = (Model.User) session.getAttribute("currentUser");
-                        boolean isAdmin = (currentUser != null && currentUser.getRoleId() == 0);
-                        boolean isBranchManager = (currentUser != null && currentUser.getRoleId() == 1);
-                        
-                        String titleText = "KẾT QUẢ BÁN HÀNG HÔM NAY";
-                        if (isBranchManager) {
-                            titleText += " CHI NHÁNH";
-                        }
-                    %>
-                    <h2 class="stats-title"><%= titleText %></h2>
+                    <h2 class="stats-title">KẾT QUẢ BÁN HÀNG HÔM NAY</h2>
                     <%
     Model.DashboardStatsDTO stats = (Model.DashboardStatsDTO) request.getAttribute("stats");
     if (stats == null) stats = new Model.DashboardStatsDTO();
                     %>
 
                     <div class="stats-grid">
-                        <% if (isBranchManager) { %>
-                        <!-- Layout đơn giản cho Branch Manager - chỉ 4 cards như trong hình -->
-                        <div class="stat-card">
-                            <div class="stat-icon orders">🛒</div>
-                            <div class="stat-content">
-                                <h3><%= stats.getTodayOrders() %> Hóa đơn</h3>
-                                <p>Doanh thu</p>
-                            </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-icon revenue">🏪</div>
-                            <div class="stat-content">
-                                <h3>Hà Nội</h3>
-                                <p>ID: <%= currentUser.getBranchId() %></p>
-                            </div>
-                        </div>
-                        
-                        <% } else { %>
-                        <!-- Layout đầy đủ cho Admin -->
                         <div class="stat-card">
                             <div class="stat-icon revenue">💰</div>
                             <div class="stat-content">
@@ -64,11 +33,9 @@
                                 <p>Doanh thu hôm nay</p>
                             </div>
                         </div>
-                        <% } %>
 
-                        <% if (!isBranchManager) { %>
                         <div class="stat-card">
-                            <div class="stat-icon orders">🛒</div>
+                            <div class="stat-icon orders">�</div>
                             <div class="stat-content">
                                 <h3><%= stats.getTodayOrders() %></h3>
                                 <p>Đơn hàng hôm nay</p>
@@ -76,24 +43,22 @@
                         </div>
 
                         <div class="stat-card">
-                            <div class="stat-icon orders">📋</div>
+                            <div class="stat-icon orders">�📋</div>
                             <div class="stat-content">
                                 <h3><%= stats.getReturnCount() %></h3>
                                 <p>Phiếu trả hàng</p>
                             </div>
                         </div>
-                        <% } %>
 
                         <%
-                        String colorClass1 = stats.getCompareYesterday() >= 0 ? "positive" : "negative";
-                        String colorClass2 = stats.getCompareLastMonth() >= 0 ? "positive" : "negative";
+    String colorClass1 = stats.getCompareYesterday() >= 0 ? "positive" : "negative";
+    String colorClass2 = stats.getCompareLastMonth() >= 0 ? "positive" : "negative";
                         %>
 
-                        <!-- Hiển thị cho cả Admin và Branch Manager -->
                         <div class="stat-card">
                             <div class="stat-icon growth">📈</div>
                             <div class="stat-content">
-                                <h3 class="<%= colorClass1 %>"><%= String.format("%.1f", stats.getCompareYesterday()) %>%</h3>
+                                <h3 class="<%= colorClass1 %>"><%= String.format("%.2f", stats.getCompareYesterday()) %>%</h3>
                                 <p>So với hôm qua</p>
                             </div>
                         </div>
@@ -101,13 +66,12 @@
                         <div class="stat-card">
                             <div class="stat-icon comparison">📊</div>
                             <div class="stat-content">
-                                <h3 class="<%= colorClass2 %>"><%= String.format("%.1f", stats.getCompareLastMonth()) %>%</h3>
+                                <h3 class="<%= colorClass2 %>"><%= String.format("%.2f", stats.getCompareLastMonth()) %>%</h3>
                                 <p>So với cùng kỳ tháng trước</p>
                             </div>
                         </div>
                         
-                        <% if (isAdmin) { %>
-                        <!-- Các thống kê tuần/tháng chỉ cho Admin -->
+                        <!-- Thêm các thống kê tuần/tháng -->
                         <div class="stat-card">
                             <div class="stat-icon revenue">💵</div>
                             <div class="stat-content">
@@ -139,7 +103,6 @@
                                 <p>Đơn hàng tháng này</p>
                             </div>
                         </div>
-                        <% } %>
                     </div>
                                 
                 </section>
@@ -147,7 +110,7 @@
                 <!-- Chart Section -->
                 <section class="chart-section">
                     <div class="chart-header">
-                        <h2 class="chart-title">DOANH THU THUẦN <% if (isBranchManager) { %>CHI NHÁNH<% } else { %>THÁNG NÀY<% } %> ℹ️</h2>
+                        <h2 class="chart-title">DOANH THU THUẦN THÁNG NÀY ℹ️</h2>
                         <div style="display: flex; gap: 1rem; align-items: center;">
 
                             <div class="chart-tabs">
@@ -207,11 +170,12 @@
                     </div>
                 </section>
 
-                <!-- Top Products Section - Hiển thị cho cả Admin và Branch Manager -->
+                <!-- Top Products Section -->
+
                 <section class="products-section">
                     <div class="products-header">
                         <h2 class="products-title">
-                            TOP 10 HÀNG HÓA BÁN CHẠY <% if (isBranchManager) { %>CHI NHÁNH<% } %>
+                            TOP 10 HÀNG HÓA BÁN CHẠY 
                             <%= "this_month".equals(request.getAttribute("period")) ? "THÁNG NÀY" : "THÁNG TRƯỚC" %>
                         </h2>
 
