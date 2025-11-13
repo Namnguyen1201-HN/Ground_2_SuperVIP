@@ -7,6 +7,7 @@ import DAL.SupplierDAO;
 import DAL.BranchDAO;
 
 import Model.Product;
+import Model.UserDTO;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -18,6 +19,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 @WebServlet(name = "SAHomePageController", urlPatterns = {"/sale"})
 public class SAHomePageController extends HttpServlet {
