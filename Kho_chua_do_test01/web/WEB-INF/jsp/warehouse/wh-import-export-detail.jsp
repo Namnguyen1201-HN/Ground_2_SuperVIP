@@ -26,12 +26,27 @@
 
     String movementStatus = (movement != null && movement.getResponseStatus()!=null)
                             ? movement.getResponseStatus().toLowerCase() : "";
+    
+    String movementType = (String) request.getAttribute("movementType");
+    if (movementType == null) {
+        movementType = request.getParameter("movementType");
+    }
+    if (movementType == null || movementType.isEmpty()) {
+        movementType = "import";
+    }
+    
+    boolean isExport = "export".equalsIgnoreCase(movementType);
+    String pageTitle = isExport ? "Chi tiết đơn xuất hàng" : "Chi tiết đơn nhập hàng";
+    String backUrl = isExport ? ctx + "/warehouse-export-orders" : ctx + "/wh-import";
+    String actionText = isExport ? "Xuất hàng" : "Nhập hàng";
+    String iconClass = isExport ? "fa-arrow-up" : "fa-arrow-down";
+    String badgeClass = isExport ? "export" : "import";
 %>
 <html>
     <head>
-        <title>Chi tiết nhập hàng #<%= movementID == null ? "" : movementID %> - WH</title>
+        <title><%= pageTitle %> #<%= movementID == null ? "" : movementID %> - WH</title>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/warehouse/wh-import-export-detail.css">
-
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     </head>
     <body>
 
@@ -39,8 +54,6 @@
 
         <div class="main-container">
             <main class="main-content">
-
-
 
                 <% if (successMessage != null && !successMessage.isEmpty()) { %>
                 <div class="alert alert-success">
@@ -59,28 +72,26 @@
                 <div class="page-header">
                     <div class="page-header-flex">
                         <div>
-                            <h1>Chi tiết đơn nhập hàng #<%= movementID == null ? "" : movementID %></h1>
-                            <p class="page-subtitle">Danh sách sản phẩm và serial trong đơn nhập này</p>
+                            <h1><%= pageTitle %> #<%= movementID == null ? "" : movementID %></h1>
+                            <p class="page-subtitle">Danh sách sản phẩm và serial trong đơn <%= isExport ? "xuất" : "nhập" %> này</p>
                         </div>
 
                         <div>
-                            <a href="<%=ctx%>/wh-import" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                            <a href="<%= backUrl %>" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
                             </a>
                         </div>
                     </div>
 
                     <div class="header-actions">
-
-
                         <% Boolean canComplete = (Boolean) request.getAttribute("canComplete"); %>
-
-                        <% if (!"completed".equals(movementStatus)) { %>
+                        <% if (!"completed".equals(movementStatus) && !"Hoàn thành".equalsIgnoreCase(movement != null ? movement.getResponseStatus() : "")) { %>
                         <% if (Boolean.TRUE.equals(canComplete)) { %>
                         <form action="<%=ctx%>/wh-complete-request" method="post" style="display:inline;">
                             <input type="hidden" name="id" value="<%= request.getParameter("id") %>"/>
+                            <input type="hidden" name="movementType" value="<%= movementType %>"/>
                             <button type="submit" class="btn btn-success">
-                                <i class="fas fa-check-circle"></i> Hoàn tất nhập hàng
+                                <i class="fas fa-check-circle"></i> Hoàn tất <%= isExport ? "xuất" : "nhập" %> hàng
                             </button>
                         </form>
                         <% } %>
@@ -92,8 +103,8 @@
                     <div class="info-grid">
                         <div class="info-item">
                             <label>Loại hoạt động:</label>
-                            <span class="movement-type-badge import">
-                                <i class="fas fa-arrow-down"></i> Nhập hàng
+                            <span class="movement-type-badge <%= badgeClass %>">
+                                <i class="fas <%= iconClass %>"></i> <%= actionText %>
                             </span>
                         </div>
 
@@ -142,11 +153,10 @@
                             <tr>
                                 <th>STT</th>
                                 <th>Tên sản phẩm</th>
-                                <th>Mã sản phẩm</th>
-                                <th>Số lượng</th>
-                                <th>Đã xử lý</th>
-                                <th>Trạng thái</th>
-                                <th>Serial Numbers</th>
+                                <th>Serial number</th>
+                                <th>Số lượng cần <%= isExport ? "xuất" : "nhập" %></th>
+                                <th>Đã <%= isExport ? "xuất" : "nhập" %></th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
 
@@ -165,39 +175,19 @@
                             %>
                             <tr class="<%= rowCls %>">
                                 <td><%= i+1 %></td>
-                                <td><strong><%= d.getProductName() == null ? "" : d.getProductName() %></strong></td>
-                                <td><code><%= d.getProductCode() == null ? "" : d.getProductCode() %></code></td>
-                                <td><%= qty %></td>
                                 <td>
-                                    <span class="<%= completed ? "text-success" : "text-warning" %>"><%= scanned %>/<%= qty %></span>
+                                    <strong><%= d.getProductName() == null ? "" : d.getProductName() %></strong>
+                                    <% if (d.getProductCode() != null && !d.getProductCode().isEmpty()) { %>
+                                    <span style="color: #6b7280; font-size: 12px;">(<%= d.getProductCode() %>)</span>
+                                    <% } %>
                                 </td>
                                 <td>
                                     <%
-                                        if (completed) {
-                                    %>
-                                    <span class="badge badge-success">Hoàn thành</span>
-                                    <%
-                                        } else if (inProgress) {
-                                    %>
-                                    <span class="badge badge-warning">Đang xử lý</span>
-                                    <%
-                                        } else {
-                                    %>
-                                    <span class="badge badge-pending">Chờ xử lý</span>
-                                    <%
-                                        }
-                                    %>
-                                </td>
-
-                                <!-- Serial numbers -->
-                                <td>
-                                    <%
-                                        List<?> serials = d.getSerials(); // List<ProductDetailSerialNumber> hoặc tương đương
+                                        List<?> serials = d.getSerials();
                                         boolean hasSerials = (serials != null && !serials.isEmpty());
                                     %>
-
                                     <% if (!hasSerials) { %>
-                                    <span class="text-muted">Chưa có serial</span>
+                                    <span class="text-muted">Chưa có serial nào</span>
                                     <% } else { %>
                                     <div class="serials-list">
                                         <%
@@ -232,32 +222,19 @@
                                         %>
                                     </div>
                                     <% } %>
-
-
-
-                                    <% boolean isCompleted = "completed".equalsIgnoreCase(movementStatus); %>
-                                    <% boolean invoiceCompleted = "completed".equalsIgnoreCase(movementStatus); %>
-                                    <!-- Chỉ hiển thị form khi CHƯA completed -->
-                                    <% if (!isCompleted && !invoiceCompleted) { %>
-                                    <!-- ====== FORM THÊM SERIAL ====== -->
-                                    <form action="<%=ctx%>/wh-import-export-detail" method="post" style="display:flex; gap:6px; margin-top:6px;">
-                                        <input type="hidden" name="action" value="addSerial"/>
-                                        <input type="hidden" name="id" value="<%= request.getParameter("id") %>"/>
-                                        <input type="hidden" name="movementDetailId" value="<%= d.getMovementDetailId() %>"/>
-                                        <input type="hidden" name="productDetailId" value="<%= d.getProductDetailId() %>"/>
-                                        <input type="text"   name="serialNumber" placeholder="Nhập/scan serial..." required class="form-input"/>
-                                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i></button>
-                                    </form>
-
-                                    <!-- ====== FORM XOÁ SERIAL ====== -->
-                                    <form action="<%=ctx%>/wh-import-export-detail" method="post" style="display:flex; gap:6px; margin-top:4px;">
-                                        <input type="hidden" name="action" value="delSerial"/>
-                                        <input type="hidden" name="id" value="<%= request.getParameter("id") %>"/>
-                                        <input type="hidden" name="movementDetailId" value="<%= d.getMovementDetailId() %>"/>
-                                        <input type="hidden" name="productDetailId" value="<%= d.getProductDetailId() %>"/>
-                                        <input type="text"   name="serialNumber" placeholder="Xoá serial..." required class="form-input"/>
-                                        <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                    </form>
+                                </td>
+                                <td><%= qty %></td>
+                                <td>
+                                    <span class="<%= completed ? "text-success" : "text-warning" %>"><%= scanned %>/<%= qty %></span>
+                                </td>
+                                <td>
+                                    <% boolean isCompleted = "completed".equalsIgnoreCase(movementStatus) || "Hoàn thành".equalsIgnoreCase(movement != null ? movement.getResponseStatus() : ""); %>
+                                    <% if (!isCompleted) { %>
+                                    <button type="button" class="btn btn-scan" onclick="openScanModal(<%= d.getMovementDetailId() %>, <%= d.getProductDetailId() %>)">
+                                        <i class="fas fa-qrcode"></i> Quét
+                                    </button>
+                                    <% } else { %>
+                                    <span class="badge badge-success">Hoàn thành</span>
                                     <% } %>
                                 </td>
                             </tr>
@@ -266,7 +243,7 @@
                                 } else {
                             %>
                             <tr>
-                                <td colspan="7" class="no-data">
+                                <td colspan="6" class="no-data">
                                     <i class="fas fa-box-open"></i> Không có sản phẩm nào trong đơn hàng này
                                 </td>
                             </tr>
@@ -280,7 +257,45 @@
             </main>
         </div>
 
-        <!-- JS “Xem thêm serial” -->
+        <!-- Modal for Serial Scanning -->
+        <div id="scanModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Nhập Serial Sản phẩm</h2>
+                    <span class="close" onclick="closeScanModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="serialForm" method="post" action="<%=ctx%>/serial-check">
+                        <input type="hidden" name="action" value="addSerial"/>
+                        <input type="hidden" name="id" value="<%= request.getParameter("id") %>"/>
+                        <input type="hidden" name="movementType" value="<%= movementType %>"/>
+                        <input type="hidden" name="movementDetailId" id="modalMovementDetailId"/>
+                        <input type="hidden" name="productDetailId" id="modalProductDetailId"/>
+                        
+                        <div class="form-group">
+                            <label for="serialNumber">Serial Number:</label>
+                            <input type="text" name="serialNumber" id="serialNumber" 
+                                   placeholder="Nhập serial hoặc quét QR..." 
+                                   class="form-input" required autofocus/>
+                        </div>
+                        
+                        <div class="modal-actions">
+                            <button type="button" class="btn btn-primary" onclick="scanQRCode()">
+                                <i class="fas fa-qrcode"></i> Quét QR Code
+                            </button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus"></i> + Thêm Serial
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="closeScanModal()">
+                                <i class="fas fa-times"></i> x Hủy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- JS "Xem thêm serial" -->
         <script>
             function showMoreSerials(el) {
                 const container = el.closest('.serials-list');
@@ -290,6 +305,31 @@
                     s.classList.remove('hidden');
                 });
                 el.style.display = 'none';
+            }
+
+            function openScanModal(movementDetailId, productDetailId) {
+                document.getElementById('modalMovementDetailId').value = movementDetailId;
+                document.getElementById('modalProductDetailId').value = productDetailId;
+                document.getElementById('scanModal').style.display = 'block';
+                document.getElementById('serialNumber').focus();
+            }
+
+            function closeScanModal() {
+                document.getElementById('scanModal').style.display = 'none';
+                document.getElementById('serialForm').reset();
+            }
+
+            function scanQRCode() {
+                // Placeholder for QR code scanning functionality
+                alert('Tính năng quét QR Code sẽ được tích hợp sau');
+            }
+
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('scanModal');
+                if (event.target == modal) {
+                    closeScanModal();
+                }
             }
         </script>
 

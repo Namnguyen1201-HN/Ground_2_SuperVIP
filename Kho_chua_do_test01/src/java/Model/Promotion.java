@@ -9,32 +9,27 @@ public class Promotion {
     private BigDecimal discountPercent;
     private Date startDate;
     private Date endDate;
-    private int productCount;
     private int branchCount;
+    private int productCount;
+    
+    // Computed field for status
+    private String status; // "active", "scheduled", "expired"
+    private long daysRemaining; // Số ngày còn lại (nếu chưa hết hạn)
 
-    public Promotion() {
-    }
+    public Promotion() {}
 
-    public Promotion(int promotionId, String promoName, BigDecimal discountPercent, Date startDate, Date endDate) {
+    public Promotion(int promotionId, String promoName, BigDecimal discountPercent, 
+                    Date startDate, Date endDate, int branchCount, int productCount) {
         this.promotionId = promotionId;
         this.promoName = promoName;
         this.discountPercent = discountPercent;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.productCount = 0;
-        this.branchCount = 0;
-    }
-
-    public Promotion(int promotionId, String promoName, BigDecimal discountPercent, Date startDate, Date endDate, int productCount, int branchCount) {
-        this.promotionId = promotionId;
-        this.promoName = promoName;
-        this.discountPercent = discountPercent;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.productCount = productCount;
         this.branchCount = branchCount;
+        this.productCount = productCount;
     }
 
+    // Getters and Setters
     public int getPromotionId() {
         return promotionId;
     }
@@ -75,14 +70,6 @@ public class Promotion {
         this.endDate = endDate;
     }
 
-    public int getProductCount() {
-        return productCount;
-    }
-
-    public void setProductCount(int productCount) {
-        this.productCount = productCount;
-    }
-
     public int getBranchCount() {
         return branchCount;
     }
@@ -91,16 +78,28 @@ public class Promotion {
         this.branchCount = branchCount;
     }
 
-    @Override
-    public String toString() {
-        return "Promotion{" +
-                "promotionId=" + promotionId +
-                ", promoName='" + promoName + '\'' +
-                ", discountPercent=" + discountPercent +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", productCount=" + productCount +
-                ", branchCount=" + branchCount +
-                '}';
+    public int getProductCount() {
+        return productCount;
+    }
+
+    public void setProductCount(int productCount) {
+        this.productCount = productCount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public long getDaysRemaining() {
+        return daysRemaining;
+    }
+
+    public void setDaysRemaining(long daysRemaining) {
+        this.daysRemaining = daysRemaining;
     }
 }
+

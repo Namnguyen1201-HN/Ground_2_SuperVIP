@@ -22,7 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @WebServlet(name = "PromotionController", urlPatterns = {"/Promotion"})
-public class PromotionsController extends HttpServlet {
+public class PromotionController extends HttpServlet {
 
     private PromotionDAO promotionDAO;
 

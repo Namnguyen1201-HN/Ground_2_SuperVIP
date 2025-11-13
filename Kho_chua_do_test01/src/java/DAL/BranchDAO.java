@@ -66,7 +66,7 @@ public class BranchDAO extends DataBaseContext {
         return false;
     }
 
-    
+    // Kiểm tra tên chi nhánh có tồn tại chưa
     public boolean isBranchNameExists(String branchName) {
         String sql = "SELECT COUNT(*) FROM Branches WHERE LOWER(BranchName) = LOWER(?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {

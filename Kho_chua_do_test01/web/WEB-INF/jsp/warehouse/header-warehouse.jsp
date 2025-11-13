@@ -223,7 +223,7 @@
                 <span class="icon-import"></span>
                 Nhập hàng
             </a>
-            <a href="XuatHang" class="nav-item">
+            <a href="warehouse-export-orders" class="nav-item">
                 <span class="icon-export"></span>
                 Xuất hàng
             </a>
