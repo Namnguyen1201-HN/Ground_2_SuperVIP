@@ -35,6 +35,11 @@ public class ProductController extends HttpServlet {
     private SupplierDAO supplierDAO;
     private CategoryDAO categoryDAO;
     private BranchDAO   branchDAO; // dùng cho dropdown chi nhánh khi chỉnh tồn
+    // Pagination defaults
+    private static final int DEFAULT_PAGE = 1;
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 100;
+
 
     @Override
     public void init() {
@@ -138,6 +143,13 @@ public class ProductController extends HttpServlet {
         if (stock == null || stock.isBlank()) stock = "all";
 
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
+        // === Pagination params ===
+        int page = parseIntOrDefault(request.getParameter("page"), DEFAULT_PAGE);
+        int pageSize = parseIntOrDefault(request.getParameter("pageSize"), DEFAULT_PAGE_SIZE);
+        if (page < 1) page = DEFAULT_PAGE;
+        if (pageSize < 1) pageSize = DEFAULT_PAGE_SIZE;
+        if (pageSize > MAX_PAGE_SIZE) pageSize = MAX_PAGE_SIZE;
+
 
         List<Product> products;
         
@@ -179,7 +191,7 @@ public class ProductController extends HttpServlet {
         
         // Filter products by status (isActive)
         System.out.println("[DEBUG] Status filter: " + status);
-        System.out.println("[DEBUG] Products before status filter: " + products.size());
+        System.out.println("[DEBUG] Products before status filter: " + (products == null ? 0 : products.size()));
         
         if (!"all".equals(status)) {
             List<Product> filteredProducts = new ArrayList<>();
@@ -197,6 +209,19 @@ public class ProductController extends HttpServlet {
             System.out.println("[DEBUG] Products after status filter: " + products.size());
         }
         
+        // === Pagination: in-memory fallback ===
+        long totalItems = (products == null) ? 0L : products.size();
+        int fromIndex = (page - 1) * pageSize;
+        List<Product> pagedProducts;
+        if (products == null || fromIndex >= products.size()) {
+            pagedProducts = new ArrayList<>();
+        } else {
+            int toIndex = Math.min(fromIndex + pageSize, products.size());
+            pagedProducts = new ArrayList<>(products.subList(fromIndex, toIndex));
+        }
+        // gán lại products để phần còn lại vẫn dùng products (đã phân trang)
+        products = pagedProducts;
+
         // Tạo formatted date map cho JSP (sau khi đã filter)
         java.util.Map<Integer, String> formattedDateMap = new java.util.HashMap<>();
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -216,6 +241,14 @@ public class ProductController extends HttpServlet {
         request.setAttribute("stock", stock);
         request.setAttribute("stockThreshold", threshold);
         request.setAttribute("status", status);
+
+        // Pagination attributes
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (totalPages < 1) totalPages = 1;
+        request.setAttribute("currentPage", page);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
 
         // Sidebar danh mục
         request.setAttribute("categories", categoryDAO.getAll());
