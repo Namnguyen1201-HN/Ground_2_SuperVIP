@@ -30,7 +30,12 @@ public class ProductController extends HttpServlet {
     private BrandDAO    brandDAO;
     private SupplierDAO supplierDAO;
     private CategoryDAO categoryDAO;
-    private BranchDAO   branchDAO;
+    private BranchDAO   branchDAO; // dùng cho dropdown chi nhánh khi chỉnh tồn
+    // Pagination defaults
+    private static final int DEFAULT_PAGE = 1;
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int MAX_PAGE_SIZE = 100;
+
 
     @Override
     public void init() {
@@ -110,36 +115,97 @@ public class ProductController extends HttpServlet {
         String stock = request.getParameter("stock");
         if (stock == null || stock.isBlank()) stock = "all";
         int threshold = parseIntOrDefault(request.getParameter("stockThreshold"), DEFAULT_STOCK_THRESHOLD);
+        // === Pagination params ===
+        int page = parseIntOrDefault(request.getParameter("page"), DEFAULT_PAGE);
+        int pageSize = parseIntOrDefault(request.getParameter("pageSize"), DEFAULT_PAGE_SIZE);
+        if (page < 1) page = DEFAULT_PAGE;
+        if (pageSize < 1) pageSize = DEFAULT_PAGE_SIZE;
+        if (pageSize > MAX_PAGE_SIZE) pageSize = MAX_PAGE_SIZE;
 
-        // === Phân trang ===
-        int pageSize = parseIntOrDefault(request.getParameter("pageSize"), 10);
-        if (pageSize != 10 && pageSize != 20 && pageSize != 30) pageSize = 10; // bảo vệ
-        int page = parseIntOrDefault(request.getParameter("page"), 1);
-        page = Math.max(page, 1);
 
-        // === Tổng & danh sách theo trang ===
-        int totalProducts = productDAO.countProducts(
-                categoryNames,
-                productName,
-                ProductDAO.StockFilter.from(stock),
-                threshold
-        );
-        int totalPages = productDAO.calcTotalPages(totalProducts, pageSize);
-        if (totalPages == 0) totalPages = 1;
-        if (page > totalPages) page = totalPages;
+        List<Product> products;
+        
+        // Kiểm tra role: 
+        // - Role 0 = Admin: xem tất cả sản phẩm, có quyền CRUD
+        // - Role 1 = Manager: chỉ xem sản phẩm của chi nhánh, không có quyền CRUD
+        if (roleID != null && roleID == 1 && branchID != null) {
+            // Manager (Role 1) - chỉ lấy sản phẩm theo chi nhánh
+            System.out.println("[DEBUG] Manager accessing products for branchID: " + branchID);
+            products = getProductsByBranch(branchID, categoryNames, productName, stock, threshold);
+        } else {
+            // Admin (Role 0) hoặc khác - lấy tất cả sản phẩm
+            System.out.println("[DEBUG] Admin accessing all products");
+            products = productDAO.listProducts(
+                    categoryNames,
+                    productName,
+                    ProductDAO.StockFilter.from(stock),
+                    threshold
+            );
+        }
 
-        var products = productDAO.listProductsByPage(
-                categoryNames,
-                productName,
-                ProductDAO.StockFilter.from(stock),
-                threshold,
-                page,
-                pageSize
-        );
+        // Load ProductDetails để có thêm thông tin chi tiết
+        List<ProductDetail> allProductDetails = productDetailDAO.getAllProductDetails();
+        
+        // Tạo Map để lookup ProductDetail theo ProductID
+        java.util.Map<Integer, ProductDetail> productDetailMap = new java.util.HashMap<>();
+        for (ProductDetail detail : allProductDetails) {
+            if (!productDetailMap.containsKey(detail.getProductID())) {
+                productDetailMap.put(detail.getProductID(), detail);
+            }
+        }
+        
+        // Set ProductDetail vào request để JSP có thể truy cập
+        request.setAttribute("productDetailMap", productDetailMap);
 
-        int offset = (page - 1) * pageSize;
+        // Lọc theo trạng thái (thêm mới)
+        String status = request.getParameter("status");
+        if (status == null || status.isBlank()) status = "all";
+        
+        // Filter products by status (isActive)
+        System.out.println("[DEBUG] Status filter: " + status);
+        System.out.println("[DEBUG] Products before status filter: " + (products == null ? 0 : products.size()));
+        
+        if (!"all".equals(status)) {
+            List<Product> filteredProducts = new ArrayList<>();
+            for (Product product : products) {
+                boolean isActive = product.getIsActive() != null && product.getIsActive();
+                System.out.println("[DEBUG] Product " + product.getProductId() + " - isActive: " + isActive + ", filter: " + status);
+                
+                if ("active".equals(status) && isActive) {
+                    filteredProducts.add(product);
+                } else if ("inactive".equals(status) && !isActive) {
+                    filteredProducts.add(product);
+                }
+            }
+            products = filteredProducts;
+            System.out.println("[DEBUG] Products after status filter: " + products.size());
+        }
+        
+        // === Pagination: in-memory fallback ===
+        long totalItems = (products == null) ? 0L : products.size();
+        int fromIndex = (page - 1) * pageSize;
+        List<Product> pagedProducts;
+        if (products == null || fromIndex >= products.size()) {
+            pagedProducts = new ArrayList<>();
+        } else {
+            int toIndex = Math.min(fromIndex + pageSize, products.size());
+            pagedProducts = new ArrayList<>(products.subList(fromIndex, toIndex));
+        }
+        // gán lại products để phần còn lại vẫn dùng products (đã phân trang)
+        products = pagedProducts;
 
-        // Set attribute cho view
+        // Tạo formatted date map cho JSP (sau khi đã filter)
+        java.util.Map<Integer, String> formattedDateMap = new java.util.HashMap<>();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        
+        for (Product product : products) {
+            if (product.getCreatedAt() != null) {
+                formattedDateMap.put(product.getProductId(), product.getCreatedAt().format(formatter));
+            }
+        }
+        request.setAttribute("formattedDateMap", formattedDateMap);
+        
+        // Đẩy dữ liệu ra view (giữ lại các giá trị người dùng nhập/chọn)
         request.setAttribute("products", products);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
@@ -155,7 +221,15 @@ public class ProductController extends HttpServlet {
         request.setAttribute("stock", stock);
         request.setAttribute("stockThreshold", threshold);
 
-        // Sidebar
+        // Pagination attributes
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (totalPages < 1) totalPages = 1;
+        request.setAttribute("currentPage", page);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
+
+        // Sidebar danh mục
         request.setAttribute("categories", categoryDAO.getAll());
 
         request.getRequestDispatcher("/WEB-INF/jsp/admin/product.jsp").forward(request, response);

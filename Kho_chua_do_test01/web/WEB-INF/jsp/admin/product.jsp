@@ -80,16 +80,125 @@
                                     <c:set var="sel" value="true"/>
                                 </c:if>
                             </c:forEach>
-                        </c:if>
-                        <option value="${c.categoryName}" <c:if test="${sel}">selected</c:if>>${c.categoryName}</option>
-                    </c:forEach>
-                </select>
-            </div>
+   <!-- ========== PAGINATION ROW ========== -->
+                            <tr>
+                                <td colspan="${(sessionScope.roleID == 0 or sessionScope.roleID == '0') ? '6' : '5'}">
+                                    <div class="pagination-wrapper" style="display:flex; justify-content:space-between; align-items:center; padding:12px 8px;">
+                                        <!-- left: info -->
+                                        <div class="pagination-info">
+                                            <c:choose>
+                                                <c:when test="${not empty totalItems}">
+                                                    Tổng <strong>${totalItems}</strong> sản phẩm — Trang <strong>${currentPage}</strong> / <strong>${totalPages}</strong>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    Không có sản phẩm
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
 
-            <!-- Tồn kho -->
-            <div class="filter-section">
-                <div class="filter-title" onclick="toggleFilter('stock-filter')">
-                    Tồn kho <span class="icon-expand" id="stock-filter-icon"></span>
+                                        <!-- right: controls -->
+                                        <div class="pagination-controls" style="display:flex; align-items:center; gap:10px;">
+
+                                            <!-- small pageSize selector (keeps filters via hidden inputs) -->
+                                            <form id="pageSizeForm" method="get" action="${pageContext.request.contextPath}/product" style="display:inline-flex; align-items:center; gap:6px;">
+                                                <input type="hidden" name="action" value="list" />
+                                                <input type="hidden" name="page" value="1" />
+                                                <c:if test="${not empty param.productName}"><input type="hidden" name="productName" value="${param.productName}" /></c:if>
+                                                <c:if test="${not empty param.keyword}"><input type="hidden" name="keyword" value="${param.keyword}" /></c:if>
+                                                <c:if test="${not empty param.status}"><input type="hidden" name="status" value="${param.status}" /></c:if>
+                                                <c:if test="${not empty param.stock}"><input type="hidden" name="stock" value="${param.stock}" /></c:if>
+                                                <c:if test="${not empty param.stockThreshold}"><input type="hidden" name="stockThreshold" value="${param.stockThreshold}" /></c:if>
+                                                <c:forEach var="cat" items="${paramValues.categoryName}">
+                                                    <input type="hidden" name="categoryName" value="${cat}" />
+                                                </c:forEach>
+
+                                                <label for="ps">Hiển thị</label>
+                                                <select id="ps" name="pageSize" onchange="document.getElementById('pageSizeForm').submit();" style="padding:4px;">
+                                                    <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+                                                    <option value="20" ${pageSize == 20 ? 'selected' : ''}>20</option>
+                                                    <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+                                                    <option value="100" ${pageSize == 100 ? 'selected' : ''}>100</option>
+                                                </select>
+                                                <span>/ trang</span>
+                                            </form>
+
+                                            <!-- Prev -->
+                                            <c:choose>
+                                                <c:when test="${currentPage > 1}">
+                                                    <c:url var="prevUrl" value="/product">
+                                                        <c:param name="action" value="list"/>
+                                                        <c:param name="page" value="${currentPage - 1}"/>
+                                                        <c:param name="pageSize" value="${pageSize}"/>
+                                                        <c:if test="${not empty param.productName}"><c:param name="productName" value="${param.productName}"/></c:if>
+                                                        <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
+                                                        <c:if test="${not empty param.status}"><c:param name="status" value="${param.status}"/></c:if>
+                                                        <c:if test="${not empty param.stock}"><c:param name="stock" value="${param.stock}"/></c:if>
+                                                        <c:if test="${not empty param.stockThreshold}"><c:param name="stockThreshold" value="${param.stockThreshold}"/></c:if>
+                                                        <c:forEach var="cat" items="${paramValues.categoryName}"><c:param name="categoryName" value="${cat}"/></c:forEach>
+                                                    </c:url>
+                                                    <a href="${prevUrl}" class="btn btn-sm" style="padding:6px 10px; text-decoration:none;">&laquo; Trước</a>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="btn btn-sm disabled" style="padding:6px 10px; opacity:0.5;">&laquo; Trước</span>
+                                                </c:otherwise>
+                                            </c:choose>
+
+                                            <!-- page numbers (window around currentPage) -->
+                                            <c:set var="window" value="3" />
+                                            <c:set var="start" value="${currentPage - window < 1 ? 1 : currentPage - window}" />
+                                            <c:set var="end" value="${currentPage + window > totalPages ? totalPages : currentPage + window}" />
+
+                                            <c:forEach var="i" begin="${start}" end="${end}">
+                                                <c:url var="pageUrl" value="/product">
+                                                    <c:param name="action" value="list" />
+                                                    <c:param name="page" value="${i}" />
+                                                    <c:param name="pageSize" value="${pageSize}" />
+                                                    <c:if test="${not empty param.productName}"><c:param name="productName" value="${param.productName}" /></c:if>
+                                                    <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}" /></c:if>
+                                                    <c:if test="${not empty param.status}"><c:param name="status" value="${param.status}" /></c:if>
+                                                    <c:if test="${not empty param.stock}"><c:param name="stock" value="${param.stock}" /></c:if>
+                                                    <c:if test="${not empty param.stockThreshold}"><c:param name="stockThreshold" value="${param.stockThreshold}" /></c:if>
+                                                    <c:forEach var="cat" items="${paramValues.categoryName}"><c:param name="categoryName" value="${cat}" /></c:forEach>
+                                                </c:url>
+
+                                                <c:choose>
+                                                    <c:when test="${i == currentPage}">
+                                                        <a href="${pageUrl}" class="btn btn-sm active" style="padding:6px 8px; font-weight:bold; background:#eee; text-decoration:none;">${i}</a>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <a href="${pageUrl}" class="btn btn-sm" style="padding:6px 8px; text-decoration:none;">${i}</a>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </c:forEach>
+
+                                            <!-- Next -->
+                                            <c:choose>
+                                                <c:when test="${currentPage < totalPages}">
+                                                    <c:url var="nextUrl" value="/product">
+                                                        <c:param name="action" value="list"/>
+                                                        <c:param name="page" value="${currentPage + 1}"/>
+                                                        <c:param name="pageSize" value="${pageSize}"/>
+                                                        <c:if test="${not empty param.productName}"><c:param name="productName" value="${param.productName}"/></c:if>
+                                                        <c:if test="${not empty param.keyword}"><c:param name="keyword" value="${param.keyword}"/></c:if>
+                                                        <c:if test="${not empty param.status}"><c:param name="status" value="${param.status}"/></c:if>
+                                                        <c:if test="${not empty param.stock}"><c:param name="stock" value="${param.stock}"/></c:if>
+                                                        <c:if test="${not empty param.stockThreshold}"><c:param name="stockThreshold" value="${param.stockThreshold}"/></c:if>
+                                                        <c:forEach var="cat" items="${paramValues.categoryName}"><c:param name="categoryName" value="${cat}"/></c:forEach>
+                                                    </c:url>
+                                                    <a href="${nextUrl}" class="btn btn-sm" style="padding:6px 10px; text-decoration:none;">Sau &raquo;</a>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="btn btn-sm disabled" style="padding:6px 10px; opacity:0.5;">Sau &raquo;</span>
+                                                </c:otherwise>
+                                            </c:choose>
+
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- ========== END PAGINATION ========== -->
+                        </tbody>
+                    </table>
                 </div>
                 <div class="filter-content" id="stock-filter-content" style="display:block">
                     <div class="filter-item">
